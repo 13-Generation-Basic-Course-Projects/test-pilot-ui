@@ -13,7 +13,7 @@ import {
 	SidebarRail,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-import Logo from "../icons/logo";
+import Logo from "./icons/logo";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [isOpen, setIsOpen] = React.useState(true);
@@ -29,7 +29,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<NavMain items={SidebarMenu.navMain} />
 			</SidebarContent>
-			<SidebarRail />
+			{/* <SidebarRail /> */}
 		</Sidebar>
 	);
 }
