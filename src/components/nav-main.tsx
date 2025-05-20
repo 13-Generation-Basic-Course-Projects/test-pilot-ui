@@ -52,10 +52,12 @@ export function NavMain({
 							defaultOpen={isActive && Href !== "/project"}
 						>
 							<SidebarMenuItem
-								className={cn({ "bg-muted font-semibold": isActive })}
+								className={cn({
+									"bg-muted font-semibold": isActive,
+								})}
 							>
 								<CollapsibleTrigger asChild>
-									<Link href={Href} className="cursor-pointer">
+									<Link href={Href}>
 										<SidebarMenuButton tooltip={item.title}>
 											{item.icon && <item.icon />}
 											<span>{item.title}</span>

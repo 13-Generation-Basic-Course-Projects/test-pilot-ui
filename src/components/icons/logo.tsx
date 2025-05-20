@@ -1,9 +1,10 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Logo = () => {
 	return (
-		<>
+		<Link href="/">
 			<Image
 				src="/logo.png"
 				alt="logo"
@@ -11,7 +12,7 @@ const Logo = () => {
 				height={100}
 				className="object-cover"
 			/>
-		</>
+		</Link>
 	);
 };
 

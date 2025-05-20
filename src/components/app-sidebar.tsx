@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 
-import { SidebarMenu } from "@/lib/constants";
+import { sidebarMenus } from "@/lib/constants";
 
 import {
 	Sidebar,
@@ -27,7 +27,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				</div>
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={SidebarMenu.navMain} />
+				<NavMain items={sidebarMenus.navMain} />
 			</SidebarContent>
 			{/* <SidebarRail /> */}
 		</Sidebar>
