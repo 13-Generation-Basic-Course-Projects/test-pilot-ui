@@ -20,8 +20,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<Sidebar collapsible="icon" {...props}>
-			<SidebarHeader>
-				<div className="flex items-center justify-between">
+			<SidebarHeader className={isOpen ? "mt-[3px]" : "mt-[7.5px]"}>
+				<div className="flex items-center  justify-between">
 					{isOpen && <Logo />}
 					<SidebarTrigger onClick={() => setIsOpen((prev) => !prev)} />
 				</div>

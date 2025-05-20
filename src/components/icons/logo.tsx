@@ -7,8 +7,8 @@ const Logo = () => {
 			<Image
 				src="/logo.png"
 				alt="logo"
-				width={110}
-				height={110}
+				width={100}
+				height={100}
 				className="object-cover"
 			/>
 		</>

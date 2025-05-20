@@ -16,7 +16,7 @@ export const NavbarComponent = ({
 	const { subpathSegments, hasSubpathSegments } = useProjectPath();
 
 	return (
-		<nav className={cn("border-b-2 py-2 px-6", className)} {...props}>
+		<nav className={cn("border-b-1 py-2 px-6", className)} {...props}>
 			<div className="flex justify-between gap-2 items-center">
 				{hasSubpathSegments ? (
 					<BreadcrumbNavbar params={subpathSegments} />
