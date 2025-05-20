@@ -1,13 +1,7 @@
-import { NavbarComponent } from "@/components/navbar";
 import React from "react";
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
-	return (
-		<div>
-			<NavbarComponent />
-			{children}
-		</div>
-	);
+	return <div className="min-h-screen">{children}</div>;
 };
 
 export default ProtectedLayout;
