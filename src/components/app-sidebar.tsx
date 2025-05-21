@@ -10,7 +10,6 @@ import {
 	Sidebar,
 	SidebarContent,
 	SidebarHeader,
-	SidebarRail,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Logo from "./icons/logo";
@@ -29,7 +28,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<NavMain items={sidebarMenus.navMain} />
 			</SidebarContent>
-			{/* <SidebarRail /> */}
 		</Sidebar>
 	);
 }

@@ -1,8 +1,7 @@
 import { NavbarComponent } from "@/components/navbar";
+import ProjectForm from "@/components/project-form";
 import ProjectItems from "@/components/project-items";
 import { SearchForm } from "@/components/search-form";
-import { Button } from "@/components/ui/button";
-import { FolderPlusIcon } from "lucide-react";
 import React from "react";
 
 const ProjectPage = () => {
@@ -17,10 +16,7 @@ const ProjectPage = () => {
 							Manage your API testing projects
 						</p>
 					</div>
-					<Button>
-						<FolderPlusIcon />
-						New Project
-					</Button>
+					<ProjectForm mode="create" />
 				</div>
 				<SearchForm className="mt-10" />
 				<div className="w-full mt-10">
