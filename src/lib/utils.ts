@@ -1,6 +1,21 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+	return twMerge(clsx(inputs));
 }
+
+export const getMethodColor = (method: string) => {
+	switch (method.toUpperCase()) {
+		case "GET":
+			return "text-[#17c964]";
+		case "POST":
+			return "text-[#f5a524]";
+		case "PUT":
+			return "text-[#006fee]";
+		case "DELETE":
+			return "text-[#f31260]";
+		default:
+			return "text-gray-500";
+	}
+};

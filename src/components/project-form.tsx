@@ -1,5 +1,5 @@
 "use client";
-import { ProjectFormProps } from "@/types/projectType";
+import { ProjectFormProps } from "@/types";
 import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {

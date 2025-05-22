@@ -2,6 +2,7 @@ import { NavbarComponent } from "@/components/navbar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import React from "react";
+import { CollectionSidebar } from "@/components/collection";
 
 const ProjectDetailLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
@@ -10,7 +11,7 @@ const ProjectDetailLayout = ({ children }: { children: React.ReactNode }) => {
 				<AppSidebar />
 				<main className="flex flex-col flex-auto">
 					<NavbarComponent />
-					<div className="p-8">{children}</div>
+					{children}
 				</main>
 			</div>
 		</SidebarProvider>
