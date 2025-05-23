@@ -14,6 +14,7 @@ export function RequestContentDetail({
 	projectId: string;
 	requestId: string;
 }) {
+	console.log(projectId, requestId);
 	return (
 		<div>
 			<Tabs defaultValue="request-content" className="w-full">
