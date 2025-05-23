@@ -7,7 +7,12 @@ const RequestContent = ({
 	projectId: string;
 	requestId: string;
 }) => {
-	return <div>RequestContent</div>;
+	return (
+		<div>
+			{projectId}
+			{requestId}
+		</div>
+	);
 };
 
 export default RequestContent;
