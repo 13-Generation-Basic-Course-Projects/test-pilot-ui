@@ -12,9 +12,7 @@ const RequestDetail = async ({
 		<div>
 			<div className="flex">
 				<CollectionSidebar />
-				<div className="hidden md:flex items-center justify-center relative flex-1 self-stretch grow bg-[#f9fafb]">
-					<RequestContent projectId={projectId} requestId={requestId} />
-				</div>
+				<RequestContent projectId={projectId} requestId={requestId} />
 			</div>
 		</div>
 	);

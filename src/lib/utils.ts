@@ -15,6 +15,8 @@ export const getMethodColor = (method: string) => {
 			return "text-[#006fee]";
 		case "DELETE":
 			return "text-[#f31260]";
+		case "PATCH":
+			return "text-[#7C3AED]";
 		default:
 			return "text-gray-500";
 	}
