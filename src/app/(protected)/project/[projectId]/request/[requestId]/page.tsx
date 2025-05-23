@@ -1,4 +1,5 @@
 import { CollectionSidebar } from "@/components/collection";
+import RequestContent from "@/components/request-content";
 import React from "react";
 
 const RequestDetail = async ({
@@ -12,8 +13,7 @@ const RequestDetail = async ({
 			<div className="flex">
 				<CollectionSidebar />
 				<div className="hidden md:flex items-center justify-center relative flex-1 self-stretch grow bg-[#f9fafb]">
-					{projectId}
-					{requestId}
+					<RequestContent projectId={projectId} requestId={requestId} />
 				</div>
 			</div>
 		</div>
