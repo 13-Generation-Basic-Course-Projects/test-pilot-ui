@@ -24,11 +24,11 @@ export default function History() {
                     <div className="space-y-2 w-fit">
                         <div className="flex space-x-2">
                             <p>Status:</p>
-                            <div className="border border-[#E2E8F0] rounded-3xl px-[10px] text-[#17C964]">200 OK</div>
+                            <div className="border border-[#E2E8F0] rounded-md px-[10px] text-[#17C964]">200 OK</div>
                         </div>
                         <div className="flex space-x-2">
                             <p>Method:</p>
-                            <div className="border border-[#E2E8F0] rounded-3xl px-[15px] text-[#006FEE]">PUT</div>
+                            <div className="border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">PUT</div>
                         </div>
                         <div className="flex space-x-2">
                             <p>Endpoint:</p>
@@ -39,7 +39,7 @@ export default function History() {
                     <hr className="text-[#94A3B8]" />
 
                     <p className="text-2xl">Request Metadata</p>
-                    <div>
+                    <div className='text-[#94A3B8]'>
                         No preview
                         {/* <SnippetCode /> */}
                     </div>

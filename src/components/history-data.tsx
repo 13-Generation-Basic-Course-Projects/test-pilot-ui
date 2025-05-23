@@ -21,11 +21,11 @@ import {
 const dates = [
   {
     date: "20 May 19:00 PM",
-    method: <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#006FEE]'>PUT</div>,
+    method: <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]'>PUT</div>,
     endPoint: "api/v1/habits/habit-id",
-    status: <div className="flex justify-between max-w-[150px]">
+    status: <div className="flex justify-between max-w-[120px]">
       <p className="text-[#17C964]">Passed</p>
-      <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#17C964]'>200</div>
+      <div className='w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]'>200</div>
     </div>,
     action: <div className="flex gap-3">
       <Play className="text-[#3B82F6]" width={20} />
@@ -34,11 +34,11 @@ const dates = [
   },
   {
     date: "20 May 19:00 PM",
-    method: <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#006FEE]'>PUT</div>,
+    method: <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]'>PUT</div>,
     endPoint: "api/v1/habits/habit-id",
-    status: <div className="flex justify-between max-w-[150px]">
+    status: <div className="flex justify-between max-w-[120px]">
       <p className="text-[#EF4444]">Failed</p>
-      <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#17C964]'>200</div>
+      <div className='w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]'>200</div>
     </div>,
     action: <div className="flex gap-3">
       <Play className="text-[#3B82F6]" width={20} />
@@ -47,11 +47,11 @@ const dates = [
   },
   {
     date: "20 May 19:00 PM",
-    method: <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#006FEE]'>PUT</div>,
+    method: <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]'>PUT</div>,
     endPoint: "api/v1/habits/habit-id",
-    status: <div className="flex justify-between max-w-[150px]">
+    status: <div className="flex justify-between max-w-[120px]">
       <p className="text-[#EF4444]">Failed</p>
-      <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#EF4444]'>500</div>
+      <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#EF4444]'>500</div>
     </div>,
     action: <div className="flex gap-3">
       <Play className="text-[#3B82F6]" width={20} />
@@ -60,11 +60,11 @@ const dates = [
   },
   {
     date: "20 May 19:00 PM",
-    method: <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#006FEE]'>PUT</div>,
+    method: <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]'>PUT</div>,
     endPoint: "api/v1/habits/habit-id",
-    status: <div className="flex justify-between max-w-[150px]">
+    status: <div className="flex justify-between max-w-[120px]">
       <p className="text-[#EF4444]">Failed</p>
-      <div className='w-fit border border-[#E2E8F0] rounded-3xl px-[15px] text-[#EF4444]'>500</div>
+      <div className='w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#EF4444]'>500</div>
     </div>,
     action: <div className="flex gap-3">
       <Play className="text-[#3B82F6]" width={20} />
