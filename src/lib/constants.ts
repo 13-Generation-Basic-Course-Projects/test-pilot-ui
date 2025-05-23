@@ -175,3 +175,15 @@ export const sidebarMenus = {
 		},
 	],
 };
+
+export const DATA_TYPES = [
+	"String",
+	"Date",
+	"Integer",
+	"Array",
+	"File",
+	"UUID",
+	"Enum",
+] as const;
+
+export type DataType = (typeof DATA_TYPES)[number];
