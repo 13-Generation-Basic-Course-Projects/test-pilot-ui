@@ -17,3 +17,15 @@ export type ProjectFormProps = {
 	isOpen?: boolean;
 	onOpenChange?: (open: boolean) => void;
 };
+
+export interface Endpoint {
+	id: string;
+	method: string;
+	path: string;
+}
+
+export interface CollectionItem {
+	id: string;
+	title: string;
+	endpoints: Endpoint[];
+}
