@@ -1,6 +1,5 @@
 import { LoginForm } from "@/app/(public)/_components/login-form";
 import Image from "next/image";
-
 export default function LoginPage() {
 	return (
 		<div className="grid min-h-svh lg:grid-cols-2">
@@ -17,6 +16,7 @@ export default function LoginPage() {
 				<div className="flex flex-1 items-center justify-center">
 					<div className="w-full max-w-lg">
 						<LoginForm />
+
 					</div>
 				</div>
 			</div>

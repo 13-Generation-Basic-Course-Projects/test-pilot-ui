@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -7,7 +6,6 @@ import Logo from "./icons/logo";
 import { cn } from "@/lib/utils";
 import BreadcrumbNavbar from "./breadcrumb-navbar";
 import { useProjectPath } from "@/hooks/use-project-path";
-
 export const NavbarComponent = ({
 	className,
 	...props

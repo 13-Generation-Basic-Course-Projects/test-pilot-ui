@@ -1,7 +1,34 @@
-import React from "react";
 
-const Register = () => {
-	return <div>Register</div>;
-};
+import Image from "next/image";
+import { RegisterForm } from "../_components/register-form";
 
-export default Register;
+export default function RegisterPage() {
+	return (
+		<div className="grid min-h-svh lg:grid-cols-2">
+			<div className="flex flex-col gap-4 p-6 md:p-10">
+				<div className="flex justify-center gap-2 md:justify-start">
+					<Image
+						src="/logo.png"
+						alt="logo"
+						width={100}
+						height={100}
+						className="object-cover"
+					/>
+				</div>
+				<div className="flex flex-1 items-center justify-center">
+					<div className="w-full max-w-lg">
+						<RegisterForm />
+					</div>
+				</div>
+			</div>
+			<div className="relative hidden lg:flex justify-start items-center ml-20">
+				<Image
+					src="/sign up.png"
+					alt="Register_page"
+					width={600}
+					height={600}
+				/>
+			</div>
+		</div>
+	);
+}
