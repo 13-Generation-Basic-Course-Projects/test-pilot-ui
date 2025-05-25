@@ -6,3 +6,9 @@ export const projectFormSchema = z.object({
 		.string()
 		.min(1, { message: "Project description is required." }),
 });
+
+export const collectionFormSchema = z.object({
+	collectionName: z
+		.string()
+		.min(1, { message: "Collection name is required." }),
+});
