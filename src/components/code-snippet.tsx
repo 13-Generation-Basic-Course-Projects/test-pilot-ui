@@ -1,6 +1,6 @@
 "use client";
 import React, { ChangeEvent, useState } from "react";
-import { CodeXml, Copy, X } from "lucide-react";
+import { Copy } from "lucide-react";
 import { CodeSnippetUI } from "@/components/code-snippet-ui";
 import { CodeSnippetValue } from "@/lib/constants";
 
