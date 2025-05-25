@@ -1,4 +1,5 @@
 import React from "react";
+import { EndpointDropdown } from "./endpoint-dropdown";
 
 const RequestContent = ({
 	projectId,
@@ -8,7 +9,8 @@ const RequestContent = ({
 	requestId: string;
 }) => {
 	return (
-		<div>
+		<div className="w-full">
+			<EndpointDropdown projectId={projectId} requestId={requestId} />
 			{projectId}
 			{requestId}
 		</div>
