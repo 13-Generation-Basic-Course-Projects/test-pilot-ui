@@ -1,8 +1,8 @@
 "use client";
 import React, { ChangeEvent, useState } from "react";
-import codeSnippets from "../../data/codeSnippet";
 import { CodeXml, Copy, X } from "lucide-react";
 import Code_Snippet from "@/components/ui/CodeSnippetUI";
+import { CodeSnippetValue } from "@/data/code-snippet-value";
 
 const CodeSnippet = () => {
 	const [copied, setCopied] = useState(false);
@@ -23,7 +23,7 @@ const CodeSnippet = () => {
 	};
 
 	// Find the selected snippet based on the language
-	const selectedSnippet = codeSnippets.find(
+	const selectedSnippet = CodeSnippetValue.find(
 		(snippet) => snippet.language === language
 	);
 
@@ -46,7 +46,7 @@ const CodeSnippet = () => {
 						onChange={handleChange}
 						className="px-4 py-1  rounded-md focus:outline-none w-[130px] "
 					>
-						{codeSnippets.map((snippet) => (
+						{CodeSnippetValue.map((snippet) => (
 							<option key={snippet.language} value={snippet.language}>
 								{snippet.label}
 							</option>
