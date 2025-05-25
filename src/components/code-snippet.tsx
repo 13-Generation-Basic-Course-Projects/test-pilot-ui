@@ -1,8 +1,8 @@
 "use client";
 import React, { ChangeEvent, useState } from "react";
 import { CodeXml, Copy, X } from "lucide-react";
-import Code_Snippet from "@/components/ui/CodeSnippetUI";
-import { CodeSnippetValue } from "@/data/code-snippet-value";
+import { CodeSnippetUI } from "@/components/code-snippet-ui";
+import { CodeSnippetValue } from "@/lib/constants";
 
 const CodeSnippet = () => {
 	const [copied, setCopied] = useState(false);
@@ -29,17 +29,7 @@ const CodeSnippet = () => {
 
 	return (
 		<div className="flex items-center flex-col gap-3">
-			<div className="bg-white border-1 border-gray-100 rounded-lg shadow-md flex items-center justify-between p-2 w-full max-w-[400px]">
-				<div className="flex items-center space-x-3">
-					<CodeXml />
-					<span className="text-gray-800 text-lg font-medium">
-						Code snippet
-					</span>
-				</div>
-				<X />
-			</div>
-
-			<div className=" border rounded-md w-[390px] p-2">
+			<div className=" border rounded-md w-[30rem] p-2">
 				<div className="flex items-center  justify-between  rounded-md focus:outline-none w-[100%] focus:ring-2 focus:ring-blue-100">
 					<select
 						value={language}
@@ -61,9 +51,9 @@ const CodeSnippet = () => {
 						)}
 					</div>
 				</div>
-				<div className="">
+				<div className="max-w-lg">
 					{selectedSnippet && (
-						<Code_Snippet
+						<CodeSnippetUI
 							language={selectedSnippet.language}
 							code={selectedSnippet.code}
 						/>
