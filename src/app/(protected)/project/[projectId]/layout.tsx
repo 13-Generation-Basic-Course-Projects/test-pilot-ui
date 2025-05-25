@@ -10,7 +10,7 @@ const ProjectDetailLayout = ({ children }: { children: React.ReactNode }) => {
 				<AppSidebar />
 				<main className="flex flex-col flex-auto">
 					<NavbarComponent />
-					<div className="p-8">{children}</div>
+					{children}
 				</main>
 			</div>
 		</SidebarProvider>

@@ -22,9 +22,9 @@ export const NavbarComponent = ({
 					<Logo />
 				)}
 				{isLogin ? (
-					<div>
+					<Link href="/profile">
 						<Image src="/profile.png" alt="profile" width={40} height={40} />
-					</div>
+					</Link>
 				) : (
 					<div className="flex gap-4">
 						<Button>

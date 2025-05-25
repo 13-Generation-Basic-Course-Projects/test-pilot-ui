@@ -14,7 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function NavMain({
+export function SideMain({
 	items,
 }: {
 	items: {
@@ -42,7 +42,10 @@ export function NavMain({
 								: `/project/${projectId}/${item.path}`
 							: "#";
 
-					const isActive = Href !== "#" && pathname === Href;
+					const isActive =
+						(Href !== "#" && pathname === Href) ||
+						(item.path === "collection" &&
+							pathname.startsWith(`/project/${projectId}/request`));
 
 					return (
 						<Collapsible
