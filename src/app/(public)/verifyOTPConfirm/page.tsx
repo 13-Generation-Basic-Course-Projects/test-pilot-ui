@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { VerifyOtpConfirmForm } from "../_components/verifyOTPConfirm";
+import { VerifyOtpConfirmSuccessForm } from "../_components/verifyOtpConfirmSuccess";
 export default function VerifyOtoConfirmPage() {
     return (
         <div className="grid min-h-svh lg:grid-cols-2">
@@ -15,7 +15,7 @@ export default function VerifyOtoConfirmPage() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-lg">
-                        <VerifyOtpConfirmForm />
+                        <VerifyOtpConfirmSuccessForm />
                     </div>
                 </div>
             </div>
@@ -23,6 +23,7 @@ export default function VerifyOtoConfirmPage() {
                 <Image
                     src="/verify otp.png"
                     alt="Verify Otp"
+                    className="rounded-2xl object-contain"
                     width={600}
                     height={600}
                 />

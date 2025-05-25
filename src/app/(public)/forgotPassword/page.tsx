@@ -1,4 +1,4 @@
-import { LoginForm } from "@/app/(public)/_components/login-form";
+"use client";
 import Image from "next/image";
 import { ForgotPasswordForm } from "../_components/forgotPassword-form";
 export default function ForgotPasswordPage() {

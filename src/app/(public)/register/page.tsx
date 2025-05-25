@@ -25,6 +25,7 @@ export default function RegisterPage() {
 				<Image
 					src="/sign up.png"
 					alt="Register_page"
+					className="rounded-2xl"
 					width={600}
 					height={600}
 				/>

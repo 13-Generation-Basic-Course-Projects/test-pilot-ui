@@ -1,6 +1,5 @@
 import { LoginForm } from "@/app/(public)/_components/login-form";
 import Image from "next/image";
-import VerifyOtoConfirmPage from "../verifyOTPConfirm/page";
 import { VerifyotpUpdateConfirmForm } from "../_components/verifyotpUpdateConfirm";
 export default function verifyotpUpdateConfirmPage() {
     return (
@@ -18,8 +17,6 @@ export default function verifyotpUpdateConfirmPage() {
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-lg">
                         <VerifyotpUpdateConfirmForm />
-                    
-                        
                     </div>
                 </div>
             </div>
@@ -27,6 +24,7 @@ export default function verifyotpUpdateConfirmPage() {
                 <Image
                     src="/verify 2.png"
                     alt="Verify-Image"
+                    className="rounded-2xl"
                     width={600}
                     height={600}
                 />
