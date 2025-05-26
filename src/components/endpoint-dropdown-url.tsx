@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, CodeXml } from "lucide-react";
 import { projectsData } from "@/lib/constants";
 
 import { cn, getMethodColor } from "@/lib/utils";
@@ -17,7 +17,16 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+	Sheet,
+	SheetContentV2,
+	SheetHeader,
+	SheetTitleV2,
+	SheetTrigger,
+} from "@/components/ui/sheet";
+
 import { Input } from "./ui/input";
+import CodeSnippet from "./code-snippet";
 
 const endpointMethods = [
 	{
@@ -120,7 +129,22 @@ export function EndpointDropdownUrl({
 					placeholder="http://..."
 				/>
 			</div>
-			<Button className="cursor-pointer">Send</Button>
+			<div className="flex items-center gap-2">
+				<Button className="cursor-pointer">Send</Button>
+				<Sheet>
+					<SheetTrigger asChild>
+						<Button className="cursor-pointer">
+							<CodeXml />
+						</Button>
+					</SheetTrigger>
+					<SheetContentV2>
+						<SheetHeader>
+							<SheetTitleV2>Are you absolutely sure?</SheetTitleV2>
+							<CodeSnippet />
+						</SheetHeader>
+					</SheetContentV2>
+				</Sheet>
+			</div>
 		</div>
 	);
 }
