@@ -124,11 +124,24 @@ function AlertDialogAction({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
+      className={cn(buttonVariants(), "bg-[#EF4444] text-white hover:bg-[#dc2626]", className)}
       {...props}
     />
   )
 }
+
+function AlertDialogActionV2({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
+  return (
+    <AlertDialogPrimitive.Action
+      className={cn(buttonVariants(), "bg-[#34302B] text-white hover:bg-[#dc2626]", className)}
+      {...props}
+    />
+  )
+}
+
 
 function AlertDialogCancel({
   className,
@@ -154,4 +167,5 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogActionV2
 }

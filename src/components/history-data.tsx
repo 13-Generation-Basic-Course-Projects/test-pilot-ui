@@ -15,103 +15,109 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
-const dates = [
-	{
-		date: "20 May 19:00 PM",
-		method: (
-			<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
-				PUT
-			</div>
-		),
-		endPoint: "api/v1/habits/habit-id",
-		status: (
-			<div className="flex justify-between max-w-[120px]">
-				<p className="text-[#17C964]">Passed</p>
-				<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
-					200
-				</div>
-			</div>
-		),
-		action: (
-			<div className="flex gap-3">
-				<Play className="text-[#3B82F6]" width={20} />
-				<Trash2 className="text-[#E2001A]" width={20} />
-			</div>
-		),
-	},
-	{
-		date: "20 May 19:00 PM",
-		method: (
-			<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
-				PUT
-			</div>
-		),
-		endPoint: "api/v1/habits/habit-id",
-		status: (
-			<div className="flex justify-between max-w-[120px]">
-				<p className="text-[#EF4444]">Failed</p>
-				<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
-					200
-				</div>
-			</div>
-		),
-		action: (
-			<div className="flex gap-3">
-				<Play className="text-[#3B82F6]" width={20} />
-				<Trash2 className="text-[#E2001A]" width={20} />
-			</div>
-		),
-	},
-	{
-		date: "20 May 19:00 PM",
-		method: (
-			<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
-				PUT
-			</div>
-		),
-		endPoint: "api/v1/habits/habit-id",
-		status: (
-			<div className="flex justify-between max-w-[120px]">
-				<p className="text-[#EF4444]">Failed</p>
-				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#EF4444]">
-					500
-				</div>
-			</div>
-		),
-		action: (
-			<div className="flex gap-3">
-				<Play className="text-[#3B82F6]" width={20} />
-				<Trash2 className="text-[#E2001A]" width={20} />
-			</div>
-		),
-	},
-	{
-		date: "20 May 19:00 PM",
-		method: (
-			<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
-				PUT
-			</div>
-		),
-		endPoint: "api/v1/habits/habit-id",
-		status: (
-			<div className="flex justify-between max-w-[120px]">
-				<p className="text-[#EF4444]">Failed</p>
-				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#EF4444]">
-					500
-				</div>
-			</div>
-		),
-		action: (
-			<div className="flex gap-3">
-				<Play className="text-[#3B82F6]" width={20} />
-				<Trash2 className="text-[#E2001A]" width={20} />
-			</div>
-		),
-	},
-];
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+type RowData = {
+	date: string;
+	method: React.ReactNode;
+	endPoint: string;
+	status: React.ReactNode;
+	action?: React.ReactNode;
+};
+
+
 export function HistoryData() {
 	const [isOpen, setIsOpen] = React.useState(true);
 	const [activeRow, setActiveRow] = React.useState<number | null>(null);
+	const [data, setData] = React.useState<RowData[]>([
+		{
+			date: "20 May 19:00 PM",
+			method: (
+				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
+					PUT
+				</div>
+			),
+			endPoint: "api/v1/habits/habit-id",
+			status: (
+				<div className="flex justify-between max-w-[120px]">
+					<p className="text-[#17C964]">Passed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+						200
+					</div>
+				</div>
+			),
+		},
+		{
+			date: "20 May 19:00 PM",
+			method: (
+				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
+					PUT
+				</div>
+			),
+			endPoint: "api/v1/habits/habit-id",
+			status: (
+				<div className="flex justify-between max-w-[120px]">
+					<p className="text-[#EF4444]">Failed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+						200
+					</div>
+				</div>
+			),
+		},
+		{
+			date: "20 May 19:00 PM",
+			method: (
+				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
+					PUT
+				</div>
+			),
+			endPoint: "api/v1/habits/habit-id",
+			status: (
+				<div className="flex justify-between max-w-[120px]">
+					<p className="text-[#EF4444]">Failed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+						500
+					</div>
+				</div>
+			),
+		},
+		{
+			date: "20 May 19:00 PM",
+			method: (
+				<div className="w-fit border border-[#E2E8F0] rounded-md px-[15px] text-[#006FEE]">
+					PUT
+				</div>
+			),
+			endPoint: "api/v1/habits/habit-id",
+			status: (
+				<div className="flex justify-between max-w-[120px]">
+					<p className="text-[#EF4444]">Failed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+						500
+					</div>
+				</div>
+			),
+		},
+	]);
+
+	const [deleteIndex, setDeleteIndex] = React.useState<number | null>(null);
+
+	const handleDelete = () => {
+		if (deleteIndex !== null) {
+			setData(prev => prev.filter((_, idx) => idx !== deleteIndex));
+			setDeleteIndex(null);
+		}
+	};
 
 	return (
 		<Collapsible
@@ -127,9 +133,9 @@ export function HistoryData() {
 				<CollapsibleTrigger asChild>
 					<button aria-label="Toggle">
 						{isOpen ? (
-							<ChevronUp className="h-5 w-5" />
+							<ChevronUp className="h-5 w-5 cursor-pointer" />
 						) : (
-							<ChevronDown className="h-5 w-5" />
+							<ChevronDown className="h-5 w-5 cursor-pointer" />
 						)}
 					</button>
 				</CollapsibleTrigger>
@@ -157,23 +163,52 @@ export function HistoryData() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{dates.map((dateItem, index) => (
+									{data.map((item, index) => (
 										<TableRow
 											key={index}
 											onClick={() => setActiveRow(index)}
-											className={`py-5 cursor-pointer ${
-												activeRow === index ? "bg-[#F1F5F9]" : ""
-											}`}
+											className={`py-5 cursor-pointer ${activeRow === index ? "bg-[#F1F5F9]" : ""
+												}`}
 										>
-											<TableCell className="py-5 pl-6">
-												{dateItem.date}
-											</TableCell>
-											<TableCell className="py-5">{dateItem.method}</TableCell>
+											<TableCell className="py-5 pl-6">{item.date}</TableCell>
+											<TableCell className="py-5">{item.method}</TableCell>
+											<TableCell className="py-5">{item.endPoint}</TableCell>
+											<TableCell className="py-5">{item.status}</TableCell>
 											<TableCell className="py-5">
-												{dateItem.endPoint}
+												<div className="flex gap-3">
+													<Play className="text-[#3B82F6]" width={20} />
+													<AlertDialog>
+														<AlertDialogTrigger asChild>
+															<Trash2
+																className="text-[#E2001A] cursor-pointer"
+																width={20}
+																onClick={(e) => {
+																	e.stopPropagation();
+																	setDeleteIndex(index);
+																}}
+															/>
+														</AlertDialogTrigger>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+																<AlertDialogDescription>
+																	This action cannot be undone. This will permanently delete your
+																	endpoint.
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>Cancel</AlertDialogCancel>
+																<AlertDialogAction
+																	onClick={handleDelete}
+																	className="bg-[#EF4444] text-white hover:bg-[#dc2626]"
+																>
+																	Delete
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
+												</div>
 											</TableCell>
-											<TableCell className="py-5">{dateItem.status}</TableCell>
-											<TableCell className="py-5">{dateItem.action}</TableCell>
 										</TableRow>
 									))}
 								</TableBody>

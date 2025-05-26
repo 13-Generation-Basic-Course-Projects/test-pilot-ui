@@ -14,7 +14,7 @@ export default function History() {
 					</p>
 				</div>
 				<div>
-					<Button>Run All History</Button>
+					<Button className="cursor-pointer">Run All History</Button>
 				</div>
 			</div>
 			<div className="grid grid-cols-12">

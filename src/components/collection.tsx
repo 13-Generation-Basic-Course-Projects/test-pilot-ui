@@ -25,8 +25,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ImportColletion } from "./import-collection";
+import { ExportComponent } from "./export-component";
+
 
 export const CollectionSidebar = () => {
+	const [showImportDialog, setShowImportDialog] = useState(false)
+	const [showExportDialog, setShowExportDialog] = useState(false)
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -168,8 +173,13 @@ export const CollectionSidebar = () => {
 		},
 	];
 
+
+
 	return (
+
 		<div>
+			<ImportColletion open={showImportDialog} onOpenChange={setShowImportDialog} />
+			<ExportComponent open={showExportDialog} onOpenChange={setShowExportDialog}  />
 			{/* Main Content Area */}
 			<div className="flex h-screen items-start relative self-stretch w-fit">
 				{/* Collections Panel */}
@@ -184,8 +194,8 @@ export const CollectionSidebar = () => {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent>
-								<DropdownMenuItem>Import</DropdownMenuItem>
-								<DropdownMenuItem>Export</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => setShowImportDialog(true)}>Import</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => setShowExportDialog(true)}>Export</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
