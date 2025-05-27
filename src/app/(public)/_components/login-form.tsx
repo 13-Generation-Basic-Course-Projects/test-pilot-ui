@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import GithubIcon from "@/components/icons/github";
 import GoogleIcon from "@/components/icons/google";
 import { Eye, EyeOff } from "lucide-react";
-// ✅ Use the correct Link import:
-import Link from "next/link"; // or "react-router-dom" if you're using React Router
+import Link from "next/link"; 
 
 export function LoginForm({
 	className,

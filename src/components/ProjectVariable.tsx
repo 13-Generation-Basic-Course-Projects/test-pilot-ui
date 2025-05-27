@@ -32,7 +32,6 @@ export default function VariableTable() {
 			<TableCaption className="caption-top mb-4 text-left text-[24px] text-black font-semibold cursor-default">
 				Project Variables
 			</TableCaption>
-
 			<TableHeader>
 				<TableRow>
 					<TableHead className="w-1/2 border-r text-sm">Variable</TableHead>

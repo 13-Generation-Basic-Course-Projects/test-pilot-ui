@@ -60,7 +60,6 @@ const ProjectForm = ({
 			onOpenChange(false);
 		}
 	}
-
 	const formContent = (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

@@ -1,8 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { HistoryData } from "./history-data";
-// import SnippetCode from './snippet-edit-form'
-
 export default function History() {
 	return (
 		<div className="w-full  mx-auto mt-10 bg-white p-8 space-y-15">
