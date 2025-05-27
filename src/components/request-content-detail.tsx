@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tabs";
 import { CustomValue } from "./custom-value";
 import PredefinedTestCase from "./predefined-test-case";
+import { ApiRequestContentHeader } from "./api-request-content-header";
 
 export function RequestContentDetail({
 	projectId,
@@ -26,7 +27,9 @@ export function RequestContentDetail({
 					</TabsTriggerV2>
 					<TabsTriggerV2 value="custom-value">Custom Value</TabsTriggerV2>
 				</TabsListV2>
-				<TabsContent value="request-content">Request Content</TabsContent>
+				<TabsContent value="request-content">
+					<ApiRequestContentHeader />
+				</TabsContent>
 				<TabsContent value="predefined-value">
 					<PredefinedTestCase />
 				</TabsContent>

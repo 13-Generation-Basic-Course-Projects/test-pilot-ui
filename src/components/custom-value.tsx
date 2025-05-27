@@ -19,6 +19,7 @@ import {
 import { DATA_TYPES, DataType } from "@/lib/constants";
 import { Separator } from "./ui/separator";
 import { CustomValueForm } from "./custom-value-form";
+import { Edit, Edit2, Trash2 } from "lucide-react";
 
 interface RequestParam {
 	name: string;
@@ -69,8 +70,11 @@ export const CustomValue = (): React.JSX.Element => {
 								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm border-r border-slate-200">
 									Value
 								</TableHead>
-								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm">
+								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm border-r border-slate-200">
 									Type
+								</TableHead>
+								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm">
+									Action
 								</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -83,13 +87,17 @@ export const CustomValue = (): React.JSX.Element => {
 									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200">
 										{param.value}
 									</TableCell>
-									<TableCell className="h-12 pl-6">
+									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200">
 										<Badge
 											variant="outline"
 											className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
 										>
 											{param.type}
 										</Badge>
+									</TableCell>
+									<TableCell className="h-12 pl-6 flex gap-4 items-center">
+										<Trash2 className="text-red-500 cursor-pointer" />
+										<Edit className="cursor-pointer" />
 									</TableCell>
 								</TableRow>
 							))}

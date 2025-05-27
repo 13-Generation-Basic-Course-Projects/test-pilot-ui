@@ -25,14 +25,18 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// import { ImportColletion } from "@/components/import-collection"
-
+import { Input } from "./ui/input";
+import { usePathname } from "next/navigation";
 
 export const CollectionSidebar = () => {
-	const [openCollections, setOpenCollections] = useState<Record<string, boolean> | null>(null);
-	const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
-	const [collectionsData, setCollectionsData] = useState(projectsData); // clone to simulate updates
+	const [openCollections, setOpenCollections] = useState<Record<
+		string,
+		boolean
+	> | null>(null);
+	const [renamingCollectionId, setRenamingCollectionId] = useState<
+		string | null
+	>(null);
+	const [collectionsData, setCollectionsData] = useState(projectsData);
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -45,6 +49,10 @@ export const CollectionSidebar = () => {
 		}
 	}, [openCollections]);
 
+	const pathname = usePathname();
+
+	console.log("Hello", pathname);
+
 	const toggleCollection = (collectionId: string) => {
 		setOpenCollections((prev) => ({
 			...prev,
@@ -52,7 +60,11 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
-	const handleRename = (projectId: string, collectionId: string, newTitle: string) => {
+	const handleRename = (
+		projectId: string,
+		collectionId: string,
+		newTitle: string
+	) => {
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
@@ -68,7 +80,10 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-	const getCollectionMenuItems = (collection: CollectionItem, projectId: string) => [
+	const getCollectionMenuItems = (
+		collection: CollectionItem,
+		projectId: string
+	) => [
 		{
 			icon: <FilePlusIcon className="w-4 h-4" />,
 			label: "Add Request",
@@ -76,7 +91,6 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				console.log("Add request:", collection.id);
 				console.log(projectId);
-				
 			},
 		},
 		{ isSeparator: true as const },
@@ -187,7 +201,7 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem >Import</DropdownMenuItem>
+							<DropdownMenuItem>Import</DropdownMenuItem>
 							<DropdownMenuItem>Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -212,12 +226,20 @@ export const CollectionSidebar = () => {
 												<Folder className="w-5 h-5 text-slate-600" />
 											)}
 											{renamingCollectionId === collection.id ? (
-												<input
+												<Input
 													autoFocus
 													defaultValue={collection.title}
+													onClick={(e) => {
+														e.stopPropagation();
+													}}
 													onBlur={(e) => {
-														handleRename(project.id, collection.id, e.target.value);
+														handleRename(
+															project.id,
+															collection.id,
+															e.target.value
+														);
 														setRenamingCollectionId(null);
+														e.stopPropagation();
 													}}
 													onKeyDown={(e) => {
 														if (e.key === "Enter") {
@@ -226,8 +248,8 @@ export const CollectionSidebar = () => {
 														if (e.key === "Escape") {
 															setRenamingCollectionId(null);
 														}
+														e.stopPropagation();
 													}}
-													className="text-[15px] font-medium px-1 py-0.5 rounded bg-white border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#E2E8F0]"
 												/>
 											) : (
 												<span className="text-[15px] font-medium">
@@ -242,31 +264,41 @@ export const CollectionSidebar = () => {
 
 									{openCollections[collection.id] && (
 										<div className="pl-10 pr-4 py-1 space-y-1">
-											{collection.endpoints.map((endpoint) => (
-												<Link
-													key={`${collection.id}-${endpoint.id}`}
-													onMouseDown={(e) => e.stopPropagation()}
-													href={`/project/${collection.id}/request/${endpoint.id}`}
-													className="group relative flex items-center justify-between gap-2 hover:bg-slate-100 cursor-pointer rounded-lg p-1 pr-2"
-												>
-													<div className="flex items-center gap-2 flex-grow">
-														<Badge
-															variant="outline"
-															className="h-5 px-4 py-3 text-[15px] font-medium"
-														>
-															<span className={getMethodColor(endpoint.method)}>
-																{endpoint.method}
+											{collection.endpoints.map((endpoint) => {
+												const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
+												const isActive = pathname === endpointPath;
+												return (
+													<Link
+														key={`${collection.id}-${endpoint.id}`}
+														onMouseDown={(e) => e.stopPropagation()}
+														href={endpointPath}
+														className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
+															isActive
+																? "bg-slate-100 hover:bg-slate-200"
+																: "hover:bg-slate-100"
+														}`}
+													>
+														<div className="flex items-center gap-2 flex-grow">
+															<Badge
+																variant="outline"
+																className="h-5 px-4 py-3 text-[15px] font-medium"
+															>
+																<span
+																	className={getMethodColor(endpoint.method)}
+																>
+																	{endpoint.method}
+																</span>
+															</Badge>
+															<span className="text-[15px] text-slate-600">
+																{endpoint.path}
 															</span>
-														</Badge>
-														<span className="text-[15px] text-slate-600">
-															{endpoint.path}
-														</span>
-													</div>
-													<ItemActionsDropdown
-														items={getEndpointMenuItems(endpoint)}
-													/>
-												</Link>
-											))}
+														</div>
+														<ItemActionsDropdown
+															items={getEndpointMenuItems(endpoint)}
+														/>
+													</Link>
+												);
+											})}
 										</div>
 									)}
 								</div>
