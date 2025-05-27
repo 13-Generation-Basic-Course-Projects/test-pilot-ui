@@ -19,7 +19,7 @@ import {
 import { DATA_TYPES, DataType } from "@/lib/constants";
 import { Separator } from "./ui/separator";
 import { CustomValueForm } from "./custom-value-form";
-import { Edit, Edit2, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 
 interface RequestParam {
 	name: string;
