@@ -28,7 +28,7 @@ export default function VariableTable() {
 	};
 
 	return (
-		<Table className="border rounded-md">
+		<Table className="border rounded-md max-w-screen">
 			<TableCaption className="caption-top mb-4 text-left text-[24px] text-black font-semibold cursor-default">
 				Project Variables
 			</TableCaption>
