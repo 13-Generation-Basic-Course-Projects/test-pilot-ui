@@ -19,12 +19,10 @@ export default function EditProfile() {
 	const handleCancel = () => {
 		setOpen(false);
 	};
-
 	const handleSave = () => {
 		console.log("Changes saved (simulated)");
 		setOpen(false);
 	};
-
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
@@ -42,14 +40,12 @@ export default function EditProfile() {
 							aria-label="Close"
 						></button>
 					</DialogClose>
-
 					{/* Header */}
 					<DialogHeader className="mb-8">
 						<DialogTitle className="text-xl font-semibold text-center text-gray-900">
 							Profile Details
 						</DialogTitle>
 					</DialogHeader>
-
 					{/* Profile Info */}
 					<div className="flex items-center pb-6 mb-8">
 						<Image
@@ -68,7 +64,6 @@ export default function EditProfile() {
 							</p>
 						</div>
 					</div>
-
 					{/* Editable Fields */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
 						<div>
