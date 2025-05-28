@@ -29,6 +29,7 @@ import {
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
 import { DeleteCollection } from "./delete-collection";
+import { DeleteEndpoint } from "./delete-endpoint";
 
 export const CollectionSidebar = () => {
 	const [openCollections, setOpenCollections] = useState<Record<string, boolean> | null>(null);
@@ -38,6 +39,14 @@ export const CollectionSidebar = () => {
 		projectId: string;
 		collectionId: string;
 	} | null>(null);
+
+	//Delete request
+	const [endpointToDelete, setEndpointToDelete] = useState<{
+		projectId: string;
+		collectionId: string;
+		endpointId: string;
+	} | null>(null);
+
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -130,7 +139,7 @@ export const CollectionSidebar = () => {
 		},
 	];
 
-	const getEndpointMenuItems = (endpoint: Endpoint) => [
+	const getEndpointMenuItems = (endpoint: Endpoint, collection: CollectionItem, projectId: string) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
@@ -165,13 +174,13 @@ export const CollectionSidebar = () => {
 			},
 		},
 		{
-			icon: <TrashIcon className="w-4 h-4" />,
+			icon: <Trash2Icon className="w-4 h-4 text-red-600" />,
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Delete endpoint:", endpoint.id);
+				setTimeout(() => setEndpointToDelete({ projectId, collectionId: collection.id, endpointId: endpoint.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
@@ -275,7 +284,7 @@ export const CollectionSidebar = () => {
 																</Badge>
 																<span className="text-[15px] text-slate-600">{endpoint.path}</span>
 															</div>
-															<ItemActionsDropdown items={getEndpointMenuItems(endpoint)} />
+															<ItemActionsDropdown items={getEndpointMenuItems(endpoint, collection, project.id)} />
 														</Link>
 													);
 												})}
@@ -321,6 +330,40 @@ export const CollectionSidebar = () => {
 						});
 
 						setCollectionToDelete(null); // Close dialog
+					}}
+				/>
+			)}
+
+			{endpointToDelete && (
+				<DeleteEndpoint
+					open={!!endpointToDelete}
+					onOpenChange={(open) => {
+						if (!open) setEndpointToDelete(null);
+					}}
+					onConfirm={() => {
+						const { projectId, collectionId, endpointId } = endpointToDelete;
+
+						setCollectionsData((prev) =>
+							prev.map((project) =>
+								project.id === projectId
+									? {
+										...project,
+										collections: project.collections.map((collection) =>
+											collection.id === collectionId
+												? {
+													...collection,
+													endpoints: collection.endpoints.filter(
+														(endpoint) => endpoint.id !== endpointId
+													),
+												}
+												: collection
+										),
+									}
+									: project
+							)
+						);
+
+						setEndpointToDelete(null);
 					}}
 				/>
 			)}
