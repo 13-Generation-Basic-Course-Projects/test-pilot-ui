@@ -24,14 +24,14 @@ export function ExportComponent({ open, onOpenChange }: ExportProps) {
 
     const handleContinue = () => {
         alert(`You selected: ${layout}`)
-        onOpenChange(false) // Close the dialog after exporting
+        onOpenChange(false) 
     }
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Export Request</AlertDialogTitle>
+                    <AlertDialogTitle>Export Collection</AlertDialogTitle>
                     <AlertDialogDescription>
                         New request will be exported as JSON file.
                     </AlertDialogDescription>
@@ -43,11 +43,11 @@ export function ExportComponent({ open, onOpenChange }: ExportProps) {
                     className="space-y-2 py-4"
                 >
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="default" id="r1" />
+                        <RadioGroupItem value="default" id="r2" />
                         <Label htmlFor="r1">Collection v2</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="comfortable" id="r2" />
+                        <RadioGroupItem value="comfortable" id="r1" />
                         <Label htmlFor="r2">Collection v2.1</Label>
                     </div>
                 </RadioGroup>

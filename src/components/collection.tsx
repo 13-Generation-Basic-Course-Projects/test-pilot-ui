@@ -28,9 +28,11 @@ import {
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
 import { ImportColletion } from "./import-collection";
+import { ExportComponent } from "./export-component";
 
 export const CollectionSidebar = () => {
 	const [isImportOpen, setIsImportOpen] = useState(false);
+	const [isExportOpen, setIsExportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -204,7 +206,7 @@ export const CollectionSidebar = () => {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
-							<DropdownMenuItem>Export</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsExportOpen(true)} className="cursor-pointer">Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
@@ -310,6 +312,7 @@ export const CollectionSidebar = () => {
 				</div>
 			</div>
 			<ImportColletion open={isImportOpen} onOpenChange={setIsImportOpen}/>
+			<ExportComponent open={isExportOpen} onOpenChange={setIsExportOpen}/>
 		</div>
 	);
 };
