@@ -118,6 +118,32 @@ function AlertDialogDescription({
   )
 }
 
+function AlertDialogTitleV2({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) {
+  return (
+    <AlertDialogPrimitive.Title
+      data-slot="alert-dialog-title"
+      className={cn("text-lg font-semibold text-center", className)}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogDescriptionV2({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
+  return (
+    <AlertDialogPrimitive.Description
+      data-slot="alert-dialog-description"
+      className={cn("text-muted-foreground text-sm text-center", className)}
+      {...props}
+    />
+  )
+}
+
 function AlertDialogAction({
   className,
   ...props
@@ -167,5 +193,7 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogActionV2
+  AlertDialogActionV2,
+  AlertDialogTitleV2,
+  AlertDialogDescriptionV2,
 }
