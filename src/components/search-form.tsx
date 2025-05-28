@@ -9,17 +9,13 @@ import {
 import Form from "next/form";
 
 interface SearchFormProps {
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	value?: string;
 	className?: string;
 	defaultValue?: string;
 }
 
 export function SearchForm({
 	className,
-	onChange,
 	defaultValue = "",
-	value,
 	...props
 }: SearchFormProps) {
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
