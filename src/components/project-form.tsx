@@ -93,17 +93,19 @@ const ProjectForm = ({
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">Submit</Button>
-				{mode === "edit" && onOpenChange && (
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						className="ml-2"
-					>
-						Cancel
-					</Button>
-				)}
+				<div className="w-full flex items-center justify-end gap-4">
+					{mode === "edit" && onOpenChange && (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							className="ml-2"
+						>
+							Cancel
+						</Button>
+					)}
+					<Button type="submit">Submit</Button>
+				</div>
 			</form>
 		</Form>
 	);

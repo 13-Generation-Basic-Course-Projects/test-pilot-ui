@@ -21,3 +21,19 @@ export const getMethodColor = (method: string) => {
 			return "text-gray-500";
 	}
 };
+
+export function getStatusBadgeColor(badgeStatus: "passed" | "failed") {
+	return badgeStatus === "passed"
+		? "text-[#17C964] bg-[#17C964]/10"
+		: "text-[#EF4444] bg-[#EF4444]/10";
+}
+
+export function isValidJSON(jsonString: string): boolean {
+	if (!jsonString.trim()) return false;
+	try {
+		JSON.parse(jsonString);
+		return true;
+	} catch {
+		return false;
+	}
+}

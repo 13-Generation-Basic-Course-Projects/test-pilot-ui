@@ -19,7 +19,7 @@ import {
 import { DATA_TYPES, DataType } from "@/lib/constants";
 import { Separator } from "./ui/separator";
 import { CustomValueForm } from "./custom-value-form";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 
 interface RequestParam {
 	name: string;
@@ -96,8 +96,8 @@ export const CustomValue = (): React.JSX.Element => {
 										</Badge>
 									</TableCell>
 									<TableCell className="h-12 pl-6 flex gap-4 items-center">
-										<Trash2 className="text-red-500 cursor-pointer" />
-										<Edit className="cursor-pointer" />
+										<Trash className="text-red-500 cursor-pointer size-4" />
+										<Edit className="cursor-pointer size-4" />
 									</TableCell>
 								</TableRow>
 							))}

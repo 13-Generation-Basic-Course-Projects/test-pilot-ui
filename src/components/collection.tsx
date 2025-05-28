@@ -207,7 +207,7 @@ export const CollectionSidebar = () => {
 
 				<div className="w-full h-full overflow-hidden pb-3">
 					<div
-						className="w-full h-full overflow-y-scroll pr-2"
+						className="w-full h-full overflow-y-scroll"
 						style={{
 							scrollbarWidth: "none",
 							msOverflowStyle: "none",
