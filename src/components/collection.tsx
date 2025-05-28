@@ -27,8 +27,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
+import { ImportColletion } from "./import-collection";
 
 export const CollectionSidebar = () => {
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -201,7 +203,7 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem>Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
 							<DropdownMenuItem>Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -307,6 +309,7 @@ export const CollectionSidebar = () => {
 					))}
 				</div>
 			</div>
+			<ImportColletion open={isImportOpen} onOpenChange={setIsImportOpen}/>
 		</div>
 	);
 };
