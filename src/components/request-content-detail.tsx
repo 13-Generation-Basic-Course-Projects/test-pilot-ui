@@ -8,6 +8,7 @@ import {
 import { CustomValue } from "./custom-value";
 import PredefinedTestCase from "./predefined-test-case";
 import { ApiRequestContentHeader } from "./api-request-content-header";
+import { ApiRequestDetailParam } from "./api-request-detail-params-testcase";
 
 export function RequestContentDetail({
 	projectId,
@@ -28,6 +29,7 @@ export function RequestContentDetail({
 					<TabsTriggerV2 value="custom-value">Custom Value</TabsTriggerV2>
 				</TabsListV2>
 				<TabsContent value="request-content">
+					<ApiRequestDetailParam />
 					<ApiRequestContentHeader />
 				</TabsContent>
 				<TabsContent value="predefined-value">

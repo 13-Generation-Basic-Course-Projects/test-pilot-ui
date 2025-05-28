@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Play } from "lucide-react";
 export default function ApiRequestDetailTestRequest() {
-	// const [field, setField] = useState("habitId");
 	const [field] = useState("habitId");
 	const [scenario, setScenario] = useState<string | undefined>(undefined);
 	const [pathVar, setPathVar] = useState<string | undefined>("");
