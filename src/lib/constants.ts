@@ -291,3 +291,101 @@ greet
     `,
 	},
 ];
+
+export const mockHistoryResponses = [
+	{
+		method: "PUT",
+		endpoint: "http://localhost:8080/api/v1/habits",
+		status: "200 OK",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{ habitName: "Morning Run", completed: true },
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ message: "Habit updated successfully" },
+			null,
+			2
+		),
+	},
+	{
+		method: "POST",
+		endpoint: "http://localhost:8080/api/v1/users/register",
+		status: "201 Created",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{ username: "john_doe", email: "john@example.com" },
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ userId: "user_123", token: "abcxyz123" },
+			null,
+			2
+		),
+	},
+	{
+		method: "GET",
+		endpoint: "http://localhost:8080/api/v1/tasks",
+		status: "200 OK",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: "Backend accepts invalid inputs like undefined",
+		requestBody: "",
+		responseBody: JSON.stringify(
+			{
+				error: "Invalid user permissions",
+				data: null,
+			},
+			null,
+			2
+		),
+	},
+	{
+		method: "DELETE",
+		endpoint: "http://localhost:8080/api/v1/habits/123",
+		status: "404 Not Found",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: "Resource not found",
+		requestBody: "",
+		responseBody: JSON.stringify({ error: "Habit not found" }, null, 2),
+	},
+	{
+		method: "POST",
+		endpoint: "http://localhost:8080/api/v1/tasks",
+		status: "200 OK",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: "Backend doesn't validate undefined taskId",
+		requestBody: JSON.stringify({ taskId: undefined }, null, 2),
+		responseBody: JSON.stringify(
+			{
+				message: "Task created with taskId: undefined", // 🚫 Invalid behavior
+			},
+			null,
+			2
+		),
+	},
+	{
+		method: "GET",
+		endpoint: "http://localhost:8080/api/v1/corrupted-data",
+		status: "500 Internal Server Error",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: false, // 🚫 No preview
+		failureReason: "Internal server error — no data returned",
+		requestBody: "",
+		responseBody: "", // 👈 No valid JSON
+	},
+];
