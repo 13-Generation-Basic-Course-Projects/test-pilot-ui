@@ -51,8 +51,6 @@ export const CollectionSidebar = () => {
 
 	const pathname = usePathname();
 
-	console.log("Hello", pathname);
-
 	const toggleCollection = (collectionId: string) => {
 		setOpenCollections((prev) => ({
 			...prev,

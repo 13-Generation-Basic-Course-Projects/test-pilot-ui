@@ -58,7 +58,7 @@ export const CustomValueForm = () => {
 						<p className="text-2xl text-center mb-4">Create custom value</p>
 					</DialogTitle>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<FormField
 								control={form.control}
 								name="nameCase"
