@@ -29,6 +29,8 @@ import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
 import { ExportEndpoint } from "./export-endpoint";
 import { ExportCollection } from "./export-collection";
+import { ShareCollection } from "./share-collection";
+import { ShareEndpoint } from "./share-endpoint";
 
 export const CollectionSidebar = () => {
 	const [openCollections, setOpenCollections] = useState<Record<
@@ -47,6 +49,13 @@ export const CollectionSidebar = () => {
 	//Export collection
 	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
 	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
+
+	//Sahre Collection
+	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
+
+	//Sahre Endpoint
+	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+
 
 
 	useEffect(() => {
@@ -108,8 +117,11 @@ export const CollectionSidebar = () => {
 				label: "Share",
 				onClick: (e: React.MouseEvent) => {
 					e.stopPropagation();
-					console.log("Share collection:", collection.id);
+					setSelectedCollection(collection);
+					setIsShareCollectionOpen(true)
+					console.log(selectedCollection);
 				},
+				className: "cursor-pointer",
 			},
 			{ isSeparator: true as const },
 			{
@@ -158,8 +170,11 @@ export const CollectionSidebar = () => {
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Share endpoint:", endpoint.id);
+				setSelectedEndpoint(endpoint);
+				setIsShareEndpointOpen(true)
+				console.log(selectedEndpoint);
 			},
+			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -334,7 +349,16 @@ export const CollectionSidebar = () => {
 					<ExportCollection
 						open={isExportCollectionOpen}
 						onOpenChange={setIsExportCollectionOpen} />
-
+					<ShareCollection
+						open={isShareCollectionOpen}
+						onOpenChange={setIsShareCollectionOpen}
+						collection={selectedCollection}
+					/>
+					<ShareEndpoint
+						open={isShareEndpointOpen}
+						onOpenChange={setIsShareEndpointOpen}
+						endpoint={selectedEndpoint}  
+					/>
 				</div>
 			</div>
 		</div>
