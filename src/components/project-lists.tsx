@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ProjectProps, ProjectItem } from "@/types"; // Ensure ProjectItem is imported
+import { ProjectProps, ProjectItem } from "@/types";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

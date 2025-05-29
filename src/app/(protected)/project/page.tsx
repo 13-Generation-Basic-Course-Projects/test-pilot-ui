@@ -4,7 +4,13 @@ import ProjectItems from "@/components/project-items";
 import { SearchForm } from "@/components/search-form";
 import React from "react";
 
-const ProjectPage = () => {
+const ProjectPage = async ({
+	searchParams,
+}: {
+	searchParams: Promise<{ query?: string }>;
+}) => {
+	const { query } = await searchParams;
+
 	return (
 		<div>
 			<NavbarComponent />
@@ -20,7 +26,7 @@ const ProjectPage = () => {
 				</div>
 				<SearchForm className="mt-10" />
 				<div className="w-full mt-10">
-					<ProjectItems />
+					<ProjectItems searchQuery={query} />
 				</div>
 			</div>
 		</div>

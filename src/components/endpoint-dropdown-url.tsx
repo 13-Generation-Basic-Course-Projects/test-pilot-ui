@@ -97,7 +97,7 @@ export function EndpointDropdownUrl({
 					</PopoverTrigger>
 					<PopoverContent className="w-[200px] p-0">
 						<Command>
-							<CommandList>
+							<CommandList className="w-full">
 								<CommandGroup>
 									{endpointMethods.map((method) => (
 										<CommandItem

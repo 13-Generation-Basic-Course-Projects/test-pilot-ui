@@ -55,8 +55,6 @@ export const CollectionSidebar = () => {
 
 	const pathname = usePathname();
 
-	console.log("Hello", pathname);
-
 	const toggleCollection = (collectionId: string) => {
 		setOpenCollections((prev) => ({
 			...prev,
@@ -194,7 +192,7 @@ export const CollectionSidebar = () => {
 	if (openCollections === null) return null;
 
 	return (
-		<div className="flex h-screen items-start relative self-stretch w-fit">
+		<div className="flex  items-start relative self-stretch h-screen">
 			<div className="flex flex-col w-[400px] items-start relative self-stretch border-r border-[#e2e2e2]">
 				<div className="flex w-[400px] items-center justify-between px-[17px] py-5 relative flex-[0_0_auto] border-r border-b border-slate-200">
 					<CollectionForm />
@@ -211,104 +209,112 @@ export const CollectionSidebar = () => {
 					</DropdownMenu>
 				</div>
 
-				<div className="w-full overflow-y-auto">
-					{collectionsData.map((project) => (
-						<div key={project.id}>
-							{project.collections.map((collection) => (
-								<div key={`${project.id}-${collection.id}`}>
-									<div
-										className="group flex items-center justify-between px-6 py-2 hover:bg-slate-50 cursor-pointer"
-										onClick={(e) => {
-											toggleCollection(collection.id);
-											e.stopPropagation();
-										}}
-									>
-										<div className="flex items-center gap-3 py-2">
-											{openCollections[collection.id] ? (
-												<FolderOpenIcon className="w-5 h-5 text-slate-600" />
-											) : (
-												<Folder className="w-5 h-5 text-slate-600" />
-											)}
-											{renamingCollectionId === collection.id ? (
-												<Input
-													autoFocus
-													defaultValue={collection.title}
-													onClick={(e) => {
-														e.stopPropagation();
-													}}
-													onBlur={(e) => {
-														handleRename(
-															project.id,
-															collection.id,
-															e.target.value
-														);
-														setRenamingCollectionId(null);
-														e.stopPropagation();
-													}}
-													onKeyDown={(e) => {
-														if (e.key === "Enter") {
-															(e.target as HTMLInputElement).blur();
-														}
-														if (e.key === "Escape") {
+				<div className="w-full h-screen overflow-hidden pb-3">
+					<div
+						className="w-full h-full overflow-y-scroll"
+						style={{
+							scrollbarWidth: "none",
+							msOverflowStyle: "none",
+						}}
+					>
+						{collectionsData.map((project) => (
+							<div key={project.id}>
+								{project.collections.map((collection) => (
+									<div key={`${project.id}-${collection.id}`}>
+										<div
+											className="group flex items-center justify-between px-6 py-2 hover:bg-slate-50 cursor-pointer"
+											onClick={(e) => {
+												toggleCollection(collection.id);
+												e.stopPropagation();
+											}}
+										>
+											<div className="flex items-center gap-3 py-2">
+												{openCollections[collection.id] ? (
+													<FolderOpenIcon className="w-5 h-5 text-slate-600" />
+												) : (
+													<Folder className="w-5 h-5 text-slate-600" />
+												)}
+												{renamingCollectionId === collection.id ? (
+													<Input
+														autoFocus
+														defaultValue={collection.title}
+														onClick={(e) => {
+															e.stopPropagation();
+														}}
+														onBlur={(e) => {
+															handleRename(
+																project.id,
+																collection.id,
+																e.target.value
+															);
 															setRenamingCollectionId(null);
-														}
-														e.stopPropagation();
-													}}
-												/>
-											) : (
-												<span className="text-[15px] font-medium">
-													{collection.title}
-												</span>
-											)}
+															e.stopPropagation();
+														}}
+														onKeyDown={(e) => {
+															if (e.key === "Enter") {
+																(e.target as HTMLInputElement).blur();
+															}
+															if (e.key === "Escape") {
+																setRenamingCollectionId(null);
+															}
+															e.stopPropagation();
+														}}
+													/>
+												) : (
+													<span className="text-[15px] font-medium">
+														{collection.title}
+													</span>
+												)}
+											</div>
+											<ItemActionsDropdown
+												items={getCollectionMenuItems(collection, project.id)}
+											/>
 										</div>
-										<ItemActionsDropdown
-											items={getCollectionMenuItems(collection, project.id)}
-										/>
-									</div>
 
-									{openCollections[collection.id] && (
-										<div className="pl-10 pr-4 py-1 space-y-1">
-											{collection.endpoints.map((endpoint) => {
-												const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
-												const isActive = pathname === endpointPath;
-												return (
-													<Link
-														key={`${collection.id}-${endpoint.id}`}
-														onMouseDown={(e) => e.stopPropagation()}
-														href={endpointPath}
-														className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
-															isActive
-																? "bg-slate-100 hover:bg-slate-200"
-																: "hover:bg-slate-100"
-														}`}
-													>
-														<div className="flex items-center gap-2 flex-grow">
-															<Badge
-																variant="outline"
-																className="h-5 px-4 py-3 text-[15px] font-medium"
-															>
-																<span
-																	className={getMethodColor(endpoint.method)}
+										{openCollections[collection.id] && (
+											<div className="pl-10 pr-4 py-1 space-y-1">
+												{collection.endpoints.map((endpoint) => {
+													const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
+													const isActive = pathname === endpointPath;
+													return (
+														<Link
+															key={`${collection.id}-${endpoint.id}`}
+															onMouseDown={(e) => e.stopPropagation()}
+															href={endpointPath}
+															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
+																isActive
+																	? "bg-slate-100 hover:bg-slate-200"
+																	: "hover:bg-slate-100"
+															}`}
+														>
+															<div className="flex items-center gap-2 flex-grow">
+																<Badge
+																	variant="outline"
+																	className="h-5 px-4 py-3 text-[15px] font-medium"
 																>
-																	{endpoint.method}
+																	<span
+																		className={getMethodColor(endpoint.method)}
+																	>
+																		{endpoint.method}
+																	</span>
+																</Badge>
+																<span className="text-[15px] text-slate-600">
+																	{endpoint.path}
 																</span>
-															</Badge>
-															<span className="text-[15px] text-slate-600">
-																{endpoint.path}
-															</span>
-														</div>
-														<ItemActionsDropdown
-															items={getEndpointMenuItems(endpoint)}
-														/>
-													</Link>
-												);
-											})}
-										</div>
-									)}
-								</div>
-							))}
-						</div>
-					))}
+															</div>
+															<ItemActionsDropdown
+																items={getEndpointMenuItems(endpoint)}
+															/>
+														</Link>
+													);
+												})}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+						))}
+					</div>
 				</div>
 			</div>
 			<ImportColletion open={isImportOpen} onOpenChange={setIsImportOpen}/>
