@@ -51,29 +51,28 @@ export const CollectionSidebar = () => {
 		collectionId: string;
 	} | null>(null);
 
-
 	//Rename
-	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(null);
+	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(
+		null
+	);
 
 	//Export request
 	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
-	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
+	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(
+		null
+	);
 
 	//Export collection
 	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
-	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
+	const [selectedCollection, setSelectedCollection] =
+		useState<CollectionItem | null>(null);
 
 	//Import collection
 	const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
 
-	//Sahre Collection
 	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
 
-	//Sahre Endpoint
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
-
-
-
 
 	//Delete request
 	const [endpointToDelete, setEndpointToDelete] = useState<{
@@ -81,7 +80,6 @@ export const CollectionSidebar = () => {
 		collectionId: string;
 		endpointId: string;
 	} | null>(null);
-
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -103,7 +101,11 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
-	const handleRename = (projectId: string, collectionId: string, newTitle: string) => {
+	const handleRename = (
+		projectId: string,
+		collectionId: string,
+		newTitle: string
+	) => {
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
@@ -119,9 +121,10 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-
-	const handleDuplicateCollection = (projectId: string, collectionId: string) => {
-
+	const handleDuplicateCollection = (
+		projectId: string,
+		collectionId: string
+	) => {
 		//Loop collectionData find the matching project
 		setCollectionsData((prev) =>
 			prev.map((project) => {
@@ -131,7 +134,6 @@ export const CollectionSidebar = () => {
 				const collectionToDuplicate = project.collections.find(
 					(collection) => collection.id === collectionId
 				);
-
 
 				if (!collectionToDuplicate) return project;
 
@@ -149,7 +151,11 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-	const handleDuplicateEndpoint = (projectId: string, collectionId: string, endpointId: string) => {
+	const handleDuplicateEndpoint = (
+		projectId: string,
+		collectionId: string,
+		endpointId: string
+	) => {
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
@@ -173,14 +179,11 @@ export const CollectionSidebar = () => {
 							...collection,
 							endpoints: [...collection.endpoints, duplicatedEndpoint],
 						};
-
 					}),
 				};
 			})
-		);		
+		);
 	};
-
-
 
 	//Rename endpoint
 	const handleRenameEndpoint = (
@@ -210,7 +213,10 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-	const getCollectionMenuItems = (collection: CollectionItem, projectId: string) => [
+	const getCollectionMenuItems = (
+		collection: CollectionItem,
+		projectId: string
+	) => [
 		{
 			icon: <FilePlusIcon className="w-4 h-4" />,
 			label: "Add Request",
@@ -226,8 +232,10 @@ export const CollectionSidebar = () => {
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Share collection:", collection.id);
+				setSelectedCollection(collection);
+				setIsShareCollectionOpen(true);
 			},
+			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -237,13 +245,14 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				setRenamingCollectionId(collection.id);
 			},
+			className: "cursor-pointer",
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Duplicate collection:", collection.id);
+				handleDuplicateCollection(projectId, collection.id);
 			},
 		},
 		{
@@ -252,30 +261,41 @@ export const CollectionSidebar = () => {
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
 				setSelectedCollection(collection);
-				setIsExportCollectionOpen(true)
+				setIsExportCollectionOpen(true);
 				console.log("Export collection:", collection.id);
 			},
-			className: "cursor-pointer"
+			className: "cursor-pointer",
 		},
 		{
-			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
+			icon: (
+				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+			),
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				setTimeout(() => setCollectionToDelete({ projectId, collectionId: collection.id }), 0);
+				setTimeout(
+					() =>
+						setCollectionToDelete({ projectId, collectionId: collection.id }),
+					0
+				);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+			className:
+				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
-	const getEndpointMenuItems = (endpoint: Endpoint, collectionId: string, projectId: string,) => [
+	const getEndpointMenuItems = (
+		endpoint: Endpoint,
+		collectionId: string,
+		projectId: string
+	) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
 				setSelectedEndpoint(endpoint);
-				setIsShareEndpointOpen(true)
+				setIsShareEndpointOpen(true);
 				console.log(selectedEndpoint);
 			},
 			className: "cursor-pointer",
@@ -288,7 +308,7 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				setRenamingEndpointId(endpoint.id);
 			},
-			className: "cursor-pointer"
+			className: "cursor-pointer",
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
@@ -298,7 +318,7 @@ export const CollectionSidebar = () => {
 				e.preventDefault();
 				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
 			},
-			className: "cursor-pointer"
+			className: "cursor-pointer",
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
@@ -309,16 +329,27 @@ export const CollectionSidebar = () => {
 				setIsExportRequestOpen(true);
 				console.log(selectedEndpoint);
 			},
-			className: "cursor-pointer"
+			className: "cursor-pointer",
 		},
 		{
-			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
+			icon: (
+				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+			),
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				setTimeout(() => setEndpointToDelete({ projectId, collectionId, endpointId: endpoint.id }), 0);
+				setTimeout(
+					() =>
+						setEndpointToDelete({
+							projectId,
+							collectionId,
+							endpointId: endpoint.id,
+						}),
+					0
+				);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+			className:
+				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
@@ -336,8 +367,18 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem onClick={() => setIsImportCollectionOpen(true)} className="cursor-pointer">Import</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setIsExportCollectionOpen(true)} className="cursor-pointer">Export</DropdownMenuItem>
+							<DropdownMenuItem
+								// onClick={() => setIsImportOpen(true)}
+								className="cursor-pointer"
+							>
+								Import
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								// onClick={() => setIsExportOpen(true)}
+								className="cursor-pointer"
+							>
+								Export
+							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
@@ -373,7 +414,11 @@ export const CollectionSidebar = () => {
 														defaultValue={collection.title}
 														onClick={(e) => e.stopPropagation()}
 														onBlur={(e) => {
-															handleRename(project.id, collection.id, e.target.value);
+															handleRename(
+																project.id,
+																collection.id,
+																e.target.value
+															);
 															setRenamingCollectionId(null);
 															e.stopPropagation();
 														}}
@@ -388,7 +433,9 @@ export const CollectionSidebar = () => {
 														}}
 													/>
 												) : (
-													<span className="text-[15px] font-medium">{collection.title}</span>
+													<span className="text-[15px] font-medium">
+														{collection.title}
+													</span>
 												)}
 											</div>
 											<ItemActionsDropdown
@@ -405,19 +452,24 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
-															onClick={(e) => {e.preventDefault(), e.stopPropagation()}}
+															// onClick={(e) => {
+															// 	e.preventDefault(), e.stopPropagation();
+															// }}
 															href={endpointPath}
-															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
-																? "bg-slate-100 hover:bg-slate-200"
-																: "hover:bg-slate-100"
-																}`}
+															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
+																isActive
+																	? "bg-slate-100 hover:bg-slate-200"
+																	: "hover:bg-slate-100"
+															}`}
 														>
 															<div className="flex items-center gap-2 flex-grow">
 																<Badge
 																	variant="outline"
 																	className="h-5 px-4 py-3 text-[15px] font-medium"
 																>
-																	<span className={getMethodColor(endpoint.method)}>
+																	<span
+																		className={getMethodColor(endpoint.method)}
+																	>
 																		{endpoint.method}
 																	</span>
 																</Badge>
@@ -426,8 +478,8 @@ export const CollectionSidebar = () => {
 																		autoFocus
 																		defaultValue={endpoint.path}
 																		onClick={(e) => {
-																			e.preventDefault()
-																			e.stopPropagation()
+																			e.preventDefault();
+																			e.stopPropagation();
 																		}}
 																		onMouseDown={(e) => e.stopPropagation()}
 																		onBlur={(e) => {
@@ -452,11 +504,17 @@ export const CollectionSidebar = () => {
 																		className="h-6"
 																	/>
 																) : (
-																	<span className="text-[15px] text-slate-600">{endpoint.path}</span>
+																	<span className="text-[15px] text-slate-600">
+																		{endpoint.path}
+																	</span>
 																)}
 															</div>
 															<ItemActionsDropdown
-																items={getEndpointMenuItems(endpoint, collection.id, project.id)}
+																items={getEndpointMenuItems(
+																	endpoint,
+																	collection.id,
+																	project.id
+																)}
 															/>
 														</Link>
 													);
@@ -474,7 +532,8 @@ export const CollectionSidebar = () => {
 					/>
 					<ExportCollection
 						open={isExportCollectionOpen}
-						onOpenChange={setIsExportCollectionOpen} />
+						onOpenChange={setIsExportCollectionOpen}
+					/>
 					<ShareCollection
 						open={isShareCollectionOpen}
 						onOpenChange={setIsShareCollectionOpen}
@@ -483,13 +542,12 @@ export const CollectionSidebar = () => {
 					<ShareEndpoint
 						open={isShareEndpointOpen}
 						onOpenChange={setIsShareEndpointOpen}
-						endpoint={selectedEndpoint}  
+						endpoint={selectedEndpoint}
 					/>
 					<ImportCollection
-					open={isImportCollectionOpen}
-					onOpenChange={setIsImportCollectionOpen}
+						open={isImportCollectionOpen}
+						onOpenChange={setIsImportCollectionOpen}
 					/>
-
 				</div>
 			</div>
 
@@ -507,11 +565,11 @@ export const CollectionSidebar = () => {
 							prev.map((project) =>
 								project.id === projectId
 									? {
-										...project,
-										collections: project.collections.filter(
-											(collection) => collection.id !== collectionId
-										),
-									}
+											...project,
+											collections: project.collections.filter(
+												(collection) => collection.id !== collectionId
+											),
+									  }
 									: project
 							)
 						);
@@ -542,18 +600,18 @@ export const CollectionSidebar = () => {
 							prev.map((project) =>
 								project.id === projectId
 									? {
-										...project,
-										collections: project.collections.map((collection) =>
-											collection.id === collectionId
-												? {
-													...collection,
-													endpoints: collection.endpoints.filter(
-														(endpoint) => endpoint.id !== endpointId
-													),
-												}
-												: collection
-										),
-									}
+											...project,
+											collections: project.collections.map((collection) =>
+												collection.id === collectionId
+													? {
+															...collection,
+															endpoints: collection.endpoints.filter(
+																(endpoint) => endpoint.id !== endpointId
+															),
+													  }
+													: collection
+											),
+									  }
 									: project
 							)
 						);
@@ -562,7 +620,6 @@ export const CollectionSidebar = () => {
 					}}
 				/>
 			)}
-
 		</div>
 	);
 };
