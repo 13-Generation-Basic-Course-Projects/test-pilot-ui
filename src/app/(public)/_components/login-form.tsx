@@ -24,7 +24,6 @@ export function LoginForm({
 					Click the button below to login via
 				</p>
 			</div>
-
 			{/* Social Buttons */}
 			<div className="flex justify-between items-center gap-8">
 				<Button
@@ -79,19 +78,13 @@ export function LoginForm({
 					>
 						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
 					</button>
-					<a
-						href="#"
-						className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]"
-					>
-						Forgot your password?
-					</a>
+					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]"><Link href={"/forgot-password"}>Forgot your password ?</Link></button>
 				</div>
 
 				<Button type="submit" className="w-full">
 					Login
 				</Button>
 			</div>
-
 			{/* Sign up */}
 			<div className="text-center text-sm text-[#737373]">
 				Don&apos;t have an account?{" "}
