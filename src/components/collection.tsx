@@ -11,6 +11,7 @@ import {
 	FolderDownIcon,
 	FolderOpenIcon,
 	Share2Icon,
+	Trash2Icon,
 	TrashIcon,
 } from "lucide-react";
 import { projectsData } from "@/lib/constants";
@@ -27,11 +28,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
+import { ImportColletion } from "./import-collection";
+import { DeleteCollection } from "./delete-collection";
 
 export const CollectionSidebar = () => {
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<string, boolean> | null>(null);
 	const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
 	const [collectionsData, setCollectionsData] = useState(projectsData);
+	const [collectionToDelete, setCollectionToDelete] = useState<{
+		projectId: string;
+		collectionId: string;
+	} | null>(null);
 
 	//Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(null);
@@ -56,11 +64,7 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
-	const handleRename = (
-		projectId: string,
-		collectionId: string,
-		newTitle: string
-	) => {
+	const handleRename = (projectId: string, collectionId: string, newTitle: string) => {
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
@@ -154,9 +158,9 @@ export const CollectionSidebar = () => {
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Delete collection:", collection.id);
+				setTimeout(() => setCollectionToDelete({ projectId, collectionId: collection.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
@@ -208,7 +212,7 @@ export const CollectionSidebar = () => {
 	if (openCollections === null) return null;
 
 	return (
-		<div className="flex h-screen items-start relative self-stretch w-fit">
+		<div className="flex items-start relative self-stretch h-screen">
 			<div className="flex flex-col w-[400px] items-start relative self-stretch border-r border-[#e2e2e2]">
 				<div className="flex w-[400px] items-center justify-between px-[17px] py-5 relative flex-[0_0_auto] border-r border-b border-slate-200">
 					<CollectionForm />
@@ -219,56 +223,65 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem>Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
 							<DropdownMenuItem>Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
 
-				<div className="w-full overflow-y-auto">
-					{collectionsData.map((project) => (
-						<div key={project.id}>
-							{project.collections.map((collection) => (
-								<div key={`${project.id}-${collection.id}`}>
-									<div
-										className="group flex items-center justify-between px-6 py-2 hover:bg-slate-50 cursor-pointer"
-										onClick={(e) => {
-											toggleCollection(collection.id);
-											e.stopPropagation();
-										}}
-									>
-										<div className="flex items-center gap-3 py-2">
-											{openCollections[collection.id] ? (
-												<FolderOpenIcon className="w-5 h-5 text-slate-600" />
-											) : (
-												<Folder className="w-5 h-5 text-slate-600" />
-											)}
-											{renamingCollectionId === collection.id ? (
-												<Input
-													autoFocus
-													defaultValue={collection.title}
-													onClick={(e) => e.stopPropagation()}
-													onBlur={(e) => {
-														handleRename(project.id, collection.id, e.target.value);
-														setRenamingCollectionId(null);
-														e.stopPropagation();
-													}}
-													onKeyDown={(e) => {
-														if (e.key === "Enter") {
-															(e.target as HTMLInputElement).blur();
-														}
-														if (e.key === "Escape") {
+				<div className="w-full h-screen overflow-hidden pb-3">
+					<div
+						className="w-full h-full overflow-y-scroll"
+						style={{
+							scrollbarWidth: "none",
+							msOverflowStyle: "none",
+						}}
+					>
+						{collectionsData.map((project) => (
+							<div key={project.id}>
+								{project.collections.map((collection) => (
+									<div key={`${project.id}-${collection.id}`}>
+										<div
+											className="group flex items-center justify-between px-6 py-2 hover:bg-slate-50 cursor-pointer"
+											onClick={(e) => {
+												toggleCollection(collection.id);
+												e.stopPropagation();
+											}}
+										>
+											<div className="flex items-center gap-3 py-2">
+												{openCollections[collection.id] ? (
+													<FolderOpenIcon className="w-5 h-5 text-slate-600" />
+												) : (
+													<Folder className="w-5 h-5 text-slate-600" />
+												)}
+												{renamingCollectionId === collection.id ? (
+													<Input
+														autoFocus
+														defaultValue={collection.title}
+														onClick={(e) => e.stopPropagation()}
+														onBlur={(e) => {
+															handleRename(project.id, collection.id, e.target.value);
 															setRenamingCollectionId(null);
-														}
-														e.stopPropagation();
-													}}
-												/>
-											) : (
-												<span className="text-[15px] font-medium">{collection.title}</span>
-											)}
+															e.stopPropagation();
+														}}
+														onKeyDown={(e) => {
+															if (e.key === "Enter") {
+																(e.target as HTMLInputElement).blur();
+															}
+															if (e.key === "Escape") {
+																setRenamingCollectionId(null);
+															}
+															e.stopPropagation();
+														}}
+													/>
+												) : (
+													<span className="text-[15px] font-medium">{collection.title}</span>
+												)}
+											</div>
+											<ItemActionsDropdown
+												items={getCollectionMenuItems(collection, project.id)}
+											/>
 										</div>
-										<ItemActionsDropdown items={getCollectionMenuItems(collection, project.id)} />
-									</div>
 
 									{openCollections[collection.id] && (
 										<div className="pl-10 pr-4 py-1 space-y-1">
@@ -341,6 +354,7 @@ export const CollectionSidebar = () => {
 					))}
 				</div>
 			</div>
+		</div>
 		</div>
 	);
 };

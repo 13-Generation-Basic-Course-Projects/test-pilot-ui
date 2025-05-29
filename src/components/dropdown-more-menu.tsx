@@ -10,6 +10,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontalIcon } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface ActionItem {
 	icon?: React.ReactNode;
@@ -42,11 +43,6 @@ export const ItemActionsDropdown: React.FC<ItemActionsDropdownProps> = ({
 	return (
 		<DropdownMenu onOpenChange={onOpenChange}>
 			<DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-				{/*
-                  If you use a <Button> from shadcn/ui as the trigger,
-                  it handles propagation and focus better.
-                  For just an icon, you might need to wrap it or style it.
-                */}
 				<button
 					aria-label="Open actions menu"
 					className="p-1 rounded-full hover:bg-slate-200 text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
