@@ -22,7 +22,8 @@ interface CodeBlockProps {
 export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 	const [contentType, setContentType] = useState("json");
 	const editorRef = useRef<typeof monacoEditorInstance>(null);
-	const { rawBody, setRawBody, setParsedBody } = useApiBodyStore();
+	// Remove setParsedBody as it's not needed. setRawBody now handles parsing.
+	const { rawBody, setRawBody } = useApiBodyStore();
 
 	useEffect(() => {
 		const editor = editorRef.current;
@@ -40,8 +41,15 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 	const handleChange = () => {
 		const editorValue = editorRef.current?.getValue();
 		if (editorValue !== undefined) {
-			// Save to Zustand immediately
-			setRawBody(editorValue);
+			try {
+				// Attempt to parse the JSON whenever the editor content changes
+				const parsedValue = JSON.parse(editorValue);
+				// Call setRawBody with both the raw value and the parsed object
+				setRawBody(editorValue, parsedValue);
+			} catch (error) {
+				// If parsing fails, store the raw body but reset parsed rows
+				setRawBody(editorValue, null);
+			}
 		}
 	};
 
@@ -51,7 +59,8 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 			if (!editorValue) return;
 
 			const parsedValue = JSON.parse(editorValue);
-			setParsedBody(parsedValue);
+			// setRawBody now also handles updating apiBodyRows based on parsedValue
+			setRawBody(editorValue, parsedValue);
 			// Switch tab
 			if (onParse) onParse();
 		} catch (error) {

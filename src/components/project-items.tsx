@@ -1,5 +1,3 @@
-// components/project-items.tsx ← No "use client"
-
 import { projectsData } from "@/lib/constants";
 import ProjectLists from "./project-lists";
 

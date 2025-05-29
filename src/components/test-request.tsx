@@ -2,10 +2,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Play } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
-import { Card } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+
+interface ValidTestCase {
+	key: string;
+	testCase: string;
+	type: "path" | "query";
+	value: any;
+	variableIndex: number;
+}
 
 export default function TestRequest() {
 	const { pathVariables, queryParams } = useParamsApiStore();
@@ -33,10 +40,12 @@ export default function TestRequest() {
 	};
 
 	// Get valid test cases from both sources
-	const validTestCases = [
+	const validTestCases: ValidTestCase[] = [
 		...getValidTestCases(pathVariables, "path"),
 		...getValidTestCases(queryParams, "query"),
 	];
+
+	console.log(validTestCases);
 
 	// State per test case
 	const [scenarios, setScenarios] = useState<Record<string, string>>({});
@@ -75,104 +84,54 @@ export default function TestRequest() {
 	}
 
 	return (
-		<div className="w-full max-w-2xl space-y-6">
-			{/* Run All Button */}
-			<div className="flex justify-end">
-				<Button
-					onClick={() =>
-						validTestCases.forEach(({ type, variableIndex, testCase }) =>
-							handleRun(type, variableIndex, testCase)
-						)
-					}
-					className="bg-black text-white"
-				>
-					Run All <Play className="ml-1 h-4 w-4" />
-				</Button>
+		<>
+			<div className=" min-h-[480px] flex flex-col space-y-4">
+				<div className="flex h-full justify-end items-center mt-1">
+					<Button>
+						Run All <Play />
+					</Button>
+				</div>
+				<div className="flex flex-col items-center gap-6">
+					{validTestCases.map((testcase, idx) => {
+						return (
+							<Card
+								key={`${testcase.key}-${testcase.testCase}-${idx}`}
+								className="break-all w-full"
+							>
+								<CardHeader className="flex justify-between items-start">
+									<div className="space-y-4 w-full">
+										<CardTitle className="text-md">
+											Fields :{" "}
+											<Badge variant="secondary">
+												<p className="text-[#006FEE] text-[14px]">
+													{testcase.key}
+												</p>
+											</Badge>
+										</CardTitle>
+										<CardTitle className="text-md">
+											Scenario :{" "}
+											<Badge variant="default">
+												<p className="text-xs">{testcase.testCase}</p>
+											</Badge>
+										</CardTitle>
+										<CardTitle className="text-md">
+											{testcase.type === "path"
+												? "Request Path Variable"
+												: "Request Query Params"}
+										</CardTitle>
+									</div>
+									<Button>
+										Run <Play />
+									</Button>
+								</CardHeader>
+								<CardContent>
+									<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto"></pre>
+								</CardContent>
+							</Card>
+						);
+					})}
+				</div>
 			</div>
-
-			{/* Render one card per valid test case */}
-			{validTestCases.map(
-				({ type, key, value, variableIndex, testCase }, idx) => {
-					const isPathParam = type === "path";
-					return (
-						<Card key={idx} className="border rounded-md p-4 space-y-4">
-							{/* Type badge */}
-							<div className="flex justify-between items-center">
-								<Badge
-									variant="outline"
-									className={isPathParam ? "text-blue-500" : "text-purple-500"}
-								>
-									{isPathParam ? "Path Variable" : "Query Param"}
-								</Badge>
-							</div>
-
-							{/* Key & Value Display */}
-							<div className="space-y-1">
-								<div className="flex items-center gap-2">
-									<span className="font-medium text-sm text-gray-500">
-										Key:
-									</span>
-									<Badge variant="outline">{key}</Badge>
-								</div>
-								<div className="flex items-center gap-2">
-									<span className="font-medium text-sm text-gray-500">
-										Value:
-									</span>
-									<Badge
-										variant="outline"
-										className="bg-green-50 text-green-700"
-									>
-										{value}
-									</Badge>
-								</div>
-							</div>
-
-							{/* Test Case + Run */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-2">
-									<span className="font-medium">Test Case:</span>
-									<Badge variant="outline" className="text-blue-500">
-										{testCase}
-									</Badge>
-								</div>
-								<Button
-									onClick={() => handleRun(type, variableIndex, testCase)}
-									className="bg-black text-white"
-								>
-									Run <Play className="ml-1 h-4 w-4" />
-								</Button>
-							</div>
-
-							{/* Scenario Result */}
-							<div className="flex items-center gap-2">
-								<span className="font-medium">Scenario:</span>
-								<Badge className="bg-gray-800 text-white rounded-full px-3 py-1 text-xs">
-									{scenarios[`${type}-${variableIndex}-${testCase}`] ??
-										"Undefined"}
-								</Badge>
-							</div>
-
-							{/* Input Field */}
-							<div>
-								<p className="mb-1 font-medium">
-									Request {isPathParam ? "Path" : "Query"} Value:
-								</p>
-								<Input
-									placeholder={
-										isPathParam
-											? `${baseUrl}/your-path-variable`
-											: `?${key}=your-query-value`
-									}
-									value={inputs[`${type}-${variableIndex}-${testCase}`] || ""}
-									onChange={(e) =>
-										handleChange(type, variableIndex, testCase, e.target.value)
-									}
-								/>
-							</div>
-						</Card>
-					);
-				}
-			)}
-		</div>
+		</>
 	);
 }

@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "./code-block";
 import { TestCase } from "./test-case";
+import { TestRequestBody } from "./test-request-body";
 
 export const Body = () => {
 	const [selectedTab, setSelectedTab] = useState("none");
@@ -63,7 +64,7 @@ export const Body = () => {
 						</TabsContent>
 
 						<TabsContent value="test-request">
-							<p>This is the Test Request content.</p>
+							<TestRequestBody />
 						</TabsContent>
 					</Tabs>
 				)}
