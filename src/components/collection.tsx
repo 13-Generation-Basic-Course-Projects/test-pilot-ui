@@ -28,9 +28,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
+import { ImportColletion } from "./import-collection";
 import { DeleteCollection } from "./delete-collection";
 
 export const CollectionSidebar = () => {
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<string, boolean> | null>(null);
 	const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
 	const [collectionsData, setCollectionsData] = useState(projectsData);
@@ -189,7 +191,7 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem>Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
 							<DropdownMenuItem>Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -288,6 +290,7 @@ export const CollectionSidebar = () => {
 					</div>
 				</div>
 			</div>
+			<ImportColletion open={isImportOpen} onOpenChange={setIsImportOpen}/>
 
 			{collectionToDelete && (
 				<DeleteCollection
