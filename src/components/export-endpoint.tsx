@@ -13,13 +13,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Endpoint } from "@/types"
 
 type ExportProps = {
-    open: boolean
-    onOpenChange: (open: boolean) => void
-}
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	endpoint?: Endpoint | null;
+};
 
-export function ExportComponent({ open, onOpenChange }: ExportProps) {
+
+export function ExportEndpoint({ open, onOpenChange }: ExportProps) {
     const [layout, setLayout] = useState("comfortable")
 
     const handleContinue = () => {

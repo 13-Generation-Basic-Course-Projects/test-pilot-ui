@@ -11,6 +11,7 @@ import {
 	FolderDownIcon,
 	FolderOpenIcon,
 	Share2Icon,
+	Trash2Icon,
 	TrashIcon,
 } from "lucide-react";
 import { projectsData } from "@/lib/constants";
@@ -27,8 +28,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
+import { ImportColletion } from "./import-collection";
+import { DeleteCollection } from "./delete-collection";
+import { ExportEndpoint } from "./export-endpoint";
+import { ExportCollection } from "./export-collection";
+import { ShareCollection } from "./share-collection";
+import { ShareEndpoint } from "./share-endpoint";
+import { string } from "zod";
+import { DeleteEndpoint } from "./delete-endpoint";
 
 export const CollectionSidebar = () => {
+	const [isImportOpen, setIsImportOpen] = useState(false);
+	const [isExportOpen, setIsExportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -37,6 +48,39 @@ export const CollectionSidebar = () => {
 		string | null
 	>(null);
 	const [collectionsData, setCollectionsData] = useState(projectsData);
+	const [collectionToDelete, setCollectionToDelete] = useState<{
+		projectId: string;
+		collectionId: string;
+	} | null>(null);
+
+
+	//Rename
+	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(null);
+
+	//Export request
+	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
+	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
+
+	//Export collection
+	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
+	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
+
+	//Sahre Collection
+	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
+
+	//Sahre Endpoint
+	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+
+
+
+
+	//Delete request
+	const [endpointToDelete, setEndpointToDelete] = useState<{
+		projectId: string;
+		collectionId: string;
+		endpointId: string;
+	} | null>(null);
+
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -58,11 +102,7 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
-	const handleRename = (
-		projectId: string,
-		collectionId: string,
-		newTitle: string
-	) => {
+	const handleRename = (projectId: string, collectionId: string, newTitle: string) => {
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
@@ -78,10 +118,98 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-	const getCollectionMenuItems = (
-		collection: CollectionItem,
-		projectId: string
-	) => [
+
+	const handleDuplicateCollection = (projectId: string, collectionId: string) => {
+
+		//Loop collectionData find the matching project
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+
+				//Find specific collection
+				const collectionToDuplicate = project.collections.find(
+					(collection) => collection.id === collectionId
+				);
+
+
+				if (!collectionToDuplicate) return project;
+
+				const duplicatedCollection = {
+					...collectionToDuplicate,
+					id: `${collectionId}-copy-${Date.now()}`, //Assign a new unique ID using Date.now()
+					// title: `${collectionToDuplicate.title} (Copy)`, //Change the title to include "(Copy)"
+				};
+
+				return {
+					...project,
+					collections: [...project.collections, duplicatedCollection],
+				};
+			})
+		);
+	};
+
+	const handleDuplicateEndpoint = (projectId: string, collectionId: string, endpointId: string) => {
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+				return {
+					...project,
+					collections: project.collections.map((collection) => {
+						if (collection.id !== collectionId) return collection;
+
+						const endpointToDuplicate = collection.endpoints.find(
+							(endpoint) => endpoint.id === endpointId
+						);
+
+						if (!endpointToDuplicate) return collection;
+
+						const duplicatedEndpoint = {
+							...endpointToDuplicate,
+							id: `${endpointToDuplicate.id}-copy-${Date.now()}`,
+						};
+
+						return {
+							...collection,
+							endpoints: [...collection.endpoints, duplicatedEndpoint],
+						};
+
+					}),
+				};
+			})
+		);		
+	};
+
+
+
+	//Rename endpoint
+	const handleRenameEndpoint = (
+		projectId: string,
+		collectionId: string,
+		endpointId: string,
+		newTitle: string
+	) => {
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+				return {
+					...project,
+					collections: project.collections.map((collection) => {
+						if (collection.id !== collectionId) return collection;
+						return {
+							...collection,
+							endpoints: collection.endpoints.map((endpoint) =>
+								endpoint.id === endpointId
+									? { ...endpoint, path: newTitle }
+									: endpoint
+							),
+						};
+					}),
+				};
+			})
+		);
+	};
+
+	const getCollectionMenuItems = (collection: CollectionItem, projectId: string) => [
 		{
 			icon: <FilePlusIcon className="w-4 h-4" />,
 			label: "Add Request",
@@ -122,30 +250,34 @@ export const CollectionSidebar = () => {
 			label: "Export",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
+				setSelectedCollection(collection);
+				setIsExportCollectionOpen(true)
 				console.log("Export collection:", collection.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
+			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Delete collection:", collection.id);
+				setTimeout(() => setCollectionToDelete({ projectId, collectionId: collection.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
-	const getEndpointMenuItems = (endpoint: Endpoint) => [
+	const getEndpointMenuItems = (endpoint: Endpoint, collectionId: string, projectId: string,) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Share endpoint:", endpoint.id);
+				setSelectedEndpoint(endpoint);
+				setIsShareEndpointOpen(true)
+				console.log(selectedEndpoint);
 			},
+			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -153,42 +285,46 @@ export const CollectionSidebar = () => {
 			label: "Rename",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Rename endpoint:", endpoint.id);
+				setRenamingEndpointId(endpoint.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Duplicate endpoint:", endpoint.id);
+				e.preventDefault();
+				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
 			label: "Export",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Export endpoint:", endpoint.id);
+				setSelectedEndpoint(endpoint);
+				setIsExportRequestOpen(true);
+				console.log(selectedEndpoint);
 			},
+			className: "cursor-pointer"
 		},
 		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
+			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Delete endpoint:", endpoint.id);
+				setTimeout(() => setEndpointToDelete({ projectId, collectionId, endpointId: endpoint.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
 	if (openCollections === null) return null;
 
 	return (
-		<div className="flex  items-start relative self-stretch h-screen">
+		<div className="flex items-start relative self-stretch h-screen">
 			<div className="flex flex-col w-[400px] items-start relative self-stretch border-r border-[#e2e2e2]">
 				<div className="flex w-[400px] items-center justify-between px-[17px] py-5 relative flex-[0_0_auto] border-r border-b border-slate-200">
 					<CollectionForm />
@@ -199,8 +335,8 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem>Import</DropdownMenuItem>
-							<DropdownMenuItem>Export</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)} className="cursor-pointer">Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsExportOpen(true)} className="cursor-pointer">Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
@@ -234,15 +370,9 @@ export const CollectionSidebar = () => {
 													<Input
 														autoFocus
 														defaultValue={collection.title}
-														onClick={(e) => {
-															e.stopPropagation();
-														}}
+														onClick={(e) => e.stopPropagation()}
 														onBlur={(e) => {
-															handleRename(
-																project.id,
-																collection.id,
-																e.target.value
-															);
+															handleRename(project.id, collection.id, e.target.value);
 															setRenamingCollectionId(null);
 															e.stopPropagation();
 														}}
@@ -257,9 +387,7 @@ export const CollectionSidebar = () => {
 														}}
 													/>
 												) : (
-													<span className="text-[15px] font-medium">
-														{collection.title}
-													</span>
+													<span className="text-[15px] font-medium">{collection.title}</span>
 												)}
 											</div>
 											<ItemActionsDropdown
@@ -276,30 +404,58 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
+															onClick={(e) => {e.preventDefault(), e.stopPropagation()}}
 															href={endpointPath}
-															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
-																isActive
-																	? "bg-slate-100 hover:bg-slate-200"
-																	: "hover:bg-slate-100"
-															}`}
+															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
+																? "bg-slate-100 hover:bg-slate-200"
+																: "hover:bg-slate-100"
+																}`}
 														>
 															<div className="flex items-center gap-2 flex-grow">
 																<Badge
 																	variant="outline"
 																	className="h-5 px-4 py-3 text-[15px] font-medium"
 																>
-																	<span
-																		className={getMethodColor(endpoint.method)}
-																	>
+																	<span className={getMethodColor(endpoint.method)}>
 																		{endpoint.method}
 																	</span>
 																</Badge>
-																<span className="text-[15px] text-slate-600">
-																	{endpoint.path}
-																</span>
+																{renamingEndpointId === endpoint.id ? (
+																	<Input
+																		autoFocus
+																		defaultValue={endpoint.path}
+																		onClick={(e) => {
+																			e.preventDefault()
+																			e.stopPropagation()
+																		}}
+																		onMouseDown={(e) => e.stopPropagation()}
+																		onBlur={(e) => {
+																			handleRenameEndpoint(
+																				project.id,
+																				collection.id,
+																				endpoint.id,
+																				e.target.value
+																			);
+																			setRenamingEndpointId(null);
+																			e.stopPropagation();
+																		}}
+																		onKeyDown={(e) => {
+																			if (e.key === "Enter") {
+																				(e.target as HTMLInputElement).blur();
+																			}
+																			if (e.key === "Escape") {
+																				setRenamingEndpointId(null);
+																			}
+																			e.stopPropagation();
+																		}}
+																		className="h-6"
+																	/>
+																) : (
+																	<span className="text-[15px] text-slate-600">{endpoint.path}</span>
+																)}
 															</div>
 															<ItemActionsDropdown
-																items={getEndpointMenuItems(endpoint)}
+																items={getEndpointMenuItems(endpoint, collection.id, project.id)}
 															/>
 														</Link>
 													);
@@ -311,8 +467,96 @@ export const CollectionSidebar = () => {
 							</div>
 						))}
 					</div>
+					<ExportEndpoint
+						open={isExportRequestOpen}
+						onOpenChange={setIsExportRequestOpen}
+					/>
+					<ExportCollection
+						open={isExportCollectionOpen}
+						onOpenChange={setIsExportCollectionOpen} />
+					<ShareCollection
+						open={isShareCollectionOpen}
+						onOpenChange={setIsShareCollectionOpen}
+						collection={selectedCollection}
+					/>
+					<ShareEndpoint
+						open={isShareEndpointOpen}
+						onOpenChange={setIsShareEndpointOpen}
+						endpoint={selectedEndpoint}  
+					/>
 				</div>
 			</div>
+
+			{collectionToDelete && (
+				<DeleteCollection
+					open={!!collectionToDelete}
+					onOpenChange={(open) => {
+						if (!open) setCollectionToDelete(null);
+					}}
+					onConfirm={() => {
+						const { projectId, collectionId } = collectionToDelete;
+
+						// Remove collection from collectionsData
+						setCollectionsData((prev) =>
+							prev.map((project) =>
+								project.id === projectId
+									? {
+										...project,
+										collections: project.collections.filter(
+											(collection) => collection.id !== collectionId
+										),
+									}
+									: project
+							)
+						);
+
+						// Remove from openCollections
+						setOpenCollections((prev) => {
+							if (!prev) return prev;
+							const updated = { ...prev };
+							delete updated[collectionId];
+							return updated;
+						});
+
+						setCollectionToDelete(null); // Close dialog
+					}}
+				/>
+			)}
+
+			{endpointToDelete && (
+				<DeleteEndpoint
+					open={!!endpointToDelete}
+					onOpenChange={(open) => {
+						if (!open) setEndpointToDelete(null);
+					}}
+					onConfirm={() => {
+						const { projectId, collectionId, endpointId } = endpointToDelete;
+
+						setCollectionsData((prev) =>
+							prev.map((project) =>
+								project.id === projectId
+									? {
+										...project,
+										collections: project.collections.map((collection) =>
+											collection.id === collectionId
+												? {
+													...collection,
+													endpoints: collection.endpoints.filter(
+														(endpoint) => endpoint.id !== endpointId
+													),
+												}
+												: collection
+										),
+									}
+									: project
+							)
+						);
+
+						setEndpointToDelete(null);
+					}}
+				/>
+			)}
+
 		</div>
 	);
 };
