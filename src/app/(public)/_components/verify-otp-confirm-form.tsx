@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
 	Form,
 	FormControl,
@@ -81,7 +82,7 @@ export function VerifyOtpConfirmForm({
 				/>
 				{/* Submit Button */}
 				<Button type="submit" className="w-full">
-					Verify
+					<Link href={"/verify-otp-update"}>Verify</Link>
 				</Button>
 				{/* Resend OTP */}
 				<div className="text-center text-sm">

@@ -1,10 +1,9 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link"; // ✅ Correct import for routing
+import Link from "next/link"; 
 
 export function ForgotPasswordForm({
 	className,
@@ -41,7 +40,6 @@ export function ForgotPasswordForm({
 				</Button>
 			</div>
 
-			{/* Back to Login */}
 			<div className="text-center text-sm text-[#94A3B8]">
 				Remember your password?{" "}
 				<Link href="/login" className="text-[#0973DC] hover:underline">

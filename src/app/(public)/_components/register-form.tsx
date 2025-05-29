@@ -84,7 +84,7 @@ export function RegisterForm({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-[38px] text-muted-foreground"
+            className="absolute right-3 top-[30px] text-muted-foreground"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
