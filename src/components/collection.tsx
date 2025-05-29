@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
+import { string } from "zod";
 
 export const CollectionSidebar = () => {
 	const [openCollections, setOpenCollections] = useState<Record<
@@ -37,6 +38,7 @@ export const CollectionSidebar = () => {
 		string | null
 	>(null);
 	const [collectionsData, setCollectionsData] = useState(projectsData);
+
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -78,67 +80,130 @@ export const CollectionSidebar = () => {
 		);
 	};
 
+
+	const handleDuplicateCollection = (projectId: string, collectionId: string) => {
+
+		//Loop collectionData find the matching project
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+
+				//Find specific collection
+				const collectionToDuplicate = project.collections.find(
+					(collection) => collection.id === collectionId
+				);
+
+
+				if (!collectionToDuplicate) return project;
+
+				const duplicatedCollection = {
+					...collectionToDuplicate,
+					id: `${collectionId}-copy-${Date.now()}`, //Assign a new unique ID using Date.now()
+					// title: `${collectionToDuplicate.title} (Copy)`, //Change the title to include "(Copy)"
+				};
+
+				return {
+					...project,
+					collections: [...project.collections, duplicatedCollection],
+				};
+			})
+		);
+	};
+
+	const handleDuplicateEndpoint = (projectId: string, collectionId: string, endpointId: string) => {
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+				return {
+					...project,
+					collections: project.collections.map((collection) => {
+						if (collection.id !== collectionId) return collection;
+
+						const endpointToDuplicate = collection.endpoints.find(
+							(endpoint) => endpoint.id === endpointId
+						);
+
+						if (!endpointToDuplicate) return collection;
+
+						const duplicatedEndpoint = {
+							...endpointToDuplicate,
+							id: `${endpointToDuplicate.id}-copy-${Date.now()}`,
+						};
+
+						return {
+							...collection,
+							endpoints: [...collection.endpoints, duplicatedEndpoint],
+						};
+
+					}),
+				};
+			})
+		);		
+	};
+
+
 	const getCollectionMenuItems = (
 		collection: CollectionItem,
 		projectId: string
 	) => [
-		{
-			icon: <FilePlusIcon className="w-4 h-4" />,
-			label: "Add Request",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Add request:", collection.id);
-				console.log(projectId);
+			{
+				icon: <FilePlusIcon className="w-4 h-4" />,
+				label: "Add Request",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					console.log("Add request:", collection.id);
+					console.log(projectId);
+				},
 			},
-		},
-		{ isSeparator: true as const },
-		{
-			icon: <Share2Icon className="w-4 h-4" />,
-			label: "Share",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Share collection:", collection.id);
+			{ isSeparator: true as const },
+			{
+				icon: <Share2Icon className="w-4 h-4" />,
+				label: "Share",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					console.log("Share collection:", collection.id);
+				},
 			},
-		},
-		{ isSeparator: true as const },
-		{
-			icon: <EditIcon className="w-4 h-4" />,
-			label: "Rename",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setRenamingCollectionId(collection.id);
+			{ isSeparator: true as const },
+			{
+				icon: <EditIcon className="w-4 h-4" />,
+				label: "Rename",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setRenamingCollectionId(collection.id);
+				},
 			},
-		},
-		{
-			icon: <FilePlus2Icon className="w-4 h-4" />,
-			label: "Duplicate",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Duplicate collection:", collection.id);
+			{
+				icon: <FilePlus2Icon className="w-4 h-4" />,
+				label: "Duplicate",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					handleDuplicateCollection(projectId, collection.id);
+				},
+				className: "cursor-pointer"
 			},
-		},
-		{
-			icon: <FileOutput className="w-4 h-4" />,
-			label: "Export",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Export collection:", collection.id);
+			{
+				icon: <FileOutput className="w-4 h-4" />,
+				label: "Export",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					console.log("Export collection:", collection.id);
+				},
 			},
-		},
-		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
-			label: "Delete",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Delete collection:", collection.id);
+			{
+				icon: (
+					<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+				),
+				label: "Delete",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					console.log("Delete collection:", collection.id);
+				},
+				className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
-		},
-	];
+		];
 
-	const getEndpointMenuItems = (endpoint: Endpoint) => [
+	const getEndpointMenuItems = (endpoint: Endpoint, collectionId: string, projectId: string,) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
@@ -161,8 +226,10 @@ export const CollectionSidebar = () => {
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Duplicate endpoint:", endpoint.id);
+				e.preventDefault();
+				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
@@ -276,12 +343,12 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
+															onClick={(e) => e.preventDefault()}
 															href={endpointPath}
-															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
-																isActive
-																	? "bg-slate-100 hover:bg-slate-200"
-																	: "hover:bg-slate-100"
-															}`}
+															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
+																? "bg-slate-100 hover:bg-slate-200"
+																: "hover:bg-slate-100"
+																}`}
 														>
 															<div className="flex items-center gap-2 flex-grow">
 																<Badge
@@ -299,7 +366,7 @@ export const CollectionSidebar = () => {
 																</span>
 															</div>
 															<ItemActionsDropdown
-																items={getEndpointMenuItems(endpoint)}
+																items={getEndpointMenuItems(endpoint, collection.id, project.id)}
 															/>
 														</Link>
 													);
