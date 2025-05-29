@@ -452,9 +452,9 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
-															onClick={(e) => {
-																e.preventDefault(), e.stopPropagation();
-															}}
+															// onClick={(e) => {
+															// 	e.preventDefault(), e.stopPropagation();
+															// }}
 															href={endpointPath}
 															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
 																isActive
