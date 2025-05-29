@@ -140,7 +140,6 @@ export const CollectionSidebar = () => {
 				const duplicatedCollection = {
 					...collectionToDuplicate,
 					id: `${collectionId}-copy-${Date.now()}`, //Assign a new unique ID using Date.now()
-					// title: `${collectionToDuplicate.title} (Copy)`, //Change the title to include "(Copy)"
 				};
 
 				return {
