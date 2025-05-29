@@ -1,6 +1,6 @@
 import React from "react";
-import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Assuming you have Card components
+import { useApiBodyStore } from "@/store/body-api-slice";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { generateValueForTestCase } from "@/lib/constants";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";

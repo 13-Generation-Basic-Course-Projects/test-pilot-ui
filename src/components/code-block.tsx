@@ -22,7 +22,6 @@ interface CodeBlockProps {
 export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 	const [contentType, setContentType] = useState("json");
 	const editorRef = useRef<typeof monacoEditorInstance>(null);
-	// Remove setParsedBody as it's not needed. setRawBody now handles parsing.
 	const { rawBody, setRawBody } = useApiBodyStore();
 
 	useEffect(() => {
@@ -82,7 +81,7 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 
 				<Button onClick={handleSubmit}>Parse Body</Button>
 			</div>
-			<Card className="w-full min-h-[391px] border-1 shadow-none">
+			<Card className="w-full min-h-[391px] border-1 shadow-none py-3">
 				<CardContent className="p-0">
 					<Editor
 						height="391px"
