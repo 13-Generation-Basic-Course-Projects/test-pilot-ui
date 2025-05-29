@@ -35,6 +35,7 @@ import { ExportCollection } from "./export-collection";
 import { ShareCollection } from "./share-collection";
 import { ShareEndpoint } from "./share-endpoint";
 import { string } from "zod";
+import { DeleteEndpoint } from "./delete-endpoint";
 
 export const CollectionSidebar = () => {
 	const [isImportOpen, setIsImportOpen] = useState(false);
@@ -71,6 +72,14 @@ export const CollectionSidebar = () => {
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
 
 
+
+
+	//Delete request
+	const [endpointToDelete, setEndpointToDelete] = useState<{
+		projectId: string;
+		collectionId: string;
+		endpointId: string;
+	} | null>(null);
 
 
 	useEffect(() => {
@@ -306,9 +315,9 @@ export const CollectionSidebar = () => {
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Delete endpoint:", endpoint.id);
+				setTimeout(() => setEndpointToDelete({ projectId, collectionId, endpointId: endpoint.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
@@ -477,6 +486,77 @@ export const CollectionSidebar = () => {
 					/>
 				</div>
 			</div>
+
+			{collectionToDelete && (
+				<DeleteCollection
+					open={!!collectionToDelete}
+					onOpenChange={(open) => {
+						if (!open) setCollectionToDelete(null);
+					}}
+					onConfirm={() => {
+						const { projectId, collectionId } = collectionToDelete;
+
+						// Remove collection from collectionsData
+						setCollectionsData((prev) =>
+							prev.map((project) =>
+								project.id === projectId
+									? {
+										...project,
+										collections: project.collections.filter(
+											(collection) => collection.id !== collectionId
+										),
+									}
+									: project
+							)
+						);
+
+						// Remove from openCollections
+						setOpenCollections((prev) => {
+							if (!prev) return prev;
+							const updated = { ...prev };
+							delete updated[collectionId];
+							return updated;
+						});
+
+						setCollectionToDelete(null); // Close dialog
+					}}
+				/>
+			)}
+
+			{endpointToDelete && (
+				<DeleteEndpoint
+					open={!!endpointToDelete}
+					onOpenChange={(open) => {
+						if (!open) setEndpointToDelete(null);
+					}}
+					onConfirm={() => {
+						const { projectId, collectionId, endpointId } = endpointToDelete;
+
+						setCollectionsData((prev) =>
+							prev.map((project) =>
+								project.id === projectId
+									? {
+										...project,
+										collections: project.collections.map((collection) =>
+											collection.id === collectionId
+												? {
+													...collection,
+													endpoints: collection.endpoints.filter(
+														(endpoint) => endpoint.id !== endpointId
+													),
+												}
+												: collection
+										),
+									}
+									: project
+							)
+						);
+
+						setEndpointToDelete(null);
+					}}
+				/>
+			)}
+
 		</div>
 	);
 };
