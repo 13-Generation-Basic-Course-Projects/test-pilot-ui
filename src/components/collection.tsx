@@ -203,7 +203,7 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)} className="cursor-pointer">Import</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => setIsExportOpen(true)} className="cursor-pointer">Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
