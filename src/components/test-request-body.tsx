@@ -1,80 +1,94 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Assuming you have Card components
+import { generateValueForTestCase } from "@/lib/constants";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Play } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 
-type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
+export const TestRequestBody = () => {
+	const { apiBodyRows } = useApiBodyStore();
 
-interface TestRequestProps {
-  parsedData?: Record<string, JSONValue> | null;
-}
+	// Generate all test case payloads
+	const testCasePayloads: {
+		field: string;
+		testCase: string;
+		payload: Record<string, any>;
+	}[] = [];
 
-export default function TestRequestBody({ parsedData }: TestRequestProps) {
-  const [scenarios, setScenarios] = useState<{ field: string; scenario: string; request: string }[]>([]);
+	apiBodyRows.forEach((row) => {
+		// Create a base payload from the current state of apiBodyRows
+		const basePayload: Record<string, any> = {};
+		apiBodyRows.forEach((r) => {
+			basePayload[r.id] = r.value;
+		});
 
-  useEffect(() => {
-    if (parsedData) {
-      const newScenarios = Object.entries(parsedData).map(([field, value]) => {
-        const scenario = value === undefined ? "Undefined" : value === null ? "Null" : "Defined";
-        const request = JSON.stringify({ [field]: value }, null, 2);
-        return { field, scenario, request };
-      });
-      setScenarios(newScenarios);
-    } else {
-      setScenarios([]);
-    }
-  }, [parsedData]);
+		row.testCases.forEach((testCase) => {
+			const modifiedPayload = { ...basePayload };
+			// Apply the specific test case modification to the current row's field
+			modifiedPayload[row.id] = generateValueForTestCase(
+				row.value,
+				row.dataType,
+				testCase
+			);
 
-  const handleRunAll = () => {
-    // Optionally trigger all scenarios if needed
-    console.log("Running all scenarios");
-  };
+			testCasePayloads.push({
+				field: row.id,
+				testCase: testCase,
+				payload: modifiedPayload,
+			});
+		});
+	});
 
-  const handleRunScenario = (index: number) => {
-    // Optionally handle individual run actions
-    console.log(`Running scenario for ${scenarios[index].field}`);
-  };
+	if (testCasePayloads.length === 0) {
+		return (
+			<p className="min-h-[480px]">No test cases have been selected yet.</p>
+		);
+	}
 
-  return (
-    <div className="w-full space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={handleRunAll} className="bg-black text-white">
-          Run All <Play className="ml-1 h-4 w-4" />
-        </Button>
-      </div>
-
-      {scenarios.map((scenario, index) => (
-        <div key={index} className="border rounded-md p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Field:</span>
-              <Badge variant="outline" className="text-blue-500">
-                {scenario.field}
-              </Badge>
-            </div>
-            <Button onClick={() => handleRunScenario(index)} className="bg-black text-white">
-              Run <Play className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Scenario:</span>
-            <Badge className="bg-gray-800 text-white rounded-full px-3 py-1 text-xs">
-              {scenario.scenario}
-            </Badge>
-          </div>
-          <div>
-            <p className="mb-1 font-medium">Request Body</p>
-            <SyntaxHighlighter
-              language="json"
-              customStyle={{ borderRadius: "12px", backgroundColor: "white", border: "1px solid #e5e7eb" }}
-            >
-              {scenario.request}
-            </SyntaxHighlighter>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+	return (
+		<div className=" min-h-[480px] flex flex-col space-y-4">
+			<div className="flex h-full justify-end items-center mt-1">
+				<Button>
+					Run All <Play />
+				</Button>
+			</div>
+			<div className="flex flex-col items-center gap-6">
+				{testCasePayloads.map((testCase, index) => (
+					<Card
+						key={`${testCase.field}-${testCase.testCase}-${index}`}
+						className="break-all w-full"
+					>
+						<CardHeader className="flex justify-between items-start">
+							<div className="space-y-4 w-full">
+								<CardTitle className="text-md">
+									Field :{" "}
+									<Badge variant="secondary">
+										<p className="text-[#006FEE] text-[14px]">
+											{testCase.field}
+										</p>
+									</Badge>
+								</CardTitle>
+								<CardTitle className="text-md">
+									Scenario :{" "}
+									<Badge variant="default">
+										<p className="text-xs">{testCase.testCase}</p>
+									</Badge>
+								</CardTitle>
+								<CardTitle className="text-md">Request Body :</CardTitle>
+							</div>
+							<Button>
+								Run <Play />
+							</Button>
+						</CardHeader>
+						<CardContent>
+							<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">
+								<code>{JSON.stringify(testCase.payload, null, 2)}</code>
+							</pre>
+						</CardContent>
+					</Card>
+				))}
+			</div>
+		</div>
+	);
+};

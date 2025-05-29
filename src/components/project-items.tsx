@@ -1,9 +1,15 @@
-import React from "react";
 import { projectsData } from "@/lib/constants";
 import ProjectLists from "./project-lists";
 
-const ProjectItems = () => {
-	return <ProjectLists projects={projectsData} />;
-};
+interface ProjectItemsProps {
+	searchQuery?: string;
+}
 
-export default ProjectItems;
+export default function ProjectItems({ searchQuery = "" }: ProjectItemsProps) {
+	const filteredProjects = projectsData.filter((project) => {
+		const lowerSearch = searchQuery.toLowerCase();
+		return project.title.toLowerCase().includes(lowerSearch) || false;
+	});
+
+	return <ProjectLists projects={filteredProjects} />;
+}

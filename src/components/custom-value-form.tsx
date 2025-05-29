@@ -52,13 +52,13 @@ export const CustomValueForm = () => {
 			<DialogTrigger asChild>
 				<Button className="cursor-pointer">Add Custom</Button>
 			</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="p-8 px-12">
 				<DialogHeader>
 					<DialogTitle>
 						<p className="text-2xl text-center mb-4">Create custom value</p>
 					</DialogTitle>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 							<FormField
 								control={form.control}
 								name="nameCase"
@@ -70,6 +70,22 @@ export const CustomValueForm = () => {
 										</FormControl>
 										<FormDescription>
 											Enter your name case for test case
+										</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Description</FormLabel>
+										<FormControl>
+											<Textarea placeholder="description..." {...field} />
+										</FormControl>
+										<FormDescription>
+											Enter your description for test case
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
@@ -119,23 +135,9 @@ export const CustomValueForm = () => {
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name="description"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Description</FormLabel>
-										<FormControl>
-											<Textarea placeholder="description..." {...field} />
-										</FormControl>
-										<FormDescription>
-											Enter your description for test case
-										</FormDescription>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<Button type="submit">Submit</Button>
+							<div className="w-full flex items-center justify-end">
+								<Button type="submit">Submit</Button>
+							</div>
 						</form>
 					</Form>
 				</DialogHeader>

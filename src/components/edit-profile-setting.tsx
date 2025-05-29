@@ -39,12 +39,10 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 	const handleCancel = () => {
 		setOpen(false);
 	};
-
 	const handleSave = () => {
 		onSave({ username, email, password });
 		setOpen(false);
 	};
-
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
@@ -61,13 +59,13 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 							aria-label="Close"
 						/>
 					</DialogClose>
-
+					{/* Header */}
 					<DialogHeader className="mb-8">
 						<DialogTitle className="text-xl font-semibold text-center text-gray-900">
 							Profile Details
 						</DialogTitle>
 					</DialogHeader>
-
+					{/* Profile Info */}
 					<div className="flex items-center pb-6 mb-8">
 						<Image
 							src="/profile.png"
@@ -85,7 +83,7 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 							</p>
 						</div>
 					</div>
-
+					{/* Editable Fields */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
 						<div>
 							<label className="block text-sm font-medium text-gray-600 mb-2">
