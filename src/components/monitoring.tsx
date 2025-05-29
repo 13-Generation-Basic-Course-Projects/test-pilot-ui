@@ -8,8 +8,8 @@ export default function Monitoring() {
 			{/* Header */}
 			<div className="flex justify-between">
 				<div>
-					<p className="text-2xl font-bold text-gray-900">Test Pilot API</p>
-					<p className="text-[#71717A]">20 May, 2025 19:00PM</p>
+					<p className="text-3xl font-bold text-gray-900">Test Pilot API</p>
+					<p className="text-[#71717A]">20 May 2025, 19:00PM</p>
 				</div>
 				<div className="text-[#71717A]">3/4 request completed</div>
 			</div>
@@ -32,7 +32,7 @@ export default function Monitoring() {
 
 			{/* Execution Summary */}
 			<div className="space-y-8">
-				<div className="space-y-2">
+				<div className="space-y-4">
 					<p className="text-2xl font-semibold">Executed Request</p>
 					<div className="flex justify-between">
 						<p className="text-[#94A3B8]">Status: completed</p>
@@ -44,8 +44,8 @@ export default function Monitoring() {
 				{/* Request Detail Section */}
 				<div className="grid grid-cols-12 gap-12">
 					{/* Left Panel: Request Info + Code */}
-					<div className="space-y-4 col-span-4 border-r pl-5 pr-10">
-						<div className="space-y-2">
+					<div className="space-y-8 col-span-5 border-r pr-10">
+						<div className="space-y-4">
 							<div className="flex space-x-2">
 								<p>Status:</p>
 								<div className="border border-[#E2E8F0] rounded-md px-[10px] text-[#17C964]">
@@ -73,7 +73,7 @@ export default function Monitoring() {
 					</div>
 
 					{/* Right Panel: Monitoring Table */}
-					<div className="col-span-8">
+					<div className="col-span-7">
 						<MonitoringData />
 					</div>
 				</div>
