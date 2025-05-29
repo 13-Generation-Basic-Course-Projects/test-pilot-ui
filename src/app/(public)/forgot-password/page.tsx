@@ -21,8 +21,9 @@ export default function ForgotPasswordPage() {
 			</div>
 			<div className="relative hidden lg:flex justify-start items-center ml-20">
 				<Image
-					src="/login_image.png"
-					alt="login_image"
+					src="/forget password.png"
+					alt="forgot_passord_image"
+					className="rounded-3xl"
 					width={600}
 					height={600}
 				/>

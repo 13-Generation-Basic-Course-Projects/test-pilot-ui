@@ -22,7 +22,8 @@ export default function VerifyOtoConfirmPage() {
 			<div className="relative hidden lg:flex justify-start items-center ml-20">
 				<Image
 					src="/verify otp.png"
-					alt="Verify Otp"
+					alt="Verify Otp confirm form"
+					className="rounded-3xl"
 					width={600}
 					height={600}
 				/>
