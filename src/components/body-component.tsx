@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,12 +10,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, FileJson } from "lucide-react";
 import CodeEditor from "./code-editor";
 import TestCaseTableBody from "./test-case-table-body-ui";
 import TestRequestBody from "./test-request-body";
+type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JSONValue[]
+  | { [key: string]: JSONValue };
 
 export function ApiRequestDetialBody() {
   const [jsonCode, setJsonCode] = useState(`{
@@ -24,19 +29,34 @@ export function ApiRequestDetialBody() {
     "age": 30,
     "isActive": true
   }`);
-
   const [bodyType, setBodyType] = useState<"none" | "raw">("raw");
+  const [parsedData, setParsedData] = useState<Record<string, JSONValue> | null>(null);
+
+  const [activeTab, setActiveTab] = useState("raw-body");
 
   const handleCodeChange = (value: string | undefined) => {
     setJsonCode(value || "");
   };
 
+  const handleParseBody = () => {
+    try {
+      if (jsonCode.trim() === "") {
+        setParsedData(null);
+        return;
+      }
+      const parsed = JSON.parse(jsonCode);
+      setParsedData(parsed);
+      setActiveTab("test-case"); // Navigate to Test Case tab
+    } catch (error) {
+      console.error("Invalid JSON:", error);
+      setParsedData(null);
+    }
+  };
+
   return (
     <div>
       <h1 className="pb-4">Body</h1>
-
-      {/* Radio to toggle none/raw */}
-      <div className="pt-4 pb-4">
+      <div className="pt-4 pb-4 flex">
         <RadioGroup
           value={bodyType}
           onValueChange={(value) => setBodyType(value as "none" | "raw")}
@@ -53,32 +73,39 @@ export function ApiRequestDetialBody() {
         </RadioGroup>
       </div>
 
-      {/* Only show Tabs if Raw is selected */}
       {bodyType === "raw" && (
-        <Tabs defaultValue="raw-body" className="w-[900px]">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-[900px]">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="raw-body">Raw body</TabsTrigger>
             <TabsTrigger value="test-case">Test Case</TabsTrigger>
             <TabsTrigger value="test-request">Test Request</TabsTrigger>
           </TabsList>
 
-          {/* Raw Body Tab */}
           <TabsContent value="raw-body">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  Body Format
-                  <ChevronDown className="h-4 w-4" />
+            <div className="flex justify-between pt-8 pb-4">
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      Body Format
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem>JSON</DropdownMenuItem>
+                      <DropdownMenuItem>XML</DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div>
+                <Button onClick={handleParseBody}>
+                  <FileJson />
+                  Parse Body
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>JSON</DropdownMenuItem>
-                  <DropdownMenuItem>XML</DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+              </div>
+            </div>
             <CodeEditor
               language="json"
               value={jsonCode}
@@ -88,14 +115,12 @@ export function ApiRequestDetialBody() {
             />
           </TabsContent>
 
-          {/* Test Case Tab */}
           <TabsContent value="test-case">
-            <TestCaseTableBody />
+            <TestCaseTableBody parsedData={parsedData} />
           </TabsContent>
 
-          {/* Test Request Tab */}
           <TabsContent value="test-request">
-            <TestRequestBody />
+            <TestRequestBody parsedData={parsedData} />
           </TabsContent>
         </Tabs>
       )}

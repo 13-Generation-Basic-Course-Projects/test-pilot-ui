@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -16,10 +16,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, X } from "lucide-react";
 import clsx from "clsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
 interface ParamTableProps {
   mode?: "path" | "query";
+  parsedData?: Record<string, JSONValue> | null;
 }
+
 
 interface ParamRow {
   Field: string;
@@ -28,10 +39,45 @@ interface ParamRow {
   "Test Case": string[];
 }
 
-export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
+export default function TestCaseTableBody({
+  mode = "path",
+  parsedData,
+}: ParamTableProps) {
   const [rows, setRows] = useState<ParamRow[]>([
     { Field: "habitId", Value: "1", "Data Type": "String", "Test Case": [] },
   ]);
+
+  useEffect(() => {
+    if (parsedData) {
+      const newRows = Object.entries(parsedData).map(([key, value]) => {
+        const dataType =
+          typeof value === "string"
+            ? "String"
+            : typeof value === "number"
+            ? "Integer"
+            : typeof value === "boolean"
+            ? "Boolean"
+            : Array.isArray(value)
+            ? "Array"
+            : "String";
+        return {
+          Field: key,
+          Value: String(value),
+          "Data Type": dataType,
+          "Test Case": [],
+        };
+      });
+      setRows(
+        newRows.length > 0
+          ? newRows
+          : [{ Field: "", Value: "", "Data Type": "String", "Test Case": [] }]
+      );
+    } else {
+      setRows([
+        { Field: "", Value: "", "Data Type": "String", "Test Case": [] },
+      ]);
+    }
+  }, [parsedData]);
 
   const handleAddRow = () => {
     setRows([
@@ -75,7 +121,6 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
     "Date",
     "Integer",
     "Boolean",
-    "File",
     "UUID",
     "ENUM",
     "Array",
@@ -89,27 +134,39 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
     "Only Space",
     "Special Character",
   ];
+
   return (
     <div className="w-full max-w-6xl mx-auto mt-6 px-4">
       <Table className="border border-gray-300 rounded-md shadow-sm w-full table-auto">
         <TableHeader>
           <TableRow className="border border-gray-300 bg-gray-100">
-            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">Field</TableHead>
-            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">Value</TableHead>
-            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">Data Type</TableHead>
-            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">Test Case</TableHead>
+            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">
+              Field
+            </TableHead>
+            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">
+              Value
+            </TableHead>
+            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">
+              Data Type
+            </TableHead>
+            <TableHead className="border border-gray-300 text-sm font-semibold text-gray-700">
+              Test Case
+            </TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {rows.map((row, index) => (
-            <TableRow key={index} className="border border-gray-300 hover:bg-gray-50">
+            <TableRow
+              key={index}
+              className="border border-gray-300 hover:bg-gray-50"
+            >
               <TableCell className="border border-gray-300">
                 <input
                   type="text"
                   value={row.Field}
                   onChange={(e) => handleChange(index, "Field", e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded "
                   placeholder="Enter field"
                 />
               </TableCell>
@@ -118,22 +175,28 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
                   type="text"
                   value={row.Value}
                   onChange={(e) => handleChange(index, "Value", e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded "
                   placeholder="Enter value"
                 />
               </TableCell>
               <TableCell className="border border-gray-300">
-                <select
+                <Select
                   value={row["Data Type"]}
-                  onChange={(e) => handleChange(index, "Data Type", e.target.value)}
-                  className="w-full px-2 py-1 text-sm rounded focus:outline-none"
+                  onValueChange={(value) =>
+                    handleChange(index, "Data Type", value)
+                  }
                 >
-                  {typeOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="max-w-full px-2 py-1 bg-blue-100 text-sm rounded-xl">
+                    <SelectValue placeholder="Select a data type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typeOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell className="border border-gray-300">
                 <div className="flex flex-wrap gap-1 mb-2">
@@ -156,7 +219,7 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
                       <DropdownMenuTrigger asChild>
                         <button className="text-2xl text-black">...</button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-48 max-h-64 overflow-y-auto">
+                      <DropdownMenuContent className="w-48 max-h-64 ">
                         {row["Test Case"].map((c, i) => (
                           <div
                             key={i}
@@ -185,7 +248,7 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
                       <Plus className="w-4 h-4 text-black" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px]">
+                  <DropdownMenuContent className="max-h-48 max-w-full">
                     {caseOptions.map((option) => (
                       <DropdownMenuItem
                         key={option}
@@ -208,7 +271,10 @@ export default function TestCaseTableBody({ mode = "path" }: ParamTableProps) {
             onClick={handleAddRow}
             className="border border-gray-300 cursor-pointer hover:bg-gray-100"
           >
-            <TableCell colSpan={4} className="border border-gray-300 text-sm py-3 text-gray-600">
+            <TableCell
+              colSpan={4}
+              className="border border-gray-300 text-sm py-3 text-gray-600"
+            >
               + Add
             </TableCell>
           </TableRow>

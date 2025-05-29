@@ -1,97 +1,80 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 
-export default function ApiRequestDetailTestRequest() {
-  const [scenario, setScenario] = useState<string | undefined>("Undefined");
-  const [scenarioNull, setScenarioNull] = useState<string>("Null");
+type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
-  const handleRunUndefined = () => {
-    setScenario("Undefined");
+interface TestRequestProps {
+  parsedData?: Record<string, JSONValue> | null;
+}
+
+export default function TestRequestBody({ parsedData }: TestRequestProps) {
+  const [scenarios, setScenarios] = useState<{ field: string; scenario: string; request: string }[]>([]);
+
+  useEffect(() => {
+    if (parsedData) {
+      const newScenarios = Object.entries(parsedData).map(([field, value]) => {
+        const scenario = value === undefined ? "Undefined" : value === null ? "Null" : "Defined";
+        const request = JSON.stringify({ [field]: value }, null, 2);
+        return { field, scenario, request };
+      });
+      setScenarios(newScenarios);
+    } else {
+      setScenarios([]);
+    }
+  }, [parsedData]);
+
+  const handleRunAll = () => {
+    // Optionally trigger all scenarios if needed
+    console.log("Running all scenarios");
   };
 
-  const handleRunNull = () => {
-    setScenarioNull("Null");
+  const handleRunScenario = (index: number) => {
+    // Optionally handle individual run actions
+    console.log(`Running scenario for ${scenarios[index].field}`);
   };
-
-  const undefinedRequest = `{
-  "habitTitle": undefined,
-  "habitDescription": "Eat breakfast before 9am and shower..."
-}`;
-
-  const nullRequest = `{
-  "habitTitle": null,
-  "habitDescription": "Eat breakfast before 9am and shower..."
-}`;
 
   return (
     <div className="w-full space-y-4">
-      {/* Top right Run All button */}
       <div className="flex justify-end">
-        <Button onClick={() => { handleRunUndefined(); handleRunNull(); }} className="bg-black text-white">
+        <Button onClick={handleRunAll} className="bg-black text-white">
           Run All <Play className="ml-1 h-4 w-4" />
         </Button>
       </div>
 
-      {/* Test Case: Undefined */}
-      <div className="border rounded-md p-4 space-y-4">
-        <div className="flex items-center justify-between">
+      {scenarios.map((scenario, index) => (
+        <div key={index} className="border rounded-md p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Field:</span>
+              <Badge variant="outline" className="text-blue-500">
+                {scenario.field}
+              </Badge>
+            </div>
+            <Button onClick={() => handleRunScenario(index)} className="bg-black text-white">
+              Run <Play className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium">Field:</span>
-            <Badge variant="outline" className="text-blue-500">
-              habitTitle
+            <span className="font-medium">Scenario:</span>
+            <Badge className="bg-gray-800 text-white rounded-full px-3 py-1 text-xs">
+              {scenario.scenario}
             </Badge>
           </div>
-          <Button onClick={handleRunUndefined} className="bg-black text-white">
-            Run <Play className="ml-1 h-4 w-4"/>
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Scenario:</span>
-          <Badge className="bg-gray-800 text-white rounded-full px-3 py-1 text-xs">
-            {scenario}
-          </Badge>
-        </div>
-        <div>
-          <p className="mb-1 font-medium">Request Body</p>
-          <SyntaxHighlighter
-            language="json" customStyle={{  borderRadius: "12px" , backgroundColor: "white" , border: "1px solid #e5e7eb"}}
-          >
-            {undefinedRequest}
-          </SyntaxHighlighter>
-        </div>
-      </div>
-
-      {/* Test Case: Null */}
-      <div className="border rounded-md p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Field:</span>
-            <Badge variant="outline" className="text-blue-500">
-              habitTitle
-            </Badge>
+          <div>
+            <p className="mb-1 font-medium">Request Body</p>
+            <SyntaxHighlighter
+              language="json"
+              customStyle={{ borderRadius: "12px", backgroundColor: "white", border: "1px solid #e5e7eb" }}
+            >
+              {scenario.request}
+            </SyntaxHighlighter>
           </div>
-          <Button onClick={handleRunNull} className="bg-black text-white">
-            Run <Play className="ml-1 h-4 w-4" />
-          </Button>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Scenario:</span>
-          <Badge className="text-white rounded-full px-3 py-1 text-xs">
-            {scenarioNull}
-          </Badge>
-        </div>
-        <div>
-          <p className="mb-1 font-medium">Request Body</p>
-          <SyntaxHighlighter language="json" customStyle={{  borderRadius: "12px" , backgroundColor: "white" , border: "1px solid #e5e7eb"}}>
-            {nullRequest}
-          </SyntaxHighlighter>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
