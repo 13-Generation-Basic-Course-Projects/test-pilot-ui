@@ -232,8 +232,10 @@ export const CollectionSidebar = () => {
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Share collection:", collection.id);
+				setSelectedCollection(collection);
+				setIsShareCollectionOpen(true);
 			},
+			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -243,13 +245,14 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				setRenamingCollectionId(collection.id);
 			},
+			className: "cursor-pointer",
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Duplicate collection:", collection.id);
+				handleDuplicateCollection(projectId, collection.id);
 			},
 		},
 		{
@@ -449,6 +452,9 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
+															onClick={(e) => {
+																e.preventDefault(), e.stopPropagation();
+															}}
 															href={endpointPath}
 															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
 																isActive
