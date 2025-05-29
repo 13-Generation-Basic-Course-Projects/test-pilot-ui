@@ -13,21 +13,18 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { CollectionItem} from "@/types"
 
 type ExportProps = {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	endpoint?: CollectionItem | null;
-};
+    open: boolean
+    onOpenChange: (open: boolean) => void
+}
 
-
-export function ExportCollection({ open, onOpenChange }: ExportProps) {
+export function ExportComponent({ open, onOpenChange }: ExportProps) {
     const [layout, setLayout] = useState("comfortable")
 
     const handleContinue = () => {
         alert(`You selected: ${layout}`)
-        onOpenChange(false) // Close the dialog after exporting
+        onOpenChange(false) 
     }
 
     return (
@@ -36,7 +33,7 @@ export function ExportCollection({ open, onOpenChange }: ExportProps) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Export Collection</AlertDialogTitle>
                     <AlertDialogDescription>
-                        New collection will be exported as JSON file.
+                        New request will be exported as JSON file.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
@@ -46,18 +43,18 @@ export function ExportCollection({ open, onOpenChange }: ExportProps) {
                     className="space-y-2 py-4"
                 >
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="default" id="r1" />
+                        <RadioGroupItem value="default" id="r2" />
                         <Label htmlFor="r1">Collection v2</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="comfortable" id="r2" />
+                        <RadioGroupItem value="comfortable" id="r1" />
                         <Label htmlFor="r2">Collection v2.1</Label>
                     </div>
                 </RadioGroup>
 
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button onClick={handleContinue}>Export</Button>
+                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                    <Button onClick={handleContinue} className="cursor-pointer">Export</Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
