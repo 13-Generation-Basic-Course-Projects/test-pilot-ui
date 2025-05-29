@@ -2,13 +2,13 @@
 
 import React, { useRef, useState } from "react"
 import { UploadCloud, File as FileIcon, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 type ImportDialogProps = {
@@ -16,19 +16,23 @@ type ImportDialogProps = {
     onOpenChange: (open: boolean) => void
 }
 
-export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
+export function ImportCollection({ open, onOpenChange }: ImportDialogProps) {
     const [file, setFile] = useState<File | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0]
-        if (selectedFile) setFile(selectedFile)
+        if (selectedFile) {
+            setFile(selectedFile)
+        }
     }
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
         const droppedFile = e.dataTransfer.files?.[0]
-        if (droppedFile) setFile(droppedFile)
+        if (droppedFile) {
+            setFile(droppedFile)
+        }
     }
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -37,7 +41,8 @@ export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
 
     const handleUpload = () => {
         if (!file) return
-        alert(`Uploading ${file.name}`)
+        // Replace this with actual upload logic (e.g., fetch/FormData)
+        alert(`Uploading: ${file.name}`)
     }
 
     return (
@@ -47,11 +52,10 @@ export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
                 onInteractOutside={(e) => e.preventDefault()}
             >
                 {/* Header */}
-                <div className=" pl-4 pr-4 pt-4 flex items-center justify-between">
+                <div className="pl-4 pr-4 pt-4 flex items-center justify-between">
                     <DialogHeader>
-                        <DialogTitle></DialogTitle>
+                        <DialogTitle>Import Collection</DialogTitle>
                     </DialogHeader>
-                    {/* Close Button */}
                     <Button
                         variant="ghost"
                         size="icon"
@@ -67,6 +71,7 @@ export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
                         className="w-full px-4 py-2 text-sm rounded"
                     />
 
+                    {/* Drop Zone */}
                     <div
                         className="border-2 border-dashed border-gray-300 rounded-lg h-64 flex flex-col items-center justify-center text-center transition hover:bg-muted/20"
                         onDrop={handleDrop}
@@ -75,7 +80,9 @@ export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
                         <div className="flex gap-4">
                             <UploadCloud strokeWidth={1} className="w-15 h-15 text-muted-foreground mb-3" />
                             <div>
-                                <p className="text-base font-medium text-muted-foreground">Drop anywhere to import</p>
+                                <p className="text-base font-medium text-muted-foreground">
+                                    Drop anywhere to import
+                                </p>
                                 <p className="text-sm text-muted-foreground">
                                     or select{" "}
                                     <button
@@ -94,16 +101,18 @@ export function ImportColletion({ open, onOpenChange }: ImportDialogProps) {
                                 </p>
                             </div>
                         </div>
-                        <Input
+
+                        {/* Hidden File Input */}
+                        <input
                             type="file"
                             accept=".csv,.xls,.xlsx,.pdf,.txt"
-                            onChange={handleFileChange}
                             ref={inputRef}
+                            onChange={handleFileChange}
                             className="hidden"
                         />
                     </div>
 
-                    {/* File Info + Upload */}
+                    {/* File Info + Upload Button */}
                     {file && (
                         <div className="flex items-center justify-between mt-4 px-2">
                             <div className="flex items-center gap-2 text-sm text-foreground">
