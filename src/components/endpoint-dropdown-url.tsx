@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronDown, ChevronUp, CodeXml } from "lucide-react";
-import { projectsData } from "@/lib/constants";
+import { projectsData } from "@/lib/constants"; // Assuming this is where your project data resides
 
 import { cn, getMethodColor } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ import {
 
 import { Input } from "./ui/input";
 import CodeSnippet from "./code-snippet";
+import { useRequestStore } from "@/store/request-url-slice";
+import { useEffect } from "react";
 
 const endpointMethods = [
 	{
@@ -59,6 +61,8 @@ export function EndpointDropdownUrl({
 }) {
 	const [open, setOpen] = React.useState(false);
 
+	const { method, url, setMethod, setUrl } = useRequestStore();
+
 	const endpoints = projectsData.flatMap((project) =>
 		project.collections.flatMap((collection) =>
 			collection.endpoints.filter((endpoint) => endpoint.id === endpointId)
@@ -67,7 +71,11 @@ export function EndpointDropdownUrl({
 
 	const endpoint = endpoints[0];
 
-	const [value, setValue] = React.useState(endpoint?.method || "GET");
+	useEffect(() => {
+		if (endpoint?.method) {
+			setMethod(endpoint.method);
+		}
+	}, [endpoint?.method, setMethod]);
 
 	return (
 		<div className="flex items-center gap-4">
@@ -82,11 +90,11 @@ export function EndpointDropdownUrl({
 						>
 							<span
 								className={`${getMethodColor(
-									endpointMethods.find((item) => item.value === value)?.label ||
-										""
+									endpointMethods.find((item) => item.value === method)
+										?.label || ""
 								)}`}
 							>
-								{endpointMethods.find((item) => item.value === value)?.label}
+								{endpointMethods.find((item) => item.value === method)?.label}
 							</span>
 							{open ? (
 								<ChevronUp className="opacity-50" />
@@ -99,22 +107,22 @@ export function EndpointDropdownUrl({
 						<Command>
 							<CommandList className="w-full">
 								<CommandGroup>
-									{endpointMethods.map((method) => (
+									{endpointMethods.map((item) => (
 										<CommandItem
-											key={method.value}
-											value={method.value}
+											key={item.value}
+											value={item.value}
 											onSelect={() => {
-												setValue(method.value);
+												setMethod(item.value); // Update method in Zustand
 												setOpen(false);
 											}}
 										>
-											<span className={getMethodColor(method.label)}>
-												{method.label}
+											<span className={getMethodColor(item.label)}>
+												{item.label}
 											</span>
 											<Check
 												className={cn(
 													"ml-auto",
-													value === method.value ? "opacity-100" : "opacity-0"
+													method === item.value ? "opacity-100" : "opacity-0"
 												)}
 											/>
 										</CommandItem>
@@ -127,6 +135,8 @@ export function EndpointDropdownUrl({
 				<Input
 					className="h-[40px] rounded-l-none md:text-lg"
 					placeholder="http://..."
+					value={url} // Bind input value to Zustand state
+					onChange={(e) => setUrl(e.target.value)} // Update URL in Zustand
 				/>
 			</div>
 			<div className="flex items-center gap-2">

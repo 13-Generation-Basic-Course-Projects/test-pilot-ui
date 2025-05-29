@@ -2,155 +2,37 @@ import { FileIcon, HistoryIcon, HomeIcon, InboxIcon } from "lucide-react";
 
 export const projectsData = [
 	{
-		id: "tp_001",
+		id: "project-1",
 		iconType: "folder",
-		title: "Test Pilot Core APIs",
-		description:
-			"Main collection for testing the Test Pilot application's essential API functionalities.",
-		creationDate: "24 April, 2025",
-		userAvatarUrl: "https://i.pravatar.cc/40?u=user1",
+		title: "My Awesome Project",
+		description: "This is a description for My Awesome Project.",
+		creationDate: "2023-01-15",
+		userAvatarUrl: "/profile-img.png",
+		name: "My Awesome Project",
 		collections: [
 			{
-				id: "col_001_01",
-				title: "User Management APIs",
-				description:
-					"Collections for user creation, retrieval, update, and deletion.",
+				id: "collection-1",
+				title: "User Management",
+				description: "APIs for user operations",
 				endpoints: [
-					// 🔽 Added endpoints array
+					// Ensure these endpoints match your Endpoint type
 					{
-						id: "ep_001_01_01",
+						id: "endpoint-1",
 						method: "GET",
 						path: "/users",
-						value: "get",
-						description: "Retrieve all users.",
-					},
-					{
-						id: "ep_001_01_02",
-						method: "POST",
-						path: "/users",
-						value: "post",
-						description: "Create a new user.",
-					},
-				],
-			},
-			{
-				id: "col_001_02",
-				title: "Content Management APIs",
-				description: "Collections for managing application content.",
-				endpoints: [
-					{
-						id: "ep_001_02_01",
-						method: "GET",
-						path: "/posts",
-						value: "get",
-						description: "Retrieve all posts.",
+						value: "http://localhost:3000/api/users",
+						description: "Get all users",
+						url: "http://localhost:3000/api/users",
+						status: 200,
+						statusText: "OK",
+						requestId: "req-123",
 					},
 				],
 			},
 		],
 	},
-	{
-		id: "tp_002",
-		iconType: "folder",
-		title: "User Authentication Suite",
-		description:
-			"Validating login, registration, password reset, and token management.",
-		creationDate: "15 May, 2025",
-		userAvatarUrl: "https://i.pravatar.cc/40?u=user2",
-		collections: [
-			{
-				id: "col_002_01",
-				title: "Login Endpoints",
-				description: "Endpoints for user login and session creation.",
-				endpoints: [
-					{
-						id: "ep_002_01_01",
-						method: "POST",
-						path: "/auth/login",
-						value: "post",
-						description: "Authenticate user and return token.",
-					},
-					{
-						id: "ep_002_01_02",
-						method: "POST",
-						path: "/auth/refresh-token",
-						value: "post",
-						description: "Refresh authentication token.",
-					},
-				],
-			},
-			{
-				id: "col_002_02",
-				title: "Registration Endpoints",
-				description: "Endpoints for new user registration.",
-				endpoints: [
-					{
-						id: "ep_002_02_01",
-						method: "POST",
-						path: "/auth/register",
-						value: "post",
-						description: "Register a new user account.",
-					},
-				],
-			},
-		],
-	},
-	// ... (Apply similar structure to other projects)
-	{
-		id: "tp_003",
-		iconType: "folder",
-		title: "E-commerce Product Endpoints",
-		description:
-			"Tests for product listing, details, search, and inventory updates.",
-		creationDate: "02 January, 2025",
-		userAvatarUrl: "https://i.pravatar.cc/40?u=user3",
-		collections: [
-			{
-				id: "col_003_01",
-				title: "Product Catalog",
-				description: "APIs for accessing product information.",
-				endpoints: [
-					{
-						id: "ep_003_01_01",
-						method: "GET",
-						path: "/products",
-						value: "get",
-						description: "Get a list of all products.",
-					},
-					{
-						id: "ep_003_01_02",
-						method: "GET",
-						path: "/products/{productId}",
-						value: "get",
-						description: "Get details for a specific product.",
-					},
-					{
-						id: "ep_003_01_03",
-						method: "GET",
-						path: "/products/search",
-						value: "get",
-						description: "Search for products.",
-					},
-				],
-			},
-			{
-				id: "col_003_02",
-				title: "Inventory Management",
-				description: "APIs for updating product stock levels.",
-				endpoints: [
-					{
-						id: "ep_003_02_01",
-						method: "PUT",
-						path: "/products/{productId}/inventory",
-						value: "put",
-						description: "Update inventory for a specific product.",
-					},
-				],
-			},
-		],
-	},
+	// ... more projects
 ];
-
 export const sidebarMenus = {
 	sideMenu: [
 		{

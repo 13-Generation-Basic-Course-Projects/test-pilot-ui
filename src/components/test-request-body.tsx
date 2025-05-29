@@ -1,10 +1,12 @@
+"use client";
 import React from "react";
-import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Assuming you have Card components
+import { useApiBodyStore } from "@/store/body-api-slice";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { generateValueForTestCase } from "@/lib/constants";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Play } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 export const TestRequestBody = () => {
 	const { apiBodyRows } = useApiBodyStore();
@@ -15,6 +17,9 @@ export const TestRequestBody = () => {
 		testCase: string;
 		payload: Record<string, any>;
 	}[] = [];
+
+	const router = useRouter();
+	const pathname = usePathname();
 
 	apiBodyRows.forEach((row) => {
 		// Create a base payload from the current state of apiBodyRows
@@ -49,7 +54,7 @@ export const TestRequestBody = () => {
 	return (
 		<div className=" min-h-[480px] flex flex-col space-y-4">
 			<div className="flex h-full justify-end items-center mt-1">
-				<Button>
+				<Button onClick={() => router.push(`${pathname}/monitoring`)}>
 					Run All <Play />
 				</Button>
 			</div>
@@ -77,7 +82,7 @@ export const TestRequestBody = () => {
 								</CardTitle>
 								<CardTitle className="text-md">Request Body :</CardTitle>
 							</div>
-							<Button>
+							<Button onClick={() => router.push(`${pathname}/monitoring`)}>
 								Run <Play />
 							</Button>
 						</CardHeader>
