@@ -1,7 +1,11 @@
+import LandingPageComponent from "@/components/landing-page";
+import { NavbarComponent } from "@/components/navbar";
+
 export default function Home() {
 	return (
-		<div className="ps-80">
-		
+		<div className="">
+			<NavbarComponent />
+			<LandingPageComponent />
 		</div>
 	);
 }

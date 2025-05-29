@@ -1,12 +1,9 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Button } from "@/components/ui/button";
-
 import {
 	Form,
 	FormControl,
@@ -45,7 +42,6 @@ export function VerifyOtpConfirmForm({
 		console.log("OTP Verify Data:", data);
 		// TODO: handle OTP verification (e.g., call API)
 	}
-
 	return (
 		<Form {...form}>
 			<form
@@ -55,12 +51,11 @@ export function VerifyOtpConfirmForm({
 			>
 				{/* Header */}
 				<div className="flex flex-col items-center gap-2 text-center">
-					<h1 className="text-2xl font-bold">Verify your Account</h1>
-					<p className="text-balance text-sm text-muted-foreground">
+					<h1 className="text-2xl font-bold text-[#34302B]">Verify your Account</h1>
+					<p className="text-balance text-sm  text-[#94A3B8]">
 						OTP already sent to your email address. Enter to verify.
 					</p>
 				</div>
-
 				{/* OTP Input Field */}
 				<FormField
 					control={form.control}
@@ -84,12 +79,10 @@ export function VerifyOtpConfirmForm({
 						</FormItem>
 					)}
 				/>
-
 				{/* Submit Button */}
 				<Button type="submit" className="w-full">
 					Verify
 				</Button>
-
 				{/* Resend OTP */}
 				<div className="text-center text-sm">
 					<div className="flex justify-between">

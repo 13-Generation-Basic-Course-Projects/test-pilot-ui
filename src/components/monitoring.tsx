@@ -2,7 +2,6 @@ import React from "react";
 import { MonitoringData } from "./monitoring-data";
 import { ProgressDemo } from "./progress";
 import { CodeBlockResponse } from "./code-block-response";
-
 export default function Monitoring() {
 	return (
 		<div className="w-full mx-auto mt-10 bg-white rounded-xl shadow p-8 space-y-15">

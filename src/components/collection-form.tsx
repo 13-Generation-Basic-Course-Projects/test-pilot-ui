@@ -64,7 +64,9 @@ export const CollectionForm = () => {
 									</FormItem>
 								)}
 							/>
-							<Button type="submit">Submit</Button>
+							<div className="w-full flex items-center justify-end">
+								<Button type="submit">Submit</Button>
+							</div>
 						</form>
 					</Form>
 				</DialogHeader>
