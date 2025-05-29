@@ -30,7 +30,10 @@ import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
 import { ImportColletion } from "./import-collection";
 import { DeleteCollection } from "./delete-collection";
-import { ExportComponent } from "./export-collection";
+import { ExportEndpoint } from "./export-endpoint";
+import { ExportCollection } from "./export-collection";
+import { ShareCollection } from "./share-collection";
+import { ShareEndpoint } from "./share-endpoint";
 
 export const CollectionSidebar = () => {
 	const [isImportOpen, setIsImportOpen] = useState(false);
@@ -48,12 +51,25 @@ export const CollectionSidebar = () => {
 		collectionId: string;
 	} | null>(null);
 
-	// 	//Export collection
-	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
-	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
 
 	//Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(null);
+
+	//Export request
+	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
+	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null);
+
+	//Export collection
+	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
+	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
+
+	//Sahre Collection
+	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
+
+	//Sahre Endpoint
+	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+
+
 
 	useEffect(() => {
 		const saved = localStorage.getItem("openCollections");
@@ -184,8 +200,11 @@ export const CollectionSidebar = () => {
 			label: "Share",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Share endpoint:", endpoint.id);
+				setSelectedEndpoint(endpoint);
+				setIsShareEndpointOpen(true)
+				console.log(selectedEndpoint);
 			},
+			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -210,8 +229,11 @@ export const CollectionSidebar = () => {
 			label: "Export",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Export endpoint:", endpoint.id);
+				setSelectedEndpoint(endpoint);
+				setIsExportRequestOpen(true);
+				console.log(selectedEndpoint);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
@@ -368,9 +390,23 @@ export const CollectionSidebar = () => {
 							</div>
 						))}
 					</div>
-					<ExportComponent
-					open={isExportCollectionOpen}
-					onOpenChange={setIsExportCollectionOpen} />
+					<ExportEndpoint
+						open={isExportRequestOpen}
+						onOpenChange={setIsExportRequestOpen}
+					/>
+					<ExportCollection
+						open={isExportCollectionOpen}
+						onOpenChange={setIsExportCollectionOpen} />
+					<ShareCollection
+						open={isShareCollectionOpen}
+						onOpenChange={setIsShareCollectionOpen}
+						collection={selectedCollection}
+					/>
+					<ShareEndpoint
+						open={isShareEndpointOpen}
+						onOpenChange={setIsShareEndpointOpen}
+						endpoint={selectedEndpoint}  
+					/>
 				</div>
 			</div>
 		</div>
