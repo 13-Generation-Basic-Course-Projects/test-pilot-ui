@@ -315,7 +315,7 @@ export const CollectionSidebar = () => {
 			label: "Delete",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				setTimeout(() => setEndpointToDelete({ projectId, collectionId: collection.id, endpointId: endpoint.id }), 0);
+				setTimeout(() => setEndpointToDelete({ projectId, collectionId, endpointId: endpoint.id }), 0);
 			},
 			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
