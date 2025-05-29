@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
-import { ImportColletion } from "./import-collection";
+import { ImportCollection } from "./import-collection";
 import { DeleteCollection } from "./delete-collection";
 import { ExportEndpoint } from "./export-endpoint";
 import { ExportCollection } from "./export-collection";
@@ -38,8 +38,6 @@ import { string } from "zod";
 import { DeleteEndpoint } from "./delete-endpoint";
 
 export const CollectionSidebar = () => {
-	const [isImportOpen, setIsImportOpen] = useState(false);
-	const [isExportOpen, setIsExportOpen] = useState(false);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -68,6 +66,9 @@ export const CollectionSidebar = () => {
 	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
 	const [selectedCollection, setSelectedCollection] =
 		useState<CollectionItem | null>(null);
+
+	//Import collection
+	const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
 
 	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
 
@@ -364,13 +365,13 @@ export const CollectionSidebar = () => {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuItem
-								onClick={() => setIsImportOpen(true)}
+								// onClick={() => setIsImportOpen(true)}
 								className="cursor-pointer"
 							>
 								Import
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => setIsExportOpen(true)}
+								// onClick={() => setIsExportOpen(true)}
 								className="cursor-pointer"
 							>
 								Export
@@ -536,6 +537,10 @@ export const CollectionSidebar = () => {
 						open={isShareEndpointOpen}
 						onOpenChange={setIsShareEndpointOpen}
 						endpoint={selectedEndpoint}
+					/>
+					<ImportCollection
+						open={isImportCollectionOpen}
+						onOpenChange={setIsImportCollectionOpen}
 					/>
 				</div>
 			</div>
