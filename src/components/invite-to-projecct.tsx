@@ -47,7 +47,6 @@ export function InviteToProject() {
         <AlertDialogHeader>
           <AlertDialogTitle>Invite to project</AlertDialogTitle>
         </AlertDialogHeader>
-        <AlertDialogDescription>
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Input
@@ -92,7 +91,7 @@ export function InviteToProject() {
               ))}
             </div>
           </div>
-        </AlertDialogDescription>
+        
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
