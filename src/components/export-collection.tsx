@@ -19,7 +19,7 @@ type ExportProps = {
     onOpenChange: (open: boolean) => void
 }
 
-export function ExportComponent({ open, onOpenChange }: ExportProps) {
+export function ExportCollection({ open, onOpenChange }: ExportProps) {
     const [layout, setLayout] = useState("comfortable")
 
     const handleContinue = () => {
