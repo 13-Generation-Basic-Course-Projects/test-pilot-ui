@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -7,7 +6,6 @@ import Logo from "./icons/logo";
 import { cn } from "@/lib/utils";
 import BreadcrumbNavbar from "./breadcrumb-navbar";
 import { useProjectPath } from "@/hooks/use-project-path";
-
 export const NavbarComponent = ({
 	className,
 	...props
@@ -24,9 +22,9 @@ export const NavbarComponent = ({
 					<Logo />
 				)}
 				{isLogin ? (
-					<div>
+					<Link href="/profile">
 						<Image src="/profile.png" alt="profile" width={40} height={40} />
-					</div>
+					</Link>
 				) : (
 					<div className="flex gap-4">
 						<Button>

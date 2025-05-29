@@ -1,5 +1,5 @@
 "use client";
-import { ProjectFormProps } from "@/types/projectType";
+import { ProjectFormProps } from "@/types";
 import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -60,7 +60,6 @@ const ProjectForm = ({
 			onOpenChange(false);
 		}
 	}
-
 	const formContent = (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -94,17 +93,19 @@ const ProjectForm = ({
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">Submit</Button>
-				{mode === "edit" && onOpenChange && (
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						className="ml-2"
-					>
-						Cancel
-					</Button>
-				)}
+				<div className="w-full flex items-center justify-end gap-4">
+					{mode === "edit" && onOpenChange && (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							className="ml-2"
+						>
+							Cancel
+						</Button>
+					)}
+					<Button type="submit">Submit</Button>
+				</div>
 			</form>
 		</Form>
 	);
