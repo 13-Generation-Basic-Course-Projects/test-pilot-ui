@@ -204,7 +204,7 @@ export const CollectionSidebar = () => {
 					</DropdownMenu>
 				</div>
 
-				<div className="w-full h-full overflow-hidden pb-3">
+				<div className="w-full h-screen overflow-hidden pb-3">
 					<div
 						className="w-full h-full overflow-y-scroll"
 						style={{

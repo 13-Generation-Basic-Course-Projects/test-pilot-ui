@@ -389,3 +389,64 @@ export const mockHistoryResponses = [
 		responseBody: "", // 👈 No valid JSON
 	},
 ];
+
+// utils/data-type-cases.ts
+export const dataTypeOptions = [
+	{ label: "String", value: "string" },
+	{ label: "Number", value: "number" },
+	{ label: "Boolean", value: "boolean" },
+	{ label: "Date", value: "date" },
+];
+
+export const caseByDataType: Record<string, string[]> = {
+	string: [
+		"Empty String",
+		"Null Value",
+		"Length",
+		"Alphanumeric Mix",
+		"Only Space",
+		"Special Character",
+	],
+	number: ["Zero", "Negative", "Non-numeric String", "Large Number"],
+	boolean: ["True", "False", "Not Boolean"],
+	date: ["Invalid Date", "Future Date", "Past Date", "ISO Format"],
+};
+
+export const generateValueForTestCase = (
+	originalValue: any,
+	dataType: string,
+	testCase: string
+): any => {
+	switch (testCase) {
+		case "Empty String":
+			return "";
+		case "Null Value":
+			return null;
+		case "Undefined":
+			return undefined;
+		case "Zero":
+			return 0;
+		case "Negative":
+			return -1;
+		case "Non-numeric String":
+			return "abc";
+		case "Large Number":
+			return 999999999999999;
+		case "True":
+			return true;
+		case "False":
+			return false;
+		case "Not Boolean":
+			return "not_a_boolean";
+		case "Invalid Date":
+			return "invalid-date";
+		case "Future Date":
+			return new Date(Date.now() + 86400000).toISOString();
+		case "Past Date":
+			return new Date(Date.now() - 86400000).toISOString();
+		case "ISO Format":
+			return new Date().toISOString();
+		default:
+			return originalValue;
+	}
+};
