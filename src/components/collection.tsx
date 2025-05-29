@@ -181,6 +181,7 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				setRenamingEndpointId(endpoint.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
