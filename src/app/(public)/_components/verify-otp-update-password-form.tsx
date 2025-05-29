@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react"; 
-
+import Link from "next/link";
 export function VerifyOtpUpdatePasswordForm({
 	className,
 	...props
@@ -21,7 +21,6 @@ export function VerifyOtpUpdatePasswordForm({
 					Choose your new password for your account
 				</p>
 			</div>
-
 			<div className="grid gap-6">
 				{/* Password Field */}
 				<div className="grid gap-2 relative">
@@ -61,6 +60,7 @@ export function VerifyOtpUpdatePasswordForm({
 
 				<Button type="submit" className="w-full">
 					Confirm
+					<Link href={"/verify-otp-success"}></Link>
 				</Button>
 			</div>
 		</form>

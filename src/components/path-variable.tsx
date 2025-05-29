@@ -65,10 +65,8 @@ export default function PathVariable() {
 		updatedRows[index].cases = exists
 			? currentCases.filter((c) => c !== selectedCase)
 			: [...currentCases, selectedCase];
-
 		setPathVariables(updatedRows);
 	};
-
 	const handleRemoveCase = (index: number, caseToRemove: string) => {
 		const updatedRows = [...pathVariables];
 		updatedRows[index].cases = updatedRows[index].cases.filter(
