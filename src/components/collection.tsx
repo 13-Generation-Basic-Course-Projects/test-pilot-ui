@@ -34,6 +34,7 @@ import { ExportEndpoint } from "./export-endpoint";
 import { ExportCollection } from "./export-collection";
 import { ShareCollection } from "./share-collection";
 import { ShareEndpoint } from "./share-endpoint";
+import { string } from "zod";
 
 export const CollectionSidebar = () => {
 	const [isImportOpen, setIsImportOpen] = useState(false);
@@ -68,6 +69,7 @@ export const CollectionSidebar = () => {
 
 	//Sahre Endpoint
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+
 
 
 
@@ -106,6 +108,68 @@ export const CollectionSidebar = () => {
 			})
 		);
 	};
+
+
+	const handleDuplicateCollection = (projectId: string, collectionId: string) => {
+
+		//Loop collectionData find the matching project
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+
+				//Find specific collection
+				const collectionToDuplicate = project.collections.find(
+					(collection) => collection.id === collectionId
+				);
+
+
+				if (!collectionToDuplicate) return project;
+
+				const duplicatedCollection = {
+					...collectionToDuplicate,
+					id: `${collectionId}-copy-${Date.now()}`, //Assign a new unique ID using Date.now()
+					// title: `${collectionToDuplicate.title} (Copy)`, //Change the title to include "(Copy)"
+				};
+
+				return {
+					...project,
+					collections: [...project.collections, duplicatedCollection],
+				};
+			})
+		);
+	};
+
+	const handleDuplicateEndpoint = (projectId: string, collectionId: string, endpointId: string) => {
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+				return {
+					...project,
+					collections: project.collections.map((collection) => {
+						if (collection.id !== collectionId) return collection;
+
+						const endpointToDuplicate = collection.endpoints.find(
+							(endpoint) => endpoint.id === endpointId
+						);
+
+						if (!endpointToDuplicate) return collection;
+
+						const duplicatedEndpoint = {
+							...endpointToDuplicate,
+							id: `${endpointToDuplicate.id}-copy-${Date.now()}`,
+						};
+
+						return {
+							...collection,
+							endpoints: [...collection.endpoints, duplicatedEndpoint],
+						};
+
+					}),
+				};
+			})
+		);		
+	};
+
 
 
 	//Rename endpoint
@@ -194,7 +258,7 @@ export const CollectionSidebar = () => {
 		},
 	];
 
-	const getEndpointMenuItems = (endpoint: Endpoint) => [
+	const getEndpointMenuItems = (endpoint: Endpoint, collectionId: string, projectId: string,) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
@@ -221,8 +285,10 @@ export const CollectionSidebar = () => {
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				console.log("Duplicate endpoint:", endpoint.id);
+				e.preventDefault();
+				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
@@ -329,8 +395,8 @@ export const CollectionSidebar = () => {
 														<Link
 															key={`${collection.id}-${endpoint.id}`}
 															onMouseDown={(e) => e.stopPropagation()}
+															onClick={(e) => {e.preventDefault(), e.stopPropagation()}}
 															href={endpointPath}
-															onClick={(e) => e.stopPropagation()}
 															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
 																? "bg-slate-100 hover:bg-slate-200"
 																: "hover:bg-slate-100"
@@ -379,7 +445,9 @@ export const CollectionSidebar = () => {
 																	<span className="text-[15px] text-slate-600">{endpoint.path}</span>
 																)}
 															</div>
-															<ItemActionsDropdown items={getEndpointMenuItems(endpoint)} />
+															<ItemActionsDropdown
+																items={getEndpointMenuItems(endpoint, collection.id, project.id)}
+															/>
 														</Link>
 													);
 												})}
