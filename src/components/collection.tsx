@@ -126,7 +126,7 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				setTimeout(() => setCollectionToDelete({ projectId, collectionId: collection.id }), 0);
 			},
-			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50",
+			className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 		},
 	];
 
