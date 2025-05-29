@@ -12,7 +12,7 @@ import { MethodBadge } from "./method-badge";
 
 const dates = [
 	{
-		date: "20 May 19:00 PM",
+		date: "20 May 2025, 19:00 PM",
 		method: <MethodBadge method="PUT" />,
 		endPoint: "api/v1/habits/habit-id",
 		status: (
@@ -25,7 +25,7 @@ const dates = [
 		),
 	},
 	{
-		date: "20 May 19:00 PM",
+		date: "20 May 2025, 19:00 PM",
 		method: <MethodBadge method="PUT" />,
 		endPoint: "api/v1/habits/habit-id",
 		status: (
@@ -38,7 +38,7 @@ const dates = [
 		),
 	},
 	{
-		date: "20 May 19:00 PM",
+		date: "20 May 2025, 19:00 PM",
 		method: <MethodBadge method="PUT" />,
 		endPoint: "api/v1/habits/habit-id",
 		status: (
@@ -51,7 +51,7 @@ const dates = [
 		),
 	},
 	{
-		date: <p className="text-[#94A3B8]">20 May 19:00 PM</p>,
+		date: <p className="text-[#94A3B8]">20 May 2025, 19:00 PM</p>,
 		method: <MethodBadge method="PUT" />,
 		endPoint: <p className="text-[#94A3B8]">api/v1/habits/habit-id</p>,
 		status: <p className="text-[#94A3B8]">Pending</p>,
@@ -65,7 +65,7 @@ export function MonitoringData() {
 		<Table>
 			<TableHeader>
 				<TableRow>
-					<TableHead>Data</TableHead>
+					<TableHead>Date</TableHead>
 					<TableHead>Method</TableHead>
 					<TableHead>Endpoint</TableHead>
 					<TableHead>Status</TableHead>
