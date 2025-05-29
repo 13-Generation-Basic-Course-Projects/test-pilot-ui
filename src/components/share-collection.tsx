@@ -44,7 +44,7 @@ export function ShareCollection({ open, onOpenChange }: ExportProps) {
               size="icon"
               variant={copied ? "secondary" : "ghost"}
               onClick={handleCopy}
-              className="ml-2 outline-0"
+              className="ml-2 outline-0 cursor-pointer"
               aria-label="Copy share link"
             >
               {copied ? (
@@ -61,7 +61,7 @@ export function ShareCollection({ open, onOpenChange }: ExportProps) {
             </Button>
           </span>
           <DialogClose asChild>
-            <Button type="button">Share</Button>
+            <Button type="button" className="cursor-pointer">Share</Button>
           </DialogClose>
         </div>
 
