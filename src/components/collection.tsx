@@ -30,16 +30,27 @@ import { Input } from "./ui/input";
 import { usePathname } from "next/navigation";
 import { ImportColletion } from "./import-collection";
 import { DeleteCollection } from "./delete-collection";
+import { ExportComponent } from "./export-collection";
 
 export const CollectionSidebar = () => {
 	const [isImportOpen, setIsImportOpen] = useState(false);
-	const [openCollections, setOpenCollections] = useState<Record<string, boolean> | null>(null);
-	const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
+	const [isExportOpen, setIsExportOpen] = useState(false);
+	const [openCollections, setOpenCollections] = useState<Record<
+		string,
+		boolean
+	> | null>(null);
+	const [renamingCollectionId, setRenamingCollectionId] = useState<
+		string | null
+	>(null);
 	const [collectionsData, setCollectionsData] = useState(projectsData);
 	const [collectionToDelete, setCollectionToDelete] = useState<{
 		projectId: string;
 		collectionId: string;
 	} | null>(null);
+
+	// 	//Export collection
+	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
+	const [selectedCollection, setSelectedCollection] = useState<CollectionItem | null>(null);
 
 	//Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(null);
@@ -150,8 +161,11 @@ export const CollectionSidebar = () => {
 			label: "Export",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
+				setSelectedCollection(collection);
+				setIsExportCollectionOpen(true)
 				console.log("Export collection:", collection.id);
 			},
+			className: "cursor-pointer"
 		},
 		{
 			icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
@@ -224,8 +238,8 @@ export const CollectionSidebar = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuItem onClick={() => setIsImportOpen(true)}>Import</DropdownMenuItem>
-							<DropdownMenuItem>Export</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsImportOpen(true)} className="cursor-pointer">Import</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setIsExportOpen(true)} className="cursor-pointer">Export</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
@@ -284,78 +298,81 @@ export const CollectionSidebar = () => {
 											/>
 										</div>
 
-									{openCollections[collection.id] && (
-										<div className="pl-10 pr-4 py-1 space-y-1">
-											{collection.endpoints.map((endpoint) => {
-												const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
-												const isActive = pathname === endpointPath;
-												return (
-													<Link
-														key={`${collection.id}-${endpoint.id}`}
-														onMouseDown={(e) => e.stopPropagation()}
-														href={endpointPath}
-														onClick={(e) => e.stopPropagation()}
-														className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
-															? "bg-slate-100 hover:bg-slate-200"
-															: "hover:bg-slate-100"
-															}`}
-													>
-														<div className="flex items-center gap-2 flex-grow">
-															<Badge
-																variant="outline"
-																className="h-5 px-4 py-3 text-[15px] font-medium"
-															>
-																<span className={getMethodColor(endpoint.method)}>
-																	{endpoint.method}
-																</span>
-															</Badge>
-															{renamingEndpointId === endpoint.id ? (
-																<Input
-																	autoFocus
-																	defaultValue={endpoint.path}
-																	onClick={(e) => {
-																		e.preventDefault()
-																		e.stopPropagation()
-																	}}
-																	onMouseDown={(e) => e.stopPropagation()}
-																	onBlur={(e) => {
-																		handleRenameEndpoint(
-																			project.id,
-																			collection.id,
-																			endpoint.id,
-																			e.target.value
-																		);
-																		setRenamingEndpointId(null);
-																		e.stopPropagation();
-																	}}
-																	onKeyDown={(e) => {
-																		if (e.key === "Enter") {
-																			(e.target as HTMLInputElement).blur();
-																		}
-																		if (e.key === "Escape") {
+										{openCollections[collection.id] && (
+											<div className="pl-10 pr-4 py-1 space-y-1">
+												{collection.endpoints.map((endpoint) => {
+													const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
+													const isActive = pathname === endpointPath;
+													return (
+														<Link
+															key={`${collection.id}-${endpoint.id}`}
+															onMouseDown={(e) => e.stopPropagation()}
+															href={endpointPath}
+															onClick={(e) => e.stopPropagation()}
+															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${isActive
+																? "bg-slate-100 hover:bg-slate-200"
+																: "hover:bg-slate-100"
+																}`}
+														>
+															<div className="flex items-center gap-2 flex-grow">
+																<Badge
+																	variant="outline"
+																	className="h-5 px-4 py-3 text-[15px] font-medium"
+																>
+																	<span className={getMethodColor(endpoint.method)}>
+																		{endpoint.method}
+																	</span>
+																</Badge>
+																{renamingEndpointId === endpoint.id ? (
+																	<Input
+																		autoFocus
+																		defaultValue={endpoint.path}
+																		onClick={(e) => {
+																			e.preventDefault()
+																			e.stopPropagation()
+																		}}
+																		onMouseDown={(e) => e.stopPropagation()}
+																		onBlur={(e) => {
+																			handleRenameEndpoint(
+																				project.id,
+																				collection.id,
+																				endpoint.id,
+																				e.target.value
+																			);
 																			setRenamingEndpointId(null);
-																		}
-																		e.stopPropagation();
-																	}}
-																	className="h-6"
-																/>
-															) : (
-																<span className="text-[15px] text-slate-600">{endpoint.path}</span>
-															)}
-														</div>
-														<ItemActionsDropdown items={getEndpointMenuItems(endpoint)} />
-													</Link>
-												);
-											})}
-										</div>
-									)}
-								</div>
-							))}
-						</div>
-					))}
+																			e.stopPropagation();
+																		}}
+																		onKeyDown={(e) => {
+																			if (e.key === "Enter") {
+																				(e.target as HTMLInputElement).blur();
+																			}
+																			if (e.key === "Escape") {
+																				setRenamingEndpointId(null);
+																			}
+																			e.stopPropagation();
+																		}}
+																		className="h-6"
+																	/>
+																) : (
+																	<span className="text-[15px] text-slate-600">{endpoint.path}</span>
+																)}
+															</div>
+															<ItemActionsDropdown items={getEndpointMenuItems(endpoint)} />
+														</Link>
+													);
+												})}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+						))}
+					</div>
+					<ExportComponent
+					open={isExportCollectionOpen}
+					onOpenChange={setIsExportCollectionOpen} />
 				</div>
 			</div>
-		</div>
 		</div>
 	);
 };

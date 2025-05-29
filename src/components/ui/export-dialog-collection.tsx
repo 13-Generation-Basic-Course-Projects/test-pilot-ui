@@ -1,60 +1,62 @@
-import React, { useState } from "react";
+"use client"
 
-const ExportCollectionDialog = ({ onClose }: { onClose: () => void }) => {
-  const [selectedVersion, setSelectedVersion] = useState("v2");
+import React, { useState } from "react"
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
-  return (
-    <div>
-      <h3 className="text-black text-2xl font-semibold mb-2">Export Collection</h3>
-      <p className="text-black text-base mb-6">
-        New request will be exported as JSON file.
-      </p>
+type ExportProps = {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+}
 
-      <div className="space-y-4 w-[200px]">
-        <label className="flex items-center space-x-3 cursor-pointer">
-          <input
-            type="radio"
-            name="collection"
-            value="v2"
-            checked={selectedVersion === "v2"}
-            onChange={() => setSelectedVersion("v2")}
-            className="form-radio text-[#34302B]"
-          />
-          <span className="text-black text-[16px]">Collection v2</span>
-        </label>
+export function ExportComponent({ open, onOpenChange }: ExportProps) {
+    const [layout, setLayout] = useState("comfortable")
 
-        <label className="flex items-center space-x-3 cursor-pointer">
-          <input
-            type="radio"
-            name="collection"
-            value="v2.1"
-            checked={selectedVersion === "v2.1"}
-            onChange={() => setSelectedVersion("v2.1")}
-            className="form-radio text-blue-600"
-          />
-          <span className="text-black text-[16px]">Collection v2.1</span>
-        </label>
-      </div>
+    const handleContinue = () => {
+        alert(`You selected: ${layout}`)
+        onOpenChange(false) // Close the dialog after exporting
+    }
 
-      <div className="flex justify-end space-x-2 mt-6">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-[16px] border border-gray-300 rounded-md text-[#34302B] hover:bg-gray-100"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            console.log("Exporting version:", selectedVersion);
-            onClose();
-          }}
-          className="px-4 py-2 text-[16px] bg-[#34302B] text-white rounded-md "
-        >
-          Export
-        </button>
-      </div>
-    </div>
-  );
-};
+    return (
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Export Request</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        New request will be exported as JSON file.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
 
-export default ExportCollectionDialog;
+                <RadioGroup
+                    value={layout}
+                    onValueChange={setLayout}
+                    className="space-y-2 py-4"
+                >
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="default" id="r1" />
+                        <Label htmlFor="r1">Collection v2</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="comfortable" id="r2" />
+                        <Label htmlFor="r2">Collection v2.1</Label>
+                    </div>
+                </RadioGroup>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button onClick={handleContinue}>Export</Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+}
