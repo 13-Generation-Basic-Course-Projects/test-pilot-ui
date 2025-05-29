@@ -3,14 +3,12 @@ import { FileIcon, HistoryIcon, HomeIcon, InboxIcon } from "lucide-react";
 export const projectsData = [
 	{
 		id: "project-1",
-		// These are the missing properties based on the error:
-		iconType: "folder", // Example
-		title: "My Awesome Project", // Use 'title' here to match ProjectItem, or adjust ProjectItem if 'name' is preferred.
-		description: "This is a description for My Awesome Project.", // Example
-		creationDate: "2023-01-15", // Example
-		userAvatarUrl: "/avatars/user1.png", // Example
-		// Existing properties:
-		name: "My Awesome Project", // You might keep this if `name` is also used elsewhere, but `title` is expected by ProjectItem
+		iconType: "folder",
+		title: "My Awesome Project",
+		description: "This is a description for My Awesome Project.",
+		creationDate: "2023-01-15",
+		userAvatarUrl: "/profile-img.png",
+		name: "My Awesome Project",
 		collections: [
 			{
 				id: "collection-1",
