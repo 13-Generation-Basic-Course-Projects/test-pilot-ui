@@ -53,8 +53,8 @@ export function ExportComponent({ open, onOpenChange }: ExportProps) {
                 </RadioGroup>
 
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button onClick={handleContinue}>Export</Button>
+                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                    <Button onClick={handleContinue} className="cursor-pointer">Export</Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
