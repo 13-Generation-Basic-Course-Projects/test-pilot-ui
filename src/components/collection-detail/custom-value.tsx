@@ -20,12 +20,12 @@ import {
 	TableRowV2,
 } from "@/components/ui/table";
 import { DATA_TYPES } from "@/lib/constants";
-import { Separator } from "./ui/separator";
-import { CustomValueForm } from "./custom-value-form";
+import { Separator } from "../ui/separator";
 import { Edit, Trash } from "lucide-react";
 import { z } from "zod";
 import { customValueSchema } from "@/lib/zodSchema";
-import { DeleteCustomValue } from "./delete-custom-value"; // <- import your popup
+import { DeleteCustomValue } from "../delete/delete-custom-value";
+import { CustomValueForm } from "./custom-value-form";
 
 interface RequestParam {
 	name: string;
@@ -46,8 +46,9 @@ export const CustomValue = (): React.JSX.Element => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	const [editingIndex, setEditingIndex] = useState<number | null>(null);
-	const [editingValue, setEditingValue] = useState<z.infer<typeof customValueSchema> | null>(null);
-
+	const [editingValue, setEditingValue] = useState<z.infer<
+		typeof customValueSchema
+	> | null>(null);
 
 	const handleAddCustomValue = (data: z.infer<typeof customValueSchema>) => {
 		setRequestParams((prev) => [
@@ -67,10 +68,9 @@ export const CustomValue = (): React.JSX.Element => {
 			nameCase: param.name,
 			value: param.value,
 			typeCase: param.type,
-			description: "", 
+			description: "",
 		});
 	};
-
 
 	const handleDeleteConfirm = () => {
 		if (deleteIndex !== null) {
@@ -84,7 +84,10 @@ export const CustomValue = (): React.JSX.Element => {
 			<div className="inline-flex items-start justify-end gap-5 relative">
 				<Select>
 					<SelectTrigger className="w-[204px] px-3 py-2 bg-[#ffffff] rounded-md border border-solid border-[#cbd5e1]">
-						<SelectValue placeholder="Select to filter" className="text-slate-400" />
+						<SelectValue
+							placeholder="Select to filter"
+							className="text-slate-400"
+						/>
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All</SelectItem>
@@ -102,7 +105,11 @@ export const CustomValue = (): React.JSX.Element => {
 						setRequestParams((prev) =>
 							prev.map((item, i) =>
 								i === index
-									? { name: data.nameCase, value: data.value, type: data.typeCase }
+									? {
+											name: data.nameCase,
+											value: data.value,
+											type: data.typeCase,
+									  }
 									: item
 							)
 						);
@@ -111,7 +118,6 @@ export const CustomValue = (): React.JSX.Element => {
 					editingValue={editingValue}
 					setEditingIndex={setEditingIndex}
 				/>
-
 			</div>
 
 			<Card className="w-full border border-solid border-slate-200 p-0">
@@ -127,9 +133,14 @@ export const CustomValue = (): React.JSX.Element => {
 						</TableHeader>
 						<TableBody>
 							{requestParams.map((param, index) => (
-								<TableRow key={index} className="border-b border-slate-200 h-12">
+								<TableRow
+									key={index}
+									className="border-b border-slate-200 h-12"
+								>
 									<TableCell className="pl-6">{param.name}</TableCell>
-									<TableCell className="pl-6 text-slate-500">{param.value}</TableCell>
+									<TableCell className="pl-6 text-slate-500">
+										{param.value}
+									</TableCell>
 									<TableCell className="pl-6">
 										<Badge
 											variant="outline"
@@ -150,9 +161,7 @@ export const CustomValue = (): React.JSX.Element => {
 											className="cursor-pointer size-4"
 											onClick={() => handleEdit(index)}
 										/>
-
 									</TableCell>
-
 								</TableRow>
 							))}
 						</TableBody>

@@ -5,11 +5,11 @@ import {
 	TabsListV2,
 	TabsTriggerV2,
 } from "@/components/ui/tabs";
-import { CustomValue } from "./custom-value";
 import PredefinedTestCase from "./predefined-test-case";
 import { ApiRequestContentHeader } from "./api-request-content-header";
 import { ApiRequestDetailParam } from "./api-request-detail-params-testcase";
 import { Body } from "./body";
+import { CustomValue } from "./custom-value";
 
 export function RequestContentDetail({
 	projectId,

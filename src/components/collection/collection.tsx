@@ -1,7 +1,7 @@
 "use client";
 import { getMethodColor } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
-import { Badge } from "./ui/badge";
+import { Badge } from "../ui/badge";
 import {
 	EditIcon,
 	FileOutput,
@@ -15,9 +15,9 @@ import {
 	TrashIcon,
 } from "lucide-react";
 import { projectsData } from "@/lib/constants";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { CollectionItem, Endpoint } from "@/types";
-import { ItemActionsDropdown } from "./dropdown-more-menu";
+import { ItemActionsDropdown } from "../dropdown-more-menu";
 import Link from "next/link";
 import { CollectionForm } from "./collection-form";
 import {
@@ -26,16 +26,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import { usePathname } from "next/navigation";
-import { ImportCollection } from "./import-collection";
-import { DeleteCollection } from "./delete-collection";
-import { ExportEndpoint } from "./export-endpoint";
-import { ExportCollection } from "./export-collection";
-import { ShareCollection } from "./share-collection";
-import { ShareEndpoint } from "./share-endpoint";
+import { ImportCollection } from "../import/import-collection";
+import { DeleteCollection } from "../delete/delete-collection";
+import { ExportEndpoint } from "../export/export-endpoint";
+import { ExportCollection } from "../export/export-collection";
+import { ShareCollection } from "../share/share-collection";
+import { ShareEndpoint } from "../share/share-endpoint";
 import { string } from "zod";
-import { DeleteEndpoint } from "./delete-endpoint";
+import { DeleteEndpoint } from "../delete/delete-endpoint";
 
 export const CollectionSidebar = () => {
 	const [openCollections, setOpenCollections] = useState<Record<

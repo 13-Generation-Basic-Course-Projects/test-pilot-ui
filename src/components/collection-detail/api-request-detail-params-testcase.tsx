@@ -1,8 +1,8 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Params } from "./params";
 import ApiRequestDetailTestRequest from "./test-request";
+import { Params } from "./params";
 
 export function ApiRequestDetailParam() {
 	return (

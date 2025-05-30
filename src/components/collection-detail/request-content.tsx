@@ -1,5 +1,5 @@
 import React from "react";
-import { EndpointDropdownUrl } from "./endpoint-dropdown-url";
+import { EndpointDropdownUrl } from "../endpoint-dropdown-url";
 import { RequestContentDetail } from "./request-content-detail";
 
 const RequestContent = ({
