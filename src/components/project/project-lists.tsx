@@ -27,6 +27,7 @@ import Image from "next/image";
 import Link from "next/link";
 import ProjectForm from "./project-form";
 import { DeleteProject } from "../delete/delete-project";
+import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
@@ -39,6 +40,22 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [selectedProjectForDelete, setSelectProjectForDelete] =
 		useState<ProjectItem | null>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+	const [selectedProjectForShare, setSelectedProjectForShare] =
+		useState<ProjectItem | null>(null);
+	const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
+
+	const handleShare = (project: ProjectItem) => {
+		setSelectedProjectForShare(project);
+		setIsShareProjectOpen(true);
+	};
+
+	const handleDialogCloseShare = (open: boolean) => {
+		setIsShareProjectOpen(open);
+		if (!open) {
+			setSelectedProjectForShare(null);
+		}
+	};
 
 	const handleEditClick = (project: ProjectItem) => {
 		setSelectedProjectForEdit(project);
@@ -122,10 +139,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer" />
 											</DropdownMenuTrigger>
 											<DropdownMenuContent>
-												<DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={(e) => {
+														e.preventDefault();
+														handleShare(project);
+													}}
+												>
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
 												</DropdownMenuItem>
+
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
 													onSelect={(e) => {
@@ -196,6 +219,14 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 				project={selectedProjectForDelete}
 				onDeleteConfirm={(projectId) => deleteProject(projectId)}
 			/>
+
+			{selectedProjectForShare && (
+				<ShareProject
+					open={isShareProjectOpen}
+					onOpenChange={handleDialogCloseShare}
+					project={selectedProjectForShare}
+				/>
+			)}
 		</>
 	);
 };
