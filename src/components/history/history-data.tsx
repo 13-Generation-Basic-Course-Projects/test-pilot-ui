@@ -32,6 +32,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MethodBadge } from "../method-badge";
+import { Button } from "../ui/button";
 
 type RowData = {
 	date: string;
@@ -53,6 +54,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 	const [isRenaming, setIsRenaming] = React.useState(false);
 	const [historyTitle, setHistoryTitle] = React.useState("Request History");
 	const [renameInput, setRenameInput] = React.useState(historyTitle);
+	const [showRenameDialog, setShowRenameDialog] = React.useState(false);
 
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -122,7 +124,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			const newTitle = renameInput.trim() || "Request History";
 			setHistoryTitle(newTitle);
 			setIsRenaming(false);
-			console.log("New history title:", newTitle); 
+			console.log("New history title:", newTitle);
 		}
 	};
 
@@ -161,17 +163,46 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 
 						/>
 					) : (
-						<h4
-							className="text-lg font-semibold flex items-center gap-1 cursor-pointer"
-							onClick={() => {
-								setRenameInput(historyTitle);
-								setIsRenaming(true);
-								console.log("history name: ", historyTitle);
+						<AlertDialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+							<AlertDialogTrigger asChild>
+								<h4
+									className="text-lg font-semibold flex items-center gap-1 cursor-pointer"
+									onClick={() => {
+										setShowRenameDialog(true);
+									}}
+								>
+									{historyTitle}
+								</h4>
+							</AlertDialogTrigger>
 
-							}}
-						>
-							{historyTitle}
-						</h4>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>Rename Folder</AlertDialogTitle>
+									<AlertDialogDescription>
+										Do you want to rename this folder?
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel onClick={() => setShowRenameDialog(false)}>
+										Cancel
+									</AlertDialogCancel>
+									<Button
+										onClick={() => {
+											setRenameInput(historyTitle);
+											setIsRenaming(true);
+											setShowRenameDialog(false);
+											setTimeout(() => {
+												inputRef.current?.focus();
+											}, 0);
+										}}
+										className="cursor-pointer"
+									>
+										Rename
+									</Button>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
+
 					)}
 				</div>
 				<CollapsibleTrigger asChild>
