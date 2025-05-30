@@ -9,9 +9,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
 import { FolderPlusIcon } from "lucide-react";
-import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { projectFormSchema } from "@/lib/zodSchema";
@@ -23,7 +21,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "./ui/form";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 const ProjectForm = ({
 	mode,

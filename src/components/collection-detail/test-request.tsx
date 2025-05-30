@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useRequestStore } from "@/store/request-url-slice"; // Assuming this is your Zustand store for method and URL
+import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface ValidTestCase {
 	key: string;

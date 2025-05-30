@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CodeBlock } from "./code-block";
+import { CodeBlock } from "../code-block/code-block";
 import { TestCase } from "./test-case";
 import { TestRequestBody } from "./test-request-body";
 

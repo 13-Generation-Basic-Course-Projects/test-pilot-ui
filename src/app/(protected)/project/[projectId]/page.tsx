@@ -1,4 +1,4 @@
-import { CollectionSidebar } from "@/components/collection";
+import { CollectionSidebar } from "@/components/collection/collection";
 import React from "react";
 
 const ProjectDetailPage = () => {

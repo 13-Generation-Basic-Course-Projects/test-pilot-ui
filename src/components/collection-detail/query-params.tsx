@@ -30,21 +30,22 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Trash2, Plus, X } from "lucide-react";
-import { Button } from "./ui/button";
 import { useParamsApiStore } from "@/store/params-api-slice";
+import { Button } from "../ui/button";
 
-export interface ParamRow {
+interface ParamRow {
 	key: string;
 	value: string;
 	cases: string[];
 }
 
-export default function PathVariable() {
-	const { pathVariables, setPathVariables } = useParamsApiStore();
+export default function QueryParams() {
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
+	const { queryParams, setQueryParams } = useParamsApiStore();
+
 	const handleAddRow = () => {
-		setPathVariables([...pathVariables, { key: "", value: "", cases: [] }]);
+		setQueryParams([...queryParams, { key: "", value: "", cases: [] }]);
 	};
 
 	const handleChange = (
@@ -52,27 +53,29 @@ export default function PathVariable() {
 		field: keyof ParamRow,
 		newValue: string | string[]
 	) => {
-		const updatedRows = [...pathVariables];
+		const updatedRows = [...queryParams];
 		updatedRows[index][field] = newValue as never;
-		setPathVariables(updatedRows);
+		setQueryParams(updatedRows);
 	};
 
 	const handleToggleCase = (index: number, selectedCase: string) => {
-		const updatedRows = [...pathVariables];
+		const updatedRows = [...queryParams];
 		const currentCases = updatedRows[index].cases;
 
 		const exists = currentCases.includes(selectedCase);
 		updatedRows[index].cases = exists
 			? currentCases.filter((c) => c !== selectedCase)
 			: [...currentCases, selectedCase];
-		setPathVariables(updatedRows);
+
+		setQueryParams(updatedRows);
 	};
+
 	const handleRemoveCase = (index: number, caseToRemove: string) => {
-		const updatedRows = [...pathVariables];
+		const updatedRows = [...queryParams];
 		updatedRows[index].cases = updatedRows[index].cases.filter(
 			(c) => c !== caseToRemove
 		);
-		setPathVariables(updatedRows);
+		setQueryParams(updatedRows);
 	};
 
 	const caseOptions = [
@@ -87,7 +90,7 @@ export default function PathVariable() {
 
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
-			setPathVariables(pathVariables.filter((_, i) => i !== deleteIndex));
+			setQueryParams(queryParams.filter((_, i) => i !== deleteIndex));
 			setDeleteIndex(null);
 		}
 	};
@@ -115,7 +118,7 @@ export default function PathVariable() {
 					</TableHeader>
 
 					<TableBody>
-						{pathVariables.map((row, index) => (
+						{queryParams.map((row, index) => (
 							<TableRow
 								key={index}
 								className="hover:bg-gray-50 border-b border-gray-200"

@@ -44,7 +44,7 @@ import {
 	TableRow,
 	TableRowV2,
 } from "@/components/ui/table";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 
 const frameworks = [
 	{ value: "no-auth", label: "No auth" },

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import type monaco from "monaco-editor";
 import { useApiBodyStore } from "@/store/body-api-slice";
 import {

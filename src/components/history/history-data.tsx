@@ -24,7 +24,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { MethodBadge } from "./method-badge";
+import { MethodBadge } from "../method-badge";
 
 type RowData = {
 	date: string;

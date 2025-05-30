@@ -1,7 +1,7 @@
 "use client";
 import React, { ChangeEvent, useState } from "react";
 import { Copy } from "lucide-react";
-import { CodeSnippetUI } from "@/components/code-snippet-ui";
+import { CodeSnippetUI } from "@/components/code-snippet/code-snippet-ui";
 import { CodeSnippetValue } from "@/lib/constants";
 
 const CodeSnippet = () => {

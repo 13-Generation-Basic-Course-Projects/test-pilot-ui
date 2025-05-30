@@ -1,5 +1,5 @@
+import ProjectVariable from "@/components/project/project-variable";
 import React from "react";
-import ProjectVariable from "@/components/project-variable";
 
 const ProjectVariables = () => {
 	return (

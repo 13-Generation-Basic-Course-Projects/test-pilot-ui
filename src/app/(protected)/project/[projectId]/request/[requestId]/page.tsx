@@ -1,5 +1,5 @@
-import { CollectionSidebar } from "@/components/collection";
-import RequestContent from "@/components/request-content";
+import RequestContent from "@/components/collection-detail/request-content";
+import { CollectionSidebar } from "@/components/collection/collection";
 import React from "react";
 
 const RequestDetail = async ({
