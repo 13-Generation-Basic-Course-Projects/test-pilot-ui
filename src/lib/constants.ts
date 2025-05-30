@@ -1,6 +1,7 @@
+import { Project } from "@/types";
 import { FileIcon, HistoryIcon, HomeIcon, InboxIcon } from "lucide-react";
 
-export const projectsData = [
+export const projectsData: Project[] = [
 	{
 		id: "project-1",
 		iconType: "folder",
@@ -15,7 +16,6 @@ export const projectsData = [
 				title: "User Management",
 				description: "APIs for user operations",
 				endpoints: [
-					// Ensure these endpoints match your Endpoint type
 					{
 						id: "endpoint-1",
 						method: "GET",
@@ -27,11 +27,61 @@ export const projectsData = [
 						statusText: "OK",
 						requestId: "req-123",
 					},
+					{
+						id: "endpoint-2",
+						method: "POST",
+						path: "/users",
+						value: "http://localhost:3000/api/users",
+						description: "create user",
+						url: "http://localhost:3000/api/users",
+						status: 201,
+						statusText: "CREATED",
+						requestId: "req-1234",
+					},
 				],
 			},
 		],
 	},
-	// ... more projects
+	{
+		id: "project-2",
+		iconType: "folder",
+		title: "My Awesome Project",
+		description: "This is a description for My Awesome Project.",
+		creationDate: "2023-01-15",
+		userAvatarUrl: "/profile-img.png",
+		name: "My Awesome Project",
+		collections: [
+			{
+				id: "collection-2",
+				title: "User Management",
+				description: "APIs for user operations",
+				endpoints: [
+					{
+						id: "endpoint-4",
+						method: "GET",
+						path: "/users",
+						value: "http://localhost:3000/api/users",
+						description: "Get all users",
+						url: "http://localhost:3000/api/users",
+						status: 200,
+						statusText: "OK",
+						requestId: "req-123",
+					},
+					{
+						id: "endpoint-3",
+						method: "POST",
+						path: "/users",
+						value: "http://localhost:3000/api/users",
+						description: "create user",
+						url: "http://localhost:3000/api/users",
+						status: 201,
+						statusText: "CREATED",
+						requestId: "req-1234",
+					},
+				],
+			},
+		],
+	},
 ];
 export const sidebarMenus = {
 	sideMenu: [
@@ -330,5 +380,22 @@ export const generateValueForTestCase = (
 			return new Date().toISOString();
 		default:
 			return originalValue;
+	}
+};
+
+export const getMethodColor = (method: string) => {
+	switch (method.toUpperCase()) {
+		case "GET":
+			return "text-green-600";
+		case "POST":
+			return "text-blue-600";
+		case "PUT":
+			return "text-yellow-600";
+		case "DELETE":
+			return "text-red-600";
+		case "PATCH":
+			return "text-purple-600";
+		default:
+			return "text-gray-600";
 	}
 };

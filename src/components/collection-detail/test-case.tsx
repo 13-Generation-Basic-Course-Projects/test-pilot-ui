@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Plus, X } from "lucide-react";
-import { Button } from "./ui/button";
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
+import { Button } from "../ui/button";
 
 // Available data types
 const dataTypeOptions = ["string", "number", "boolean", "date"] as const;

@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
 import { useApiBodyStore } from "@/store/body-api-slice";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { generateValueForTestCase } from "@/lib/constants";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { Play } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
 
 export const TestRequestBody = () => {
 	const { apiBodyRows } = useApiBodyStore();

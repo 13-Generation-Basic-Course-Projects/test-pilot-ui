@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { Input } from "./ui/input";
-import CodeSnippet from "./code-snippet";
+import CodeSnippet from "./code-snippet/code-snippet";
 import { useRequestStore } from "@/store/request-url-slice";
 import { useEffect } from "react";
 

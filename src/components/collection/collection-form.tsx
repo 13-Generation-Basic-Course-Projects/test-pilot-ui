@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -7,7 +9,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusSquareIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -23,7 +25,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-export const CollectionForm = () => {
+export const CollectionForm = ({
+	onCollectionCreate,
+}: {
+	onCollectionCreate: (collectionName: string) => void;
+}) => {
+	const [open, setOpen] = useState(false);
+
 	const form = useForm<z.infer<typeof collectionFormSchema>>({
 		resolver: zodResolver(collectionFormSchema),
 		defaultValues: {
@@ -32,9 +40,11 @@ export const CollectionForm = () => {
 	});
 	function onSubmit(values: z.infer<typeof collectionFormSchema>) {
 		console.log(values);
+		onCollectionCreate(values.collectionName);
+		setOpen((prev) => !prev);
 	}
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button className="bg-[#34302b] hover:bg-[#34302b]/90 cursor-pointer">
 					<PlusSquareIcon className="w-6 h-6 mr-2" />

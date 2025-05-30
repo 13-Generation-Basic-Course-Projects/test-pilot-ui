@@ -1,9 +1,9 @@
 // Params.tsx
 import React, { useState } from "react";
-import { Separator } from "./ui/separator";
-import { Tabs, TabsContent, TabsListV2, TabsTriggerV2 } from "./ui/tabs";
 import PathVariable, { ParamRow } from "./path-variable";
 import QueryParams from "./query-params";
+import { Separator } from "../ui/separator";
+import { Tabs, TabsContent, TabsListV2, TabsTriggerV2 } from "../ui/tabs";
 
 export const Params = () => {
 	return (

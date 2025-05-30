@@ -18,18 +18,6 @@ export type ProjectFormProps = {
 	onOpenChange?: (open: boolean) => void;
 };
 
-export interface Endpoint {
-	id: string;
-	method: string;
-	path: string;
-}
-
-export interface CollectionItem {
-	id: string;
-	title: string;
-	endpoints: Endpoint[];
-}
-
 export type TestStatus = "pending" | "loading" | "passed" | "failed";
 
 export type LogLevel = "INFO" | "WARNING" | "ERROR" | "DEBUG";
@@ -38,14 +26,6 @@ export interface LogEntry {
 	level: LogLevel;
 	message: string;
 	source?: string;
-}
-
-export interface Endpoint {
-	method: string;
-	url: string;
-	status: number;
-	statusText: string;
-	requestId: string;
 }
 
 export interface TestMetadata {
@@ -75,4 +55,34 @@ export interface TestProgress {
 	completed: number;
 	total: number;
 	currentTest: number;
+}
+
+export interface Endpoint {
+	id: string;
+	method: string;
+	path: string;
+	value?: string; // optional field
+	description?: string; // optional field
+	url?: string; // optional field
+	status?: number; // optional field
+	statusText?: string; // optional field
+	requestId?: string; // optional field
+}
+
+export interface CollectionItem {
+	id: string;
+	title: string;
+	description?: string; // optional field
+	endpoints: Endpoint[];
+}
+
+export interface Project {
+	id: string;
+	iconType: string; // e.g., "folder"
+	title: string;
+	description: string; // required field
+	creationDate: string; // e.g., "2023-01-15"
+	userAvatarUrl: string; // e.g., "/profile-img.png"
+	name: string; // seems redundant with title but included in data
+	collections: CollectionItem[];
 }

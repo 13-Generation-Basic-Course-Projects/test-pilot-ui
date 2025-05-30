@@ -44,7 +44,7 @@ import {
 	TableRow,
 	TableRowV2,
 } from "@/components/ui/table";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 
 const frameworks = [
 	{ value: "no-auth", label: "No auth" },
@@ -89,10 +89,15 @@ export function ApiRequestContentHeader() {
 
 			<Tabs defaultValue="authorization-type" className="w-full space-y-5">
 				<TabsListV2 className="grid w-[400px] grid-cols-2">
-					<TabsTriggerV2 value="authorization-type">
+					<TabsTriggerV2
+						value="authorization-type"
+						className="text-[15px] w-fit"
+					>
 						Authorization Type
 					</TabsTriggerV2>
-					<TabsTriggerV2 value="manual">Manual</TabsTriggerV2>
+					<TabsTriggerV2 value="manual" className="text-[15px] w-fit">
+						Manual
+					</TabsTriggerV2>
 				</TabsListV2>
 
 				<TabsContent value="authorization-type">

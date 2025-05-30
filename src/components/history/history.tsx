@@ -3,9 +3,9 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { HistoryData } from "@/components/history-data";
+import { HistoryData } from "@/components/history/history-data";
 import { mockHistoryResponses } from "@/lib/constants";
-import { PreviewSkeleton } from "./preview-skeleton";
+import { PreviewSkeleton } from "../preview-skeleton";
 import { isValidJSON } from "@/lib/utils";
 
 export default function History() {

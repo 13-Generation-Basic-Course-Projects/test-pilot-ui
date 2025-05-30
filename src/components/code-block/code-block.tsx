@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import type monaco from "monaco-editor";
 import { useApiBodyStore } from "@/store/body-api-slice";
 import {
@@ -81,25 +81,27 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 
 				<Button onClick={handleSubmit}>Parse Body</Button>
 			</div>
-			<Card className="w-full min-h-[391px] border-1 shadow-none py-3">
-				<CardContent className="p-0">
-					<Editor
-						height="391px"
-						defaultLanguage="json"
-						value={rawBody || "{\n\n}"}
-						// Save on every change
-						onChange={handleChange}
-						theme="vs-light"
-						options={{
-							minimap: { enabled: false },
-							fontSize: 14,
-							lineNumbers: "on",
-							renderLineHighlight: "none",
-							scrollBeyondLastLine: false,
-							wordWrap: "on",
-						}}
-						onMount={handleEditorDidMount}
-					/>
+			<Card className="w-[95%] min-h-[391px] border shadow-none py-3 overflow-hidden mx-auto">
+				<CardContent className="p-0 h-full overflow-hidden">
+					<div className="h-full w-full overflow-hidden">
+						<Editor
+							width="100%"
+							height="391px"
+							defaultLanguage="json"
+							value={rawBody || "{\n\n}"}
+							onChange={handleChange}
+							theme="vs-light"
+							options={{
+								minimap: { enabled: false },
+								fontSize: 14,
+								lineNumbers: "on",
+								renderLineHighlight: "none",
+								scrollBeyondLastLine: false,
+								wordWrap: "on",
+							}}
+							onMount={handleEditorDidMount}
+						/>
+					</div>
 				</CardContent>
 			</Card>
 		</div>
