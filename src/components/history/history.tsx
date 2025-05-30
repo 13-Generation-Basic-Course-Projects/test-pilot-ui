@@ -7,6 +7,7 @@ import { HistoryData } from "@/components/history/history-data";
 import { mockHistoryResponses } from "@/lib/constants";
 import { PreviewSkeleton } from "../preview-skeleton";
 import { isValidJSON } from "@/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function History() {
 	const [previewData, setPreviewData] = useState<any>(null);
