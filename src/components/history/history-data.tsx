@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Folder, Play, Trash2 } from "lucide-react";
+import {
+	ChevronDown,
+	ChevronUp,
+	Folder,
+	Play,
+	Trash2,
+	Pencil,
+} from "lucide-react";
 
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -40,6 +47,15 @@ type HistoryDataType = {
 export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 	const [isOpen, setIsOpen] = React.useState(true);
 	const [activeRow, setActiveRow] = React.useState<number | null>(null);
+	const [deleteIndex, setDeleteIndex] = React.useState<number | null>(null);
+
+	// Rename history
+	const [isRenaming, setIsRenaming] = React.useState(false);
+	const [historyTitle, setHistoryTitle] = React.useState("Request History");
+	const [renameInput, setRenameInput] = React.useState(historyTitle);
+
+	const inputRef = React.useRef<HTMLInputElement>(null);
+	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const [data, setData] = React.useState<RowData[]>([
 		{
 			date: "20 May 19:00 PM",
@@ -95,7 +111,20 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 		},
 	]);
 
-	const [deleteIndex, setDeleteIndex] = React.useState<number | null>(null);
+
+
+	// Auto-save on outside click
+	const handleClickOutside = (event: MouseEvent) => {
+		if (
+			wrapperRef.current &&
+			!wrapperRef.current.contains(event.target as Node)
+		) {
+			const newTitle = renameInput.trim() || "Request History";
+			setHistoryTitle(newTitle);
+			setIsRenaming(false);
+			console.log("New history title:", newTitle); 
+		}
+	};
 
 	const handleDelete = () => {
 		if (deleteIndex !== null) {
@@ -111,10 +140,40 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			className="w-full space-y-2"
 		>
 			<div className="flex items-center justify-between space-x-4 px-4 border py-3 rounded-md">
-				<h4 className="text-lg font-semibold flex gap-2 items-center">
+				<div className="flex items-center gap-2" ref={wrapperRef}>
 					<Folder />
-					Request History
-				</h4>
+					{isRenaming ? (
+						<input
+							ref={inputRef}
+							type="text"
+							className="border px-2 py-1 rounded text-sm"
+							value={renameInput}
+							onChange={(e) => setRenameInput(e.target.value)}
+							autoFocus
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									const newTitle = renameInput.trim() || "Request History";
+									setHistoryTitle(newTitle);
+									setIsRenaming(false);
+									console.log("New history title:", newTitle);
+								}
+							}}
+
+						/>
+					) : (
+						<h4
+							className="text-lg font-semibold flex items-center gap-1 cursor-pointer"
+							onClick={() => {
+								setRenameInput(historyTitle);
+								setIsRenaming(true);
+								console.log("history name: ", historyTitle);
+
+							}}
+						>
+							{historyTitle}
+						</h4>
+					)}
+				</div>
 				<CollapsibleTrigger asChild>
 					<button aria-label="Toggle">
 						{isOpen ? (
@@ -166,14 +225,10 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 											setActiveRequestIndex?.(index);
 											document
 												.getElementById(`request-${index}`)
-												?.scrollIntoView({
-													behavior: "smooth",
-													block: "center",
-												});
+												?.scrollIntoView({ behavior: "smooth", block: "center" });
 										}}
-										className={`py-5 cursor-pointer ${
-											activeRow === index ? "bg-[#F1F5F9]" : ""
-										}`}
+										className={`py-5 cursor-pointer ${activeRow === index ? "bg-[#F1F5F9]" : ""
+											}`}
 									>
 										<TableCell className="py-5 pl-6">{item.date}</TableCell>
 										<TableCell className="py-5">{item.method}</TableCell>
@@ -199,8 +254,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 																Are you absolutely sure?
 															</AlertDialogTitle>
 															<AlertDialogDescription>
-																This action cannot be undone. This will
-																permanently delete your endpoint.
+																This action cannot be undone. This will permanently delete your endpoint.
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>
