@@ -12,6 +12,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { FileJson } from "lucide-react";
 
 let monacoEditorInstance: monaco.editor.IStandaloneCodeEditor;
 
@@ -79,7 +80,10 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 					</SelectContent>
 				</Select>
 
-				<Button onClick={handleSubmit}>Parse Body</Button>
+				<Button onClick={handleSubmit}>
+					<FileJson />
+					Parse Body
+				</Button>
 			</div>
 			<Card className="w-[95%] min-h-[391px] border shadow-none py-3 overflow-hidden mx-auto">
 				<CardContent className="p-0 h-full overflow-hidden">

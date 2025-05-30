@@ -52,12 +52,10 @@ export const CollectionSidebar = () => {
 		projectId: string;
 		collectionId: string;
 	} | null>(null);
-
 	// Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(
 		null
 	);
-
 	// Export request
 	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
 	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(
@@ -398,7 +396,7 @@ export const CollectionSidebar = () => {
 
 	if (!isCollectionSidebarOpen) {
 		return (
-			<div className="border-r bg-background h-fit border-b rounded-br-md p-2 duration-75">
+			<div className="border-r bg-background h-full p-2 duration-75">
 				<Button
 					variant="outline"
 					size="sm"
@@ -643,7 +641,6 @@ export const CollectionSidebar = () => {
 									: project
 							)
 						);
-
 						setOpenCollections((prev) => {
 							if (!prev) return prev;
 							const updated = { ...prev };
