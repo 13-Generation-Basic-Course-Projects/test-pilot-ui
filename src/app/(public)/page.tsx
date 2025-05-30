@@ -1,11 +1,10 @@
-import LandingPageComponent from "@/components/landing-page";
-import { NavbarComponent } from "@/components/navbar";
+import VariableTable from "@/components/project-variable";
 
 export default function Home() {
 	return (
 		<div className="">
-			<NavbarComponent />
-			<LandingPageComponent />
+			<VariableTable/>
+			
 		</div>
 	);
 }
