@@ -136,8 +136,11 @@ export const CollectionSidebar = () => {
 		};
 
 		setCollectionsData((prev) => {
+			// Find the last project or use the first one if no projects exist
+			const lastProjectIndex = prev.length - 1;
 			return prev.map((project, index) => {
-				if (index === 0) {
+				console.log(index);
+				if (index === lastProjectIndex) {
 					return {
 						...project,
 						collections: [...project.collections, newCollection],

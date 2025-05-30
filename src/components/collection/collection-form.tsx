@@ -42,6 +42,9 @@ export const CollectionForm = ({
 		console.log(values);
 		onCollectionCreate(values.collectionName);
 		setOpen((prev) => !prev);
+		form.reset({
+			collectionName: "",
+		});
 	}
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
