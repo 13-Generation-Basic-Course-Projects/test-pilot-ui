@@ -23,7 +23,7 @@ export function SearchForm({
 	};
 
 	return (
-		<Form action="/project" {...props}>
+		<Form action="/project" {...props} className="w-full">
 			<SidebarGroup className="py-0 px-0">
 				<SidebarGroupContent className="relative">
 					<Label htmlFor="search" className="sr-only">

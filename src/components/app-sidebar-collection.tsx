@@ -135,14 +135,18 @@ export const CollectionSidebar = () => {
 			endpoints: [],
 		};
 
-		setCollectionsData((prev) =>
-			prev.map((project) => ({
-				...project,
-				collections: [...project.collections, newCollection],
-			}))
-		);
+		setCollectionsData((prev) => {
+			return prev.map((project, index) => {
+				if (index === 0) {
+					return {
+						...project,
+						collections: [...project.collections, newCollection],
+					};
+				}
+				return project;
+			});
+		});
 	};
-
 	const handleRename = (
 		projectId: string,
 		collectionId: string,

@@ -1,23 +1,3 @@
-export type ProjectItem = {
-	id: string;
-	iconType: string;
-	title: string;
-	description: string;
-	creationDate: string;
-	userAvatarUrl: string;
-};
-
-export type ProjectProps = {
-	projects: ProjectItem[];
-};
-
-export type ProjectFormProps = {
-	initialData?: ProjectItem;
-	mode: "create" | "edit";
-	isOpen?: boolean;
-	onOpenChange?: (open: boolean) => void;
-};
-
 export type TestStatus = "pending" | "loading" | "passed" | "failed";
 
 export type LogLevel = "INFO" | "WARNING" | "ERROR" | "DEBUG";
@@ -86,3 +66,27 @@ export interface Project {
 	name: string; // seems redundant with title but included in data
 	collections: CollectionItem[];
 }
+
+// types.ts
+export interface ProjectItem {
+	id: string;
+	title: string;
+	description: string;
+	creationDate: string;
+	userAvatarUrl: string;
+}
+
+export interface ProjectProps {
+	projects: ProjectItem[];
+}
+
+export interface ProjectFormProps {
+	mode: "create" | "edit";
+	initialData?: ProjectItem;
+	isOpen?: boolean; // Make isOpen optional for the create trigger
+	onOpenChange?: (open: boolean) => void; // Make onOpenChange optional for the create trigger
+	onProjectCreated?: (newProject: ProjectItem) => void; // New prop for create mode
+	onProjectUpdated?: (updatedProject: ProjectItem) => void; // New prop for edit mode
+}
+
+export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;

@@ -1,4 +1,4 @@
-import ProfileSetting from "@/components/project/profile-setting";
+import ProfileSetting from "@/components/profile/profile-setting";
 import React from "react";
 
 const Profile = () => {
