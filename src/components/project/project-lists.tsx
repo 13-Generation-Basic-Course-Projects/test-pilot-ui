@@ -44,6 +44,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [selectedProjectForShare, setSelectedProjectForShare] =
 		useState<ProjectItem | null>(null);
 	const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
+
 	const handleShare = (project: ProjectItem) => {
 		setSelectedProjectForShare(project);
 		setIsShareProjectOpen(true);
@@ -147,7 +148,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
 												</DropdownMenuItem>
-												<DropdownMenuSeparator />
 
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
