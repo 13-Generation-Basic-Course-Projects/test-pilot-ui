@@ -469,7 +469,7 @@ export const CollectionSidebar = () => {
 				</div>
 
 				{/* Collections */}
-				<div className="flex-1 overflow-auto">
+				<div className="flex-1 custom-scrollbar">
 					{collectionsData.map((project) =>
 						project.collections.map((collection) => (
 							<div key={`${project.id}-${collection.id}`}>

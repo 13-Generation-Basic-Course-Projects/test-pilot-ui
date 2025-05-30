@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { materialLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 type LogLevel = "INFO" | "WARNING" | "ERROR" | "DEBUG";
 
@@ -40,12 +43,10 @@ export function RequestMetadataWithLogs({
 	const [isClient, setIsClient] = useState(false);
 	const logContainerRef = useRef<HTMLDivElement>(null);
 
-	// Fix hydration error
 	useEffect(() => {
 		setIsClient(true);
 	}, []);
 
-	// Generate timestamp in format HH:MM:SS.mmm
 	const generateTimestamp = () => {
 		if (!isClient) return "00:00:00.000";
 		const now = new Date();
@@ -128,9 +129,7 @@ export function RequestMetadataWithLogs({
 			{/* Test-Specific Logs Section */}
 			<div className="space-y-3">
 				<div className="flex justify-between items-center">
-					<p className="text-xl font-semibold">
-						Test Logs - {selectedTest.testName}
-					</p>
+					<p className="text-xl font-semibold">Test Logs</p>
 					<div className="text-xs text-[#94A3B8]">
 						{displayedLogs.length}/{selectedTest.logs?.length || 0}
 					</div>
@@ -168,12 +167,32 @@ export function RequestMetadataWithLogs({
 			{/* Request Metadata Section */}
 			<div className="space-y-3">
 				<p className="text-xl font-semibold">Request Metadata</p>
-				<div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 font-mono text-sm">
-					<pre className="text-[#475569] whitespace-pre-wrap">
-						{selectedTest.metadata
-							? JSON.stringify(selectedTest.metadata, null, 2)
-							: "No metadata available"}
-					</pre>
+				<div className="rounded-lg overflow-hidden border border-[#E2E8F0] bg-white">
+					{selectedTest.metadata ? (
+						<SyntaxHighlighter
+							language="json"
+							style={oneLight}
+							showLineNumbers
+							wrapLines
+							customStyle={{
+								margin: 0,
+								padding: "1rem",
+								fontSize: "0.875rem",
+								lineHeight: "1.5",
+								border: "none",
+							}}
+							lineNumberStyle={{
+								color: "#94A3B8",
+								paddingRight: "1rem",
+							}}
+						>
+							{JSON.stringify(selectedTest.metadata, null, 2)}
+						</SyntaxHighlighter>
+					) : (
+						<div className="bg-[#F8FAFC] p-4 text-[#94A3B8] text-sm">
+							No metadata available
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
