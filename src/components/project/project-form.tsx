@@ -1,6 +1,7 @@
+// components/project-form.tsx
 "use client";
-import { ProjectFormProps } from "@/types";
-import React, { useEffect } from "react";
+import { ProjectFormProps, NewProjectPayload, ProjectItem } from "@/types"; // Import NewProjectPayload and ProjectItem
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Dialog,
@@ -30,7 +31,11 @@ const ProjectForm = ({
 	initialData,
 	isOpen,
 	onOpenChange,
+	onProjectCreated,
+	onProjectUpdated,
 }: ProjectFormProps) => {
+	const [openCreated, setOpenCreated] = useState(false);
+
 	const form = useForm<z.infer<typeof projectFormSchema>>({
 		resolver: zodResolver(projectFormSchema),
 		defaultValues: {
@@ -53,13 +58,39 @@ const ProjectForm = ({
 		}
 	}, [mode, initialData, form]);
 
-	// **  Update and Create with Endpoint
-	function onSubmit(values: z.infer<typeof projectFormSchema>) {
-		console.log(values);
+	async function onSubmit(values: z.infer<typeof projectFormSchema>) {
+		if (mode === "create") {
+			// Simulate API call for creating a new project
+			const newProject: ProjectItem = {
+				id: crypto.randomUUID(), // Generate a unique ID
+				title: values.projectName,
+				description: values.projectDescription,
+				creationDate: new Date().toLocaleDateString("en-US"), // Set current date
+				userAvatarUrl: "/profile-img.png", // Default avatar for new projects
+			};
+			console.log("New project created:", newProject);
+			if (onProjectCreated) {
+				onProjectCreated(newProject);
+				setOpenCreated((prev) => !prev);
+			}
+		} else if (mode === "edit" && initialData) {
+			// Simulate API call for updating an existing project
+			const updatedProject: ProjectItem = {
+				...initialData,
+				title: values.projectName,
+				description: values.projectDescription,
+			};
+			console.log("Project updated:", updatedProject);
+			if (onProjectUpdated) {
+				onProjectUpdated(updatedProject);
+			}
+		}
+
 		if (onOpenChange) {
 			onOpenChange(false);
 		}
 	}
+
 	const formContent = (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -126,7 +157,7 @@ const ProjectForm = ({
 	}
 
 	return (
-		<Dialog>
+		<Dialog open={openCreated} onOpenChange={setOpenCreated}>
 			<DialogTrigger asChild>
 				<Button className="cursor-pointer">
 					<FolderPlusIcon className="mr-2 h-4 w-4" />

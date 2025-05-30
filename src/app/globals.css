@@ -130,3 +130,20 @@
 	padding-top: 1rem;
 	padding-bottom: 1rem;
 }
+
+/* Hide scrollbar for Webkit browsers (Chrome, Safari, Edge, Opera) */
+.custom-scrollbar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* For a stronger hide */
+}
+
+/* Hide scrollbar for Firefox */
+.custom-scrollbar {
+	scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar for Internet Explorer and Edge (older versions) */
+.custom-scrollbar {
+	-ms-overflow-style: none; /* IE and Edge */
+}
