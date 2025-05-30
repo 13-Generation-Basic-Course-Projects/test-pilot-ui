@@ -1,3 +1,4 @@
+// components/project-lists.tsx
 "use client";
 import React, { useState } from "react";
 import { ProjectProps, ProjectItem } from "@/types";
@@ -26,6 +27,9 @@ import Image from "next/image";
 import Link from "next/link";
 import ProjectForm from "./project-form";
 import { DeleteProject } from "../delete/delete-project";
+import { ShareProject } from "../share/share-project";
+import { SearchForm } from "../search-form";
+
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
 
@@ -36,6 +40,22 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [selectedProjectForDelete, setSelectProjectForDelete] =
 		useState<ProjectItem | null>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+	const [selectedProjectForShare, setSelectedProjectForShare] =
+		useState<ProjectItem | null>(null);
+	const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
+
+	const handleShare = (project: ProjectItem) => {
+		setSelectedProjectForShare(project);
+		setIsShareProjectOpen(true);
+	};
+
+	const handleDialogCloseShare = (open: boolean) => {
+		setIsShareProjectOpen(open);
+		if (!open) {
+			setSelectedProjectForShare(null);
+		}
+	};
 
 	const handleEditClick = (project: ProjectItem) => {
 		setSelectedProjectForEdit(project);
@@ -62,15 +82,41 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	};
 
 	const deleteProject = async (projectId: string) => {
-		await fetch(`/api/projects/${projectId}`, {
-			method: "DELETE",
-		});
-
+		// Simulate API call for deleting a project
+		// In a real app, this would be `await fetch(...)`
 		setProjects((prev) => prev.filter((project) => project.id !== projectId));
+		console.log(`Simulating deletion of project with ID: ${projectId}`);
+	};
+
+	// New handler for when a project is created
+	const handleProjectCreated = (newProject: ProjectItem) => {
+		setProjects((prev) => [...prev, newProject]);
+	};
+
+	// New handler for when a project is updated
+	const handleProjectUpdated = (updatedProject: ProjectItem) => {
+		setProjects((prev) =>
+			prev.map((project) =>
+				project.id === updatedProject.id ? updatedProject : project
+			)
+		);
 	};
 
 	return (
 		<>
+			<div className="mb-6 flex flex-col justify-between items-center">
+				<div className="flex items-center justify-between w-full">
+					<div>
+						<h1 className="text-2xl">Projects</h1>
+						<p className="text-slate-400 mt-2">
+							Manage your API testing projects
+						</p>
+					</div>
+					<ProjectForm mode="create" onProjectCreated={handleProjectCreated} />
+				</div>
+				<SearchForm className="mt-10" />
+			</div>
+
 			{projects.length === 0 ? (
 				<div className="text-center text-slate-500 mt-10 justify-center">
 					<p className="text-lg font-medium ">No projects found</p>
@@ -93,10 +139,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer" />
 											</DropdownMenuTrigger>
 											<DropdownMenuContent>
-												<DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={(e) => {
+														e.preventDefault();
+														handleShare(project);
+													}}
+												>
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
 												</DropdownMenuItem>
+
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
 													onSelect={(e) => {
@@ -157,6 +209,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 					initialData={selectedProjectForEdit}
 					isOpen={isEditDialogOpen}
 					onOpenChange={handleDialogClose}
+					onProjectUpdated={handleProjectUpdated} // Pass the update handler
 				/>
 			)}
 
@@ -166,6 +219,14 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 				project={selectedProjectForDelete}
 				onDeleteConfirm={(projectId) => deleteProject(projectId)}
 			/>
+
+			{selectedProjectForShare && (
+				<ShareProject
+					open={isShareProjectOpen}
+					onOpenChange={handleDialogCloseShare}
+					project={selectedProjectForShare}
+				/>
+			)}
 		</>
 	);
 };

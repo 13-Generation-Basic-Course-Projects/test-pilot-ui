@@ -130,3 +130,21 @@
 	padding-top: 1rem;
 	padding-bottom: 1rem;
 }
+
+.custom-scrollbar {
+	overflow: auto;
+}
+
+/* Hide scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.custom-scrollbar {
+	scrollbar-width: none; /* "auto" || "thin" || "none" */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+.custom-scrollbar {
+	scroll-behavior: smooth;
+}

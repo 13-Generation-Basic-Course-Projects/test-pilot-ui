@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -18,8 +18,14 @@ interface EditProfileProps {
 		username: string;
 		email: string;
 		password: string;
+		imageUrl?: string;
 	};
-	onSave: (data: { username: string; email: string; password: string }) => void;
+	onSave: (data: {
+		username: string;
+		email: string;
+		password: string;
+		image?: File | null;
+	}) => void;
 }
 
 export default function EditProfile({ profile, onSave }: EditProfileProps) {
@@ -27,31 +33,52 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 	const [username, setUsername] = useState(profile.username);
 	const [email, setEmail] = useState(profile.email);
 	const [password, setPassword] = useState(profile.password);
+	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [imagePreview, setImagePreview] = useState(profile.imageUrl || "/profile.png");
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
 		if (open) {
 			setUsername(profile.username);
 			setEmail(profile.email);
 			setPassword(profile.password);
+			setImageFile(null);
+			setImagePreview(profile.imageUrl || "/profile.png");
 		}
 	}, [open, profile]);
+
+	const handleImageClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			setImageFile(file);
+			setImagePreview(URL.createObjectURL(file));
+		}
+	};
 
 	const handleCancel = () => {
 		setOpen(false);
 	};
+
 	const handleSave = () => {
-		onSave({ username, email, password });
+		onSave({
+			username,
+			email,
+			password,
+			image: imageFile,
+		});
 		setOpen(false);
 	};
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button variant="outline">Edit Profile</Button>
 			</DialogTrigger>
-			<DialogContent
-				className="p-0"
-				onInteractOutside={(e) => e.preventDefault()}
-			>
+			<DialogContent className="p-0" onInteractOutside={(e) => e.preventDefault()}>
 				<div className="relative bg-white rounded-xl shadow p-8">
 					<DialogClose asChild>
 						<button
@@ -59,40 +86,45 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 							aria-label="Close"
 						/>
 					</DialogClose>
+
 					{/* Header */}
 					<DialogHeader className="mb-8">
 						<DialogTitle className="text-xl font-semibold text-center text-gray-900">
 							Profile Details
 						</DialogTitle>
 					</DialogHeader>
-					{/* Profile Info */}
+
+					{/* Profile Image Clickable */}
 					<div className="flex items-center pb-6 mb-8">
-						<Image
-							src="/profile.png"
-							alt="Profile"
-							className="w-20 h-20 rounded-full object-cover mr-5"
-							width={20}
-							height={20}
-						/>
+						<div className="cursor-pointer mr-5" onClick={handleImageClick}>
+							<Image
+								src={imagePreview}
+								alt="Profile"
+								className="w-20 h-20 rounded-full object-cover"
+								width={80}
+								height={80}
+							/>
+							<input
+								type="file"
+								accept="image/*"
+								ref={fileInputRef}
+								className="hidden"
+								onChange={handleImageChange}
+							/>
+						</div>
 						<div>
-							<p className="text-lg font-semibold text-gray-900">
-								Testing Pilot
-							</p>
-							<p className="text-sm font-medium text-gray-500">
-								testingpilot@gmail.com
-							</p>
+							<p className="text-lg font-semibold text-gray-900">{username}</p>
+							<p className="text-sm font-medium text-gray-500">{email}</p>
 						</div>
 					</div>
+
 					{/* Editable Fields */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
 						<div>
 							<label className="block text-sm font-medium text-gray-600 mb-2">
 								Username
 							</label>
-							<Input
-								value={username}
-								onChange={(e) => setUsername(e.target.value)}
-							/>
+							<Input value={username} onChange={(e) => setUsername(e.target.value)} />
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-gray-600 mb-2">

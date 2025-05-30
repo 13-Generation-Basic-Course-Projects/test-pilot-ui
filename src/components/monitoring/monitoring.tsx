@@ -479,9 +479,9 @@ export default function Monitoring() {
 											{selectedTest.method}
 										</div>
 									</div>
-									<div className="flex space-x-2">
+									<div className="flex space-x-2 items-end">
 										<p>Endpoint:</p>
-										<p className="text-[#475569] font-mono text-sm">
+										<p className="text-[#475569] font-mono text-sm line-clamp-1">
 											{selectedTest.endpoint}
 										</p>
 									</div>

@@ -135,14 +135,21 @@ export const CollectionSidebar = () => {
 			endpoints: [],
 		};
 
-		setCollectionsData((prev) =>
-			prev.map((project) => ({
-				...project,
-				collections: [...project.collections, newCollection],
-			}))
-		);
+		setCollectionsData((prev) => {
+			// Find the last project or use the first one if no projects exist
+			const lastProjectIndex = prev.length - 1;
+			return prev.map((project, index) => {
+				console.log(index);
+				if (index === lastProjectIndex) {
+					return {
+						...project,
+						collections: [...project.collections, newCollection],
+					};
+				}
+				return project;
+			});
+		});
 	};
-
 	const handleRename = (
 		projectId: string,
 		collectionId: string,
@@ -462,7 +469,7 @@ export const CollectionSidebar = () => {
 				</div>
 
 				{/* Collections */}
-				<div className="flex-1 overflow-auto">
+				<div className="flex-1 custom-scrollbar">
 					{collectionsData.map((project) =>
 						project.collections.map((collection) => (
 							<div key={`${project.id}-${collection.id}`}>
