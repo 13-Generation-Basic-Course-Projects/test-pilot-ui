@@ -1,5 +1,6 @@
+import { CollectionSidebar } from "@/components/app-sidebar-collection";
 import RequestContent from "@/components/collection-detail/request-content";
-import { CollectionSidebar } from "@/components/collection/collection";
+import { SidebarCollectionProvider } from "@/components/ui/sidebar-collection";
 import React from "react";
 
 const RequestDetail = async ({
@@ -9,9 +10,11 @@ const RequestDetail = async ({
 }) => {
 	const { projectId, requestId } = await params;
 	return (
-		<div>
-			<div className="flex">
+		<div className="flex h-screen overflow-hidden">
+			<SidebarCollectionProvider>
 				<CollectionSidebar />
+			</SidebarCollectionProvider>
+			<div className="flex-1 min-w-0 overflow-auto">
 				<RequestContent projectId={projectId} requestId={requestId} />
 			</div>
 		</div>

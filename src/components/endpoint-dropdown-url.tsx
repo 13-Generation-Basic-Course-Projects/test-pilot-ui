@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronDown, ChevronUp, CodeXml } from "lucide-react";
-import { projectsData } from "@/lib/constants"; // Assuming this is where your project data resides
+import { projectsData } from "@/lib/constants";
 
 import { cn, getMethodColor } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -112,7 +112,7 @@ export function EndpointDropdownUrl({
 											key={item.value}
 											value={item.value}
 											onSelect={() => {
-												setMethod(item.value); // Update method in Zustand
+												setMethod(item.value);
 												setOpen(false);
 											}}
 										>
@@ -133,10 +133,10 @@ export function EndpointDropdownUrl({
 					</PopoverContent>
 				</Popover>
 				<Input
-					className="h-[40px] rounded-l-none md:text-lg"
-					placeholder="http://..."
-					value={url} // Bind input value to Zustand state
-					onChange={(e) => setUrl(e.target.value)} // Update URL in Zustand
+					className="h-[40px] rounded-l-none md:text-sm"
+					placeholder="http://test-pilot/"
+					value={url}
+					onChange={(e) => setUrl(e.target.value)}
 				/>
 			</div>
 			<div className="flex items-center gap-2">

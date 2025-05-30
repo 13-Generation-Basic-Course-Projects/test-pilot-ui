@@ -1,7 +1,7 @@
 "use client";
-import { getMethodColor } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
-import { Badge } from "../ui/badge";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import {
 	EditIcon,
 	FileOutput,
@@ -11,33 +11,35 @@ import {
 	FolderDownIcon,
 	FolderOpenIcon,
 	Share2Icon,
-	Trash2Icon,
 	TrashIcon,
 } from "lucide-react";
-import { projectsData } from "@/lib/constants";
-import { Button } from "../ui/button";
-import { CollectionItem, Endpoint } from "@/types";
-import { ItemActionsDropdown } from "../dropdown-more-menu";
 import Link from "next/link";
-import { CollectionForm } from "./collection-form";
+import { usePathname } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "../ui/input";
-import { usePathname } from "next/navigation";
-import { ImportCollection } from "../import/import-collection";
-import { DeleteCollection } from "../delete/delete-collection";
-import { ExportEndpoint } from "../export/export-endpoint";
-import { ExportCollection } from "../export/export-collection";
-import { ShareCollection } from "../share/share-collection";
-import { ShareEndpoint } from "../share/share-endpoint";
-import { string } from "zod";
-import { DeleteEndpoint } from "../delete/delete-endpoint";
+
+import { projectsData } from "@/lib/constants";
+import { getMethodColor } from "@/lib/utils";
+import { CollectionItem, Endpoint } from "@/types";
+import { CollectionForm } from "./collection/collection-form";
+import { ItemActionsDropdown } from "./dropdown-more-menu";
+import { ExportEndpoint } from "./export/export-endpoint";
+import { ExportCollection } from "./export/export-collection";
+import { ShareCollection } from "./share/share-collection";
+import { ShareEndpoint } from "./share/share-endpoint";
+import { ImportCollection } from "./import/import-collection";
+import { DeleteCollection } from "./delete/delete-collection";
+import { DeleteEndpoint } from "./delete/delete-endpoint";
 
 export const CollectionSidebar = () => {
+	const [isCollectionSidebarOpen, setIsCollectionSidebarOpen] = useState(true);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
 		boolean
@@ -50,31 +52,28 @@ export const CollectionSidebar = () => {
 		projectId: string;
 		collectionId: string;
 	} | null>(null);
-
-	//Rename
+	// Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(
 		null
 	);
-
-	//Export request
+	// Export request
 	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
 	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(
 		null
 	);
 
-	//Export collection
+	// Export collection
 	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
 	const [selectedCollection, setSelectedCollection] =
 		useState<CollectionItem | null>(null);
 
-	//Import collection
+	// Import collection
 	const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
 
 	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
-
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
 
-	//Delete request
+	// Delete request
 	const [endpointToDelete, setEndpointToDelete] = useState<{
 		projectId: string;
 		collectionId: string;
@@ -101,6 +100,49 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
+	const handleAddEndpoint = (projectId: string, collectionId: string) => {
+		const newEndpoint: Endpoint = {
+			id: `endpoint-${Date.now()}`,
+			method: "GET",
+			path: "/new-request",
+		};
+
+		setCollectionsData((prev) =>
+			prev.map((project) => {
+				if (project.id !== projectId) return project;
+				return {
+					...project,
+					collections: project.collections.map((collection) =>
+						collection.id === collectionId
+							? {
+									...collection,
+									endpoints: [...collection.endpoints, newEndpoint],
+							  }
+							: collection
+					),
+				};
+			})
+		);
+
+		// Automatically start renaming the new endpoint
+		// setRenamingEndpointId(newEndpoint.id);
+	};
+
+	const handleCreateCollection = (title: string) => {
+		const newCollection: CollectionItem = {
+			id: `collection-${Date.now()}`,
+			title,
+			endpoints: [],
+		};
+
+		setCollectionsData((prev) =>
+			prev.map((project) => ({
+				...project,
+				collections: [...project.collections, newCollection],
+			}))
+		);
+	};
+
 	const handleRename = (
 		projectId: string,
 		collectionId: string,
@@ -125,12 +167,10 @@ export const CollectionSidebar = () => {
 		projectId: string,
 		collectionId: string
 	) => {
-		//Loop collectionData find the matching project
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
 
-				//Find specific collection
 				const collectionToDuplicate = project.collections.find(
 					(collection) => collection.id === collectionId
 				);
@@ -139,7 +179,7 @@ export const CollectionSidebar = () => {
 
 				const duplicatedCollection = {
 					...collectionToDuplicate,
-					id: `${collectionId}-copy-${Date.now()}`, //Assign a new unique ID using Date.now()
+					id: `${collectionId}-copy-${Date.now()}`,
 				};
 
 				return {
@@ -184,7 +224,6 @@ export const CollectionSidebar = () => {
 		);
 	};
 
-	//Rename endpoint
 	const handleRenameEndpoint = (
 		projectId: string,
 		collectionId: string,
@@ -223,6 +262,7 @@ export const CollectionSidebar = () => {
 				e.stopPropagation();
 				console.log("Add request:", collection.id);
 				console.log(projectId);
+				handleAddEndpoint(projectId, collection.id);
 			},
 		},
 		{ isSeparator: true as const },
@@ -354,201 +394,231 @@ export const CollectionSidebar = () => {
 
 	if (openCollections === null) return null;
 
+	if (!isCollectionSidebarOpen) {
+		return (
+			<div className="border-r bg-background h-full p-2 duration-75">
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => setIsCollectionSidebarOpen(true)}
+					className="w-full"
+				>
+					<Folder className="w-4 h-4" />
+				</Button>
+			</div>
+		);
+	}
+
 	return (
-		<div className="flex items-start relative self-stretch h-screen">
-			<div className="flex flex-col w-[400px] items-start relative self-stretch border-r border-[#e2e2e2]">
-				<div className="flex w-[400px] items-center justify-between px-[17px] py-5 relative flex-[0_0_auto] border-r border-b border-slate-200">
-					<CollectionForm />
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="cursor-pointer">
-								<FolderDownIcon className="relative w-6 h-6" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuItem
-								onClick={() => setIsImportCollectionOpen(true)}
-								className="cursor-pointer"
+		<>
+			<div className="w-80 border-r bg-background duration-300">
+				{/* Header */}
+				<div className="flex items-center justify-between p-4 border-b">
+					<CollectionForm onCollectionCreate={handleCreateCollection} />
+					{/* In the header section, add a close button after the dropdown menu: */}
+					<div className="flex items-center gap-1">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon" className="h-8 w-8">
+									<FolderDownIcon className="w-4 h-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem
+									onClick={() => setIsImportCollectionOpen(true)}
+									className="cursor-pointer"
+								>
+									Import
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => setIsExportCollectionOpen(true)}
+									className="cursor-pointer"
+								>
+									Export
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8"
+							onClick={() => setIsCollectionSidebarOpen(false)}
+						>
+							<svg
+								className="w-4 h-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
 							>
-								Import
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => setIsExportCollectionOpen(true)}
-								className="cursor-pointer"
-							>
-								Export
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</Button>
+					</div>
 				</div>
 
-				<div className="w-full h-screen overflow-hidden pb-3">
-					<div
-						className="w-full h-full overflow-y-scroll"
-						style={{
-							scrollbarWidth: "none",
-							msOverflowStyle: "none",
-						}}
-					>
-						{collectionsData.map((project) => (
-							<div key={project.id}>
-								{project.collections.map((collection) => (
-									<div key={`${project.id}-${collection.id}`}>
-										<div
-											className="group flex items-center justify-between px-6 py-2 hover:bg-slate-50 cursor-pointer"
-											onClick={(e) => {
-												toggleCollection(collection.id);
-												e.stopPropagation();
-											}}
-										>
-											<div className="flex items-center gap-3 py-2">
-												{openCollections[collection.id] ? (
-													<FolderOpenIcon className="w-5 h-5 text-slate-600" />
-												) : (
-													<Folder className="w-5 h-5 text-slate-600" />
-												)}
-												{renamingCollectionId === collection.id ? (
-													<Input
-														autoFocus
-														defaultValue={collection.title}
-														onClick={(e) => e.stopPropagation()}
-														onBlur={(e) => {
-															handleRename(
-																project.id,
-																collection.id,
-																e.target.value
-															);
-															setRenamingCollectionId(null);
-															e.stopPropagation();
-														}}
-														onKeyDown={(e) => {
-															if (e.key === "Enter") {
-																(e.target as HTMLInputElement).blur();
-															}
-															if (e.key === "Escape") {
-																setRenamingCollectionId(null);
-															}
-															e.stopPropagation();
-														}}
-													/>
-												) : (
-													<span className="text-[15px] font-medium">
-														{collection.title}
-													</span>
-												)}
-											</div>
-											<ItemActionsDropdown
-												items={getCollectionMenuItems(collection, project.id)}
-											/>
-										</div>
-
-										{openCollections[collection.id] && (
-											<div className="pl-10 pr-4 py-1 space-y-1">
-												{collection.endpoints.map((endpoint) => {
-													const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
-													const isActive = pathname === endpointPath;
-													return (
-														<Link
-															key={`${collection.id}-${endpoint.id}`}
-															onMouseDown={(e) => e.stopPropagation()}
-															// onClick={(e) => {
-															// 	e.preventDefault(), e.stopPropagation();
-															// }}
-															href={endpointPath}
-															className={`group relative flex items-center justify-between gap-2 rounded-lg p-1 pr-2 cursor-pointer ${
-																isActive
-																	? "bg-slate-100 hover:bg-slate-200"
-																	: "hover:bg-slate-100"
-															}`}
-														>
-															<div className="flex items-center gap-2 flex-grow">
-																<Badge
-																	variant="outline"
-																	className="h-5 px-4 py-3 text-[15px] font-medium"
-																>
-																	<span
-																		className={getMethodColor(endpoint.method)}
-																	>
-																		{endpoint.method}
-																	</span>
-																</Badge>
-																{renamingEndpointId === endpoint.id ? (
-																	<Input
-																		autoFocus
-																		defaultValue={endpoint.path}
-																		onClick={(e) => {
-																			e.preventDefault();
-																			e.stopPropagation();
-																		}}
-																		onMouseDown={(e) => e.stopPropagation()}
-																		onBlur={(e) => {
-																			handleRenameEndpoint(
-																				project.id,
-																				collection.id,
-																				endpoint.id,
-																				e.target.value
-																			);
-																			setRenamingEndpointId(null);
-																			e.stopPropagation();
-																		}}
-																		onKeyDown={(e) => {
-																			if (e.key === "Enter") {
-																				(e.target as HTMLInputElement).blur();
-																			}
-																			if (e.key === "Escape") {
-																				setRenamingEndpointId(null);
-																			}
-																			e.stopPropagation();
-																		}}
-																		className="h-6"
-																	/>
-																) : (
-																	<span className="text-[15px] text-slate-600">
-																		{endpoint.path}
-																	</span>
-																)}
-															</div>
-															<ItemActionsDropdown
-																items={getEndpointMenuItems(
-																	endpoint,
-																	collection.id,
-																	project.id
-																)}
-															/>
-														</Link>
+				{/* Collections */}
+				<div className="flex-1 overflow-auto">
+					{collectionsData.map((project) =>
+						project.collections.map((collection) => (
+							<div key={`${project.id}-${collection.id}`}>
+								<div
+									className="group flex items-center justify-between px-4 py-3 mb-2 hover:bg-muted/50 cursor-pointer"
+									onClick={(e) => {
+										toggleCollection(collection.id);
+										e.stopPropagation();
+									}}
+								>
+									<div className="flex items-center gap-3">
+										{openCollections[collection.id] ? (
+											<FolderOpenIcon className="w-4 h-4 text-muted-foreground" />
+										) : (
+											<Folder className="w-4 h-4 text-muted-foreground" />
+										)}
+										{renamingCollectionId === collection.id ? (
+											<Input
+												autoFocus
+												defaultValue={collection.title}
+												onClick={(e) => e.stopPropagation()}
+												onBlur={(e) => {
+													handleRename(
+														project.id,
+														collection.id,
+														e.target.value
 													);
-												})}
-											</div>
+													setRenamingCollectionId(null);
+													e.stopPropagation();
+												}}
+												onKeyDown={(e) => {
+													if (e.key === "Enter") {
+														(e.target as HTMLInputElement).blur();
+													}
+													if (e.key === "Escape") {
+														setRenamingCollectionId(null);
+													}
+													e.stopPropagation();
+												}}
+												className="h-6"
+											/>
+										) : (
+											<span className="font-medium">{collection.title}</span>
 										)}
 									</div>
-								))}
+									<ItemActionsDropdown
+										items={getCollectionMenuItems(collection, project.id)}
+									/>
+								</div>
+
+								{openCollections[collection.id] && (
+									<div className="pb-2">
+										{collection.endpoints.map((endpoint) => {
+											const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
+											const isActive = pathname === endpointPath;
+											return (
+												<div
+													key={`${collection.id}-${endpoint.id}`}
+													className={`group mx-4 mb-1 rounded-md ${
+														isActive ? "bg-muted" : "hover:bg-muted/50"
+													}`}
+												>
+													<Link
+														href={endpointPath}
+														className="flex items-center justify-between gap-2 p-2"
+														onMouseDown={(e) => e.stopPropagation()}
+													>
+														<div className="flex items-center gap-2 flex-grow min-w-0">
+															<Badge
+																variant="outline"
+																className="h-5 px-2 text-xs font-medium shrink-0"
+															>
+																<span
+																	className={getMethodColor(endpoint.method)}
+																>
+																	{endpoint.method}
+																</span>
+															</Badge>
+															{renamingEndpointId === endpoint.id ? (
+																<Input
+																	autoFocus
+																	defaultValue={endpoint.path}
+																	onClick={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																	}}
+																	onMouseDown={(e) => e.stopPropagation()}
+																	onBlur={(e) => {
+																		handleRenameEndpoint(
+																			project.id,
+																			collection.id,
+																			endpoint.id,
+																			e.target.value
+																		);
+																		setRenamingEndpointId(null);
+																		e.stopPropagation();
+																	}}
+																	onKeyDown={(e) => {
+																		if (e.key === "Enter") {
+																			(e.target as HTMLInputElement).blur();
+																		}
+																		if (e.key === "Escape") {
+																			setRenamingEndpointId(null);
+																		}
+																		e.stopPropagation();
+																	}}
+																	className="h-6"
+																/>
+															) : (
+																<span className="text-sm text-muted-foreground truncate">
+																	{endpoint.path}
+																</span>
+															)}
+														</div>
+														<ItemActionsDropdown
+															items={getEndpointMenuItems(
+																endpoint,
+																collection.id,
+																project.id
+															)}
+														/>
+													</Link>
+												</div>
+											);
+										})}
+									</div>
+								)}
 							</div>
-						))}
-					</div>
-					<ExportEndpoint
-						open={isExportRequestOpen}
-						onOpenChange={setIsExportRequestOpen}
-					/>
-					<ExportCollection
-						open={isExportCollectionOpen}
-						onOpenChange={setIsExportCollectionOpen}
-					/>
-					<ShareCollection
-						open={isShareCollectionOpen}
-						onOpenChange={setIsShareCollectionOpen}
-						collection={selectedCollection}
-					/>
-					<ShareEndpoint
-						open={isShareEndpointOpen}
-						onOpenChange={setIsShareEndpointOpen}
-						endpoint={selectedEndpoint}
-					/>
-					<ImportCollection
-						open={isImportCollectionOpen}
-						onOpenChange={setIsImportCollectionOpen}
-					/>
+						))
+					)}
 				</div>
 			</div>
+
+			{/* All your existing dialogs */}
+			<ExportEndpoint
+				open={isExportRequestOpen}
+				onOpenChange={setIsExportRequestOpen}
+			/>
+			<ExportCollection
+				open={isExportCollectionOpen}
+				onOpenChange={setIsExportCollectionOpen}
+			/>
+			<ShareCollection
+				open={isShareCollectionOpen}
+				onOpenChange={setIsShareCollectionOpen}
+				collection={selectedCollection}
+			/>
+			<ShareEndpoint
+				open={isShareEndpointOpen}
+				onOpenChange={setIsShareEndpointOpen}
+				endpoint={selectedEndpoint}
+			/>
+			<ImportCollection
+				open={isImportCollectionOpen}
+				onOpenChange={setIsImportCollectionOpen}
+			/>
 
 			{collectionToDelete && (
 				<DeleteCollection
@@ -559,7 +629,6 @@ export const CollectionSidebar = () => {
 					onConfirm={() => {
 						const { projectId, collectionId } = collectionToDelete;
 
-						// Remove collection from collectionsData
 						setCollectionsData((prev) =>
 							prev.map((project) =>
 								project.id === projectId
@@ -572,8 +641,6 @@ export const CollectionSidebar = () => {
 									: project
 							)
 						);
-
-						// Remove from openCollections
 						setOpenCollections((prev) => {
 							if (!prev) return prev;
 							const updated = { ...prev };
@@ -581,7 +648,7 @@ export const CollectionSidebar = () => {
 							return updated;
 						});
 
-						setCollectionToDelete(null); // Close dialog
+						setCollectionToDelete(null);
 					}}
 				/>
 			)}
@@ -619,6 +686,6 @@ export const CollectionSidebar = () => {
 					}}
 				/>
 			)}
-		</div>
+		</>
 	);
 };
