@@ -89,4 +89,14 @@ export interface ProjectFormProps {
 	onProjectUpdated?: (updatedProject: ProjectItem) => void; // New prop for edit mode
 }
 
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  token?: string;
+  avatarUrl?: string;
+  role?: string;
+}
+
+
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
