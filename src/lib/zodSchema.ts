@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const loginSchema = z.object({
+	email: z.string().email({ message: "Please enter a valid email address." }),
+	password: z.string().min(1, { message: "Password is required." }),
+	// Optional: Include callbackUrl if needed for redirects
+	// callbackUrl: z.string().optional(),
+});
+
 export const projectFormSchema = z.object({
 	projectName: z.string().min(1, { message: "Project name is required." }),
 	projectDescription: z

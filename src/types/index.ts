@@ -90,3 +90,13 @@ export interface ProjectFormProps {
 }
 
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
+
+export type LoginResponseType = {
+	message: string;
+	status: string;
+	success: boolean;
+	timestamps: string;
+	data: {
+		token: string;
+	};
+};
