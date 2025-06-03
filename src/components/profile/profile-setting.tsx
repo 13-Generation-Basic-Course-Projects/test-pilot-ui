@@ -3,6 +3,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { BreadcrumbProfile } from "../breadcrumb-profile";
 import EditProfile from "../profile/edit-profile-setting";
+import {handleUserUpdate} from "@/action/user-action";
+import headerToken from "@/lib/header";
+import {string} from "zod";
+
 
 export default function ProfileSetting() {
 	const [profile, setProfile] = useState({
@@ -12,29 +16,40 @@ export default function ProfileSetting() {
 		imageUrl: "/profile-img.png",
 	});
 
-	const handleUpdateProfile = (updatedData: {
+
+
+	const handleUpdateProfile = async (updatedData: {
 		username: string;
 		email: string;
 		password: string;
 		image?: File | null;
 	}) => {
-		if (updatedData.image) {
-			const imageUrl = URL.createObjectURL(updatedData.image);
+		try {
+			await handleUserUpdate(
+				{
+					name: updatedData.username, // Convert to backend-required "name"
+					email: updatedData.email,
+				},
+
+			);
+
+			let imageUrl = profile.imageUrl;
+			if (updatedData.image) {
+				imageUrl = URL.createObjectURL(updatedData.image);
+			}
+
 			setProfile({
 				username: updatedData.username,
 				email: updatedData.email,
 				password: updatedData.password,
-				imageUrl: imageUrl,
+				imageUrl,
 			});
-		} else {
-			setProfile({
-				username: updatedData.username,
-				email: updatedData.email,
-				password: updatedData.password,
-				imageUrl: profile.imageUrl,
-			});
+		} catch (error) {
+			console.error("Failed to update profile:", error);
 		}
 	};
+
+
 
 	return (
 		<div className="min-w-screen">
