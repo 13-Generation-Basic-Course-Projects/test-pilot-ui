@@ -1,63 +1,70 @@
-// src/auth.j
-import NextAuth from "next-auth";
+import NextAuth, { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { signInService } from "./service/signInService";
+import { signInService } from "./service/auth-service";
 
+class CustomError extends CredentialsSignin {
+	constructor(code: string) {
+		super();
+		this.code = code;
+		this.message = code;
+		this.stack = undefined;
+	}
+}
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    Credentials({
-      name: "credentials",
-      credentials: {
-        email: {},
-        password: {},
-      },
+export const { handlers, signIn, signOut, auth } = NextAuth({
+	providers: [
+		Credentials({
+			credentials: {
+				email: {},
+				password: {},
+			},
+			authorize: async (credentials) => {
+				try {
+					// Implement Login with jwt and session
+					const userToken: { token: string } = await signInService({
+						credentials,
+					} as {
+						credentials: { email: string; password: string };
+					});
 
-      authorize: async (credentials) => {
-        try {
-        //   const user = await signInService(credentials);
+					if (!userToken) {
+						throw new CustomError("Invalid Credential");
+					}
 
-        //   if (!user) {
-        //     throw new Error("Invalid credentials");
-        //   }
-          // console.log("user", user);
-          
-          return null;
-        } catch (error) {
-          console.error("Authorize error:", error);
-          return null;
-        }
-      },
-    }),
-  ],
+					return {
+						id: "some-id",
+						token: userToken.token,
+					};
+				} catch (error: any) {
+					if (error instanceof AuthError) {
+						throw new CustomError("invalid_schema");
+					}
+					throw new CustomError(error.message);
+				}
+			},
+		}),
+	],
+	secret: process.env.AUTH_SECRET,
+	session: {
+		strategy: "jwt",
+	},
+	pages: {
+		signIn: "/login",
+	},
+	debug: process.env.NODE_ENV === "development",
+	callbacks: {
+		async jwt({ token, user }) {
+			if (user) {
+				token.accessToken = (user as { id: string; token: string }).token;
+			}
 
-  secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
-
-  callbacks: {
-    jwt: async ({ token, user }) => {
-
-      if (user) {
-        token.user = user;
-      }
-
-      return token; // Ensure token is always returned
-    },
-    session: async ({ session, token }) => {
-
-    //   if (token && token.user) {
-    //     session.user = token.user;
-    //   }
-      // console.log("Token: ", token);
-      // console.log("Seesion token: ", session);
-      
-      
-      return session;
-    },
-  },
+			return token;
+		},
+		async session({ session, token }) {
+			if (token) {
+				return { ...session, accessToken: token.accessToken };
+			}
+			return session;
+		},
+	},
 });

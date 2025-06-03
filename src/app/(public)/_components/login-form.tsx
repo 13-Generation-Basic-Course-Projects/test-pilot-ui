@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,34 @@ import { Label } from "@/components/ui/label";
 import GithubIcon from "@/components/icons/github";
 import GoogleIcon from "@/components/icons/google";
 import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link"; 
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { signInAction } from "@/action/auth-action";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"form">) {
+	const searchParams = useSearchParams();
+
+	useEffect(() => {
+		const error = searchParams.get("error");
+		if (error) {
+			console.log("Invalid credentials");
+			toast.error("Invalid credentials", {
+				id: "login-credentials-id",
+			});
+		}
+	}, [searchParams]);
 	const [showPassword, setShowPassword] = useState(false);
 
 	return (
-		<form className={cn("flex flex-col gap-8 mb-10", className)} {...props}>
+		<form
+			className={cn("flex flex-col gap-8 mb-10", className)}
+			action={signInAction}
+			{...props}
+		>
 			{/* Header */}
 			<div className="flex flex-col items-center gap-2 text-center">
 				<h1 className="text-2xl font-bold">Login to your account</h1>
@@ -52,10 +70,13 @@ export function LoginForm({
 			{/* Email & Password */}
 			<div className="grid gap-6">
 				<div className="grid gap-2">
-					<Label htmlFor="email" className="text-[#34302B]">Email</Label>
+					<Label htmlFor="email" className="text-[#34302B]">
+						Email
+					</Label>
 					<Input
 						id="email"
 						type="email"
+						name="email"
 						placeholder="channarith@gmail.com"
 						required
 						className="text-[#94A3B8]"
@@ -64,9 +85,12 @@ export function LoginForm({
 
 				{/* Password Field with Eye Icon */}
 				<div className="grid gap-2 relative">
-					<Label htmlFor="password" className="text-[#34302B]">Password</Label>
+					<Label htmlFor="password" className="text-[#34302B]">
+						Password
+					</Label>
 					<Input
 						id="password"
+						name="password"
 						type={showPassword ? "text" : "password"}
 						required
 						className="pr-10"
@@ -78,17 +102,21 @@ export function LoginForm({
 					>
 						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
 					</button>
-					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]"><Link href={"/forgot-password"}>Forgot your password ?</Link></button>
+					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
+						<Link href={"/forgot-password"}>Forgot your password ?</Link>
+					</button>
 				</div>
 
-				<Button type="submit" className="w-full">
+				<Button type="submit" className="w-full cursor-pointer">
 					Login
 				</Button>
 			</div>
 			{/* Sign up */}
 			<div className="text-center text-sm text-[#737373]">
 				Don&apos;t have an account?{" "}
-				<Link href="/register" className="text-[#0973DC]">Sign up</Link>
+				<Link href="/register" className="text-[#0973DC]">
+					Sign up
+				</Link>
 			</div>
 		</form>
 	);
