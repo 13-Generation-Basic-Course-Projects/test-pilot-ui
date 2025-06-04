@@ -36,8 +36,8 @@ export function DeleteProject({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => onDeleteConfirm(project.id)}>
+          <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => onDeleteConfirm(project.id)} className="cursor-pointer">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

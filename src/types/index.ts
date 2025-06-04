@@ -73,7 +73,7 @@ export interface ProjectItem {
 	title: string;
 	description: string;
 	creationDate: string;
-	userAvatarUrl: string;
+	userAvatarUrl?: string
 }
 
 export interface ProjectProps {
