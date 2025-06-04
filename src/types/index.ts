@@ -106,7 +106,7 @@ export type LoginResponseType = {
 	status: string;
 	success: boolean;
 	timestamps: string;
-	data: {
+	payload: {
 		token: string;
 	};
 };
