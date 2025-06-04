@@ -2,9 +2,24 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const publicPaths = ["/", "/login", "/sign-up"];
+const publicPaths = [
+	"/",
+	"/login",
+	"/register",
+	"/forgot-password",
+	"/verify-otp-confirm",
+	"/verify-otp-update",
+	"/verify-otp-success",
+];
 
-const authRoutes = ["/login", "/sign-up"];
+const authRoutes = [
+	"/login",
+	"/register",
+	"/forgot-password",
+	"/verify-otp-confirm",
+	"/verify-otp-update",
+	"/verify-otp-success",
+];
 
 const defaultLoginRedirect = "/project";
 

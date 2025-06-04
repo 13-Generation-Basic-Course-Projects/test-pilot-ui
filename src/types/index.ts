@@ -100,3 +100,21 @@ export type LoginResponseType = {
 		token: string;
 	};
 };
+
+export type RegisterResponseType = {
+	message: string;
+	status: string;
+	success: boolean;
+	timestamps: string;
+	data: string;
+};
+
+export type BackendErrorResponse = {
+	type: string;
+	title: string;
+	status: number;
+	detail?: string;
+	instance: string;
+	timestamp: string;
+	errors?: { [key: string]: string };
+};
