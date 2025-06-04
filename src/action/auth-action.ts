@@ -1,6 +1,7 @@
 "use server";
 import { signIn, signOut } from "@/auth";
 import {
+	requestOTPPasswordService,
 	resendOTPService,
 	signUpService,
 	verifyOTPService,
@@ -73,6 +74,18 @@ export const resendOTPAction = async ({ email }: { email: string }) => {
 		console.log("email", data);
 		return data;
 	} catch (error) {}
+};
+
+export const forgetPasswordAction = async (
+	prevState: { message: string | null; success: boolean },
+	formData: FormData
+) => {
+	const data = await requestOTPPasswordService({
+		email: formData.get("email") as string,
+	});
+
+	console.log(data);
+	return data;
 };
 
 export const logout = async () => {

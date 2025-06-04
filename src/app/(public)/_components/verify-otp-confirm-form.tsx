@@ -18,11 +18,11 @@ import {
 	InputOTPGroup,
 	InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { verifyOTPAction, resendOTPAction } from "@/action/auth-action"; // Ensure resendOTPAction is imported
-import { useRegister } from "@/store/email-register-slice"; // Assuming this is your Zustand store
-import { useState, useEffect } from "react"; // Add useEffect for redirection and toast
+import { verifyOTPAction, resendOTPAction } from "@/action/auth-action";
+import { useRegister } from "@/store/email-register-slice";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // For displaying notifications
+import { toast } from "sonner";
 
 const FormSchema = z.object({
 	pin: z.string().length(6, {
@@ -42,12 +42,11 @@ export function VerifyOtpConfirmForm({
 		},
 	});
 
-	const { registeredEmail } = useRegister(); // Get clearRegisteredEmail if you have it
+	const { registeredEmail } = useRegister();
 
-	const [isResending, setIsResending] = useState(false); // State for resend loading
-	const [resendCooldown, setResendCooldown] = useState(0); // State for cooldown timer
+	const [isResending, setIsResending] = useState(false);
+	const [resendCooldown, setResendCooldown] = useState(0);
 
-	// Redirect if no email is registered (good practice from previous feedback)
 	useEffect(() => {
 		if (!registeredEmail) {
 			toast.error("No email found for verification. Please register again.");

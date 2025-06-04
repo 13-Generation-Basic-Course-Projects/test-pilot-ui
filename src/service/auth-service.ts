@@ -96,3 +96,20 @@ export const resendOTPService = async ({ email }: { email: string }) => {
 	const data = await res.json();
 	return data;
 };
+
+export const requestOTPPasswordService = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	const res = await fetch(`${AUTH_ENDPOINT}/password/request-reset-otp`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email }),
+	});
+
+	const data = await res.json();
+	return data;
+};
