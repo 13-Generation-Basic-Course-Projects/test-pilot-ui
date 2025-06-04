@@ -1,6 +1,6 @@
 import { NavbarComponent } from "@/components/navbar";
 import ProjectItems from "@/components/project/project-items";
-import { getAllProjectService } from "@/service/project-service";
+// import { getAllProjectService } from "@/service/project-service";
 import React from "react";
 
 const ProjectPage = async ({
@@ -9,8 +9,7 @@ const ProjectPage = async ({
 	searchParams: Promise<{ query?: string }>;
 }) => {
 	const { query } = await searchParams;
-	const project = await getAllProjectService();
-	console.log(project.payload);
+	// const project = await getAllProjectService();
 
 	return (
 		<div>
