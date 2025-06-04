@@ -15,14 +15,33 @@ export async function uploadProfileImageService(file: File) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetchAPI(`${USER_ENDPOINT}/upload/profile-image`, {
-        method: "POST",
-        body: JSON.stringify(formData),
-
+    const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/upload/profile-image`, {
+        method: "PUT",
+        body: formData,
     });
 
-    return res;
+    return res.data.profileImage;
 }
+export async function getUserProfileService(): Promise<{
+    username: string;
+    email: string;
+    profileImage: string;
+}> {
+    const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/profile-info`, {
+        method: "GET",
+    });
+
+    return {
+        username: res.payload.name,
+        email: res.payload.email,
+        profileImage: res.payload.profileImage,
+    };
+
+}
+
+
+
+
 
 
 

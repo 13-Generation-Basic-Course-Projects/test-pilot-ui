@@ -1,3 +1,4 @@
+
 export type UserProfileType = {
         userId: string
         name: string,
@@ -5,3 +6,4 @@ export type UserProfileType = {
         isVerified: boolean,
         profileImage: string
 }
+

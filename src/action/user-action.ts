@@ -1,9 +1,10 @@
 "use server";
 
-import {userUpdateService} from "@/service/user-service";
+import {getUserProfileService, uploadProfileImageService, userUpdateService} from "@/service/user-service";
+
 
 export const handleUserUpdate = async (
-    data: { name: string; email: string },
+    data: { name: string; email: string; profileImage: string },
 ) => {
     try {
         const updated = await userUpdateService(data);
@@ -13,3 +14,17 @@ export const handleUserUpdate = async (
         throw e;
     }
 };
+
+export const handleUploadProfileImage = async (
+    file: File
+) => {
+    try {
+        const upload = await uploadProfileImageService(file);
+        return upload;
+    } catch (e) {
+        console.error("handleUploadProfileImage error:", e);
+        return null;
+    }
+};
+
+
