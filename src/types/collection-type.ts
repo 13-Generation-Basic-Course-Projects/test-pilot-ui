@@ -31,3 +31,9 @@ export type CollectionResponseType = {
     limit: number;
   };
 };
+
+export type CollectionItem = {
+  id: string;
+  title: string;
+  endpoints: any[];
+};

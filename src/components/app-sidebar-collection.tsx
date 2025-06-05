@@ -35,7 +35,10 @@ import { ImportCollection } from "./import/import-collection";
 import { DeleteCollection } from "./delete/delete-collection";
 import { DeleteEndpoint } from "./delete/delete-endpoint";
 import { getMethodColor } from "@/lib/utils";
-import { fetchCollectionsForProject } from "@/actions/collection-action";
+import {
+  createCollectionAction,
+  fetchCollectionsForProject,
+} from "@/actions/collection-action";
 import { deleteCollectionByIdService } from "@/service/collection-service";
 
 interface Project {
@@ -135,25 +138,30 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     );
   };
 
-  const handleCreateCollection = (title: string) => {
-    const newCollection: CollectionItem = {
-      id: `collection-${Date.now()}`,
-      title,
-      endpoints: [],
-    };
-
-    setCollectionsData((prev) => {
-      const lastProjectIndex = prev.length - 1;
-      return prev.map((project, index) => {
-        if (index === lastProjectIndex) {
-          return {
-            ...project,
-            collections: [...project.collections, newCollection],
-          };
-        }
-        return project;
+  const handleCreateCollection = async (title: string) => {
+    if (!projectId) {
+      alert("No project selected");
+      return;
+    }
+    //Call API to create collection
+    const newCollection = await createCollectionAction(title, projectId);
+    if (newCollection) {
+      //  Add collection into UI Component
+      setCollectionsData((prev) => {
+        const lastProjectIndex = prev.length - 1;
+        return prev.map((project, index) => {
+          if (index === lastProjectIndex) {
+            return {
+              ...project,
+              collections: [...project.collections, newCollection],
+            };
+          }
+          return project;
+        });
       });
-    });
+    } else {
+      console.log("Failed to create collection.");
+    }
   };
 
   const handleRename = (
