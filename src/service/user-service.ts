@@ -2,13 +2,14 @@ import {fetchAPI} from "@/lib/api";
 import {USER_ENDPOINT} from "@/lib/static";
 import {UserProfileType} from "@/types/user-profile-type";
 
+
 export async function userUpdateService(data: { name: string; email: string }) {
     const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/update/profile-info`, {
         method: "PUT",
         body: JSON.stringify(data),
     });
 
-    return res.data;
+    return res.payload;
 }
 
 export async function uploadProfileImageService(file: File) {
@@ -20,7 +21,7 @@ export async function uploadProfileImageService(file: File) {
         body: formData,
     });
 
-    return res.data.profileImage;
+    return res.payload.profileImage;
 }
 export async function getUserProfileService(): Promise<{
     username: string;

@@ -5,6 +5,8 @@ declare global {
 		payload: T;
 		message: string;
 		status: string;
-		data: T;
+		payload: T;
+		success: boolean,
+		timestamps : string
 	}
 }
