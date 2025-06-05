@@ -52,8 +52,11 @@ export interface Endpoint {
 export interface CollectionItem {
 	id: string;
 	title: string;
-	description?: string; // optional field
 	endpoints: Endpoint[];
+}
+
+export interface ProjectDetailPageProps {
+  params: Promise<{ projectId: string }>;
 }
 
 export interface Project {
@@ -74,6 +77,14 @@ export interface ProjectItem {
 	description: string;
 	creationDate: string;
 	userAvatarUrl?: string
+}
+
+
+
+export interface Endpoint {
+  id: string;
+  method: string;
+  path: string;
 }
 
 export interface ProjectProps {

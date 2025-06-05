@@ -14,7 +14,7 @@ export const projectsData: Project[] = [
 			{
 				id: "collection-1",
 				title: "User Management",
-				description: "APIs for user operations",
+				// description: "APIs for user operations",
 				endpoints: [
 					{
 						id: "endpoint-1",
@@ -54,7 +54,7 @@ export const projectsData: Project[] = [
 			{
 				id: "collection-3",
 				title: "Product Catalog",
-				description: "Endpoints for product information",
+				// description: "Endpoints for product information",
 				endpoints: [
 					{
 						id: "endpoint-5",
@@ -105,7 +105,7 @@ export const projectsData: Project[] = [
 			{
 				id: "collection-9",
 				title: "Stock Levels",
-				description: "Manage product stock.",
+				// description: "Manage product stock.",
 				endpoints: [
 					{
 						id: "endpoint-15",
@@ -145,7 +145,7 @@ export const projectsData: Project[] = [
 			{
 				id: "collection-10",
 				title: "Articles",
-				description: "Endpoints for blog articles.",
+				// description: "Endpoints for blog articles.",
 				endpoints: [
 					{
 						id: "endpoint-17",

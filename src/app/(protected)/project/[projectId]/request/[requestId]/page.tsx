@@ -12,7 +12,7 @@ const RequestDetail = async ({
 	return (
 		<div className="flex h-screen overflow-hidden">
 			<SidebarCollectionProvider>
-				<CollectionSidebar />
+				<CollectionSidebar projectId={""} />
 			</SidebarCollectionProvider>
 			<div className="flex-1 min-w-0 overflow-auto">
 				<RequestContent projectId={projectId} requestId={requestId} />
