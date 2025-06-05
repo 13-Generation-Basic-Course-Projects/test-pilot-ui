@@ -13,9 +13,8 @@ export async function fetchAPI<T>(
 
 		const text = await response.text();
 		if (!text.trim()) {
-			return { message: "", status: "OK", data: [] } as APIResponse<T>;
+			return { message: "", status: "OK", payload: [], success : false, timestamps: "" } as APIResponse<T>;
 		}
-
 		const data: APIResponse<T> = JSON.parse(text);
 		return data;
 	} catch (error) {
