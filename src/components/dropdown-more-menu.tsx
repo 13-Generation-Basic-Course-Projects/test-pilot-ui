@@ -14,7 +14,7 @@ import { Button } from "./ui/button";
 
 interface ActionItem {
 	icon?: React.ReactNode;
-	label: string;
+	label: React.ReactNode; // <--- This is the fix
 	onClick: (event: React.MouseEvent) => void;
 	isSeparator?: false;
 	className?: string;
@@ -66,7 +66,7 @@ export const ItemActionsDropdown: React.FC<ItemActionsDropdownProps> = ({
 					}
 					return (
 						<DropdownMenuItem
-							key={item.label + index}
+							key={`item-${index}`} // Using index is okay here as list is static per render
 							onClick={item.onClick}
 							className={item.className}
 						>
@@ -74,7 +74,7 @@ export const ItemActionsDropdown: React.FC<ItemActionsDropdownProps> = ({
 								{item.icon && <span className="mr-2">{item.icon}</span>}
 								{item.label}
 							</span>
-							{item.endIcon && <span className="ml-2">{item.endIcon}</span>}{" "}
+							{item.endIcon && <span className="ml-2">{item.endIcon}</span>}
 						</DropdownMenuItem>
 					);
 				})}

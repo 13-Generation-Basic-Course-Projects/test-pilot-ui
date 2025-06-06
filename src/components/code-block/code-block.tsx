@@ -1,3 +1,4 @@
+"use client";
 import React, { useRef, useEffect, useState } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import { Card, CardContent } from "../ui/card";
@@ -12,7 +13,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { FileJson } from "lucide-react";
+import { FileJson, Loader2 } from "lucide-react"; // Import Loader2
 
 let monacoEditorInstance: monaco.editor.IStandaloneCodeEditor;
 
@@ -24,6 +25,7 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 	const [contentType, setContentType] = useState("json");
 	const editorRef = useRef<typeof monacoEditorInstance>(null);
 	const { rawBody, setRawBody } = useApiBodyStore();
+	const [isParsing, setIsParsing] = useState(false); // State for loading
 
 	useEffect(() => {
 		const editor = editorRef.current;
@@ -34,7 +36,6 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 
 	const handleEditorDidMount: OnMount = (editor) => {
 		editorRef.current = editor;
-		// Set initial value from Zustand
 		editor.setValue(rawBody || "{\n\n}");
 	};
 
@@ -42,30 +43,38 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 		const editorValue = editorRef.current?.getValue();
 		if (editorValue !== undefined) {
 			try {
-				// Attempt to parse the JSON whenever the editor content changes
 				const parsedValue = JSON.parse(editorValue);
-				// Call setRawBody with both the raw value and the parsed object
 				setRawBody(editorValue, parsedValue);
 			} catch (error) {
-				// If parsing fails, store the raw body but reset parsed rows
 				setRawBody(editorValue, null);
 			}
 		}
 	};
 
 	const handleSubmit = () => {
-		try {
-			const editorValue = editorRef.current?.getValue();
-			if (!editorValue) return;
+		setIsParsing(true); // Set loading state to true
 
-			const parsedValue = JSON.parse(editorValue);
-			// setRawBody now also handles updating apiBodyRows based on parsedValue
-			setRawBody(editorValue, parsedValue);
-			// Switch tab
-			if (onParse) onParse();
-		} catch (error) {
-			toast.error("Can't parse wrong format!");
-		}
+		setTimeout(() => {
+			// Simulate 2-second delay
+			try {
+				const editorValue = editorRef.current?.getValue();
+				if (!editorValue) {
+					setIsParsing(false); // Reset loading if no value
+					return;
+				}
+
+				const parsedValue = JSON.parse(editorValue);
+				setRawBody(editorValue, parsedValue);
+
+				if (onParse) {
+					onParse(); // Call onParse if it exists, e.g., to switch tabs
+				}
+			} catch (error) {
+				toast.error("Can't parse wrong format!");
+			} finally {
+				setIsParsing(false); // Reset loading state in both success and error cases
+			}
+		}, 2000); // 2000 milliseconds = 2 seconds
 	};
 
 	return (
@@ -80,9 +89,23 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 					</SelectContent>
 				</Select>
 
-				<Button onClick={handleSubmit}>
-					<FileJson />
-					Parse Body
+				<Button
+					onClick={handleSubmit}
+					disabled={isParsing} // Disable button while parsing
+					className="cursor-pointer"
+				>
+					{isParsing ? (
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Parsing...
+						</>
+					) : (
+						<>
+							<FileJson className="mr-2 h-4 w-4" />{" "}
+							{/* Added margin for consistency */}
+							Parse Body
+						</>
+					)}
 				</Button>
 			</div>
 			<Card className="w-[95%] min-h-[391px] border shadow-none py-3 overflow-hidden mx-auto">

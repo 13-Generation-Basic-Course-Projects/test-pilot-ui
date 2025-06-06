@@ -23,11 +23,11 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-import { projectsData } from "@/lib/constants";
 import { getMethodColor } from "@/lib/utils";
-import { CollectionItem, Endpoint } from "@/types";
+import { CollectionItem, Endpoint, Project } from "@/types";
 import { CollectionForm } from "./collection/collection-form";
 import { ItemActionsDropdown } from "./dropdown-more-menu";
 import { ExportEndpoint } from "./export/export-endpoint";
@@ -40,370 +40,263 @@ import { DeleteEndpoint } from "./delete/delete-endpoint";
 
 export const CollectionSidebar = () => {
 	const [isCollectionSidebarOpen, setIsCollectionSidebarOpen] = useState(true);
-	const [openCollections, setOpenCollections] = useState<Record<
-		string,
-		boolean
-	> | null>(null);
+	const [openCollections, setOpenCollections] = useState<
+		Record<string, boolean>
+	>({});
 	const [renamingCollectionId, setRenamingCollectionId] = useState<
 		string | null
 	>(null);
-	const [collectionsData, setCollectionsData] = useState(projectsData);
-	const [collectionToDelete, setCollectionToDelete] = useState<{
-		projectId: string;
-		collectionId: string;
-	} | null>(null);
-	// Rename
 	const [renamingEndpointId, setRenamingEndpointId] = useState<string | null>(
 		null
 	);
-	// Export request
-	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
+	const [project, setProject] = useState<Project | null>(null);
+	const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+	// State for modals
+	const [collectionToDelete, setCollectionToDelete] =
+		useState<CollectionItem | null>(null);
+	const [endpointToDelete, setEndpointToDelete] = useState<Endpoint | null>(
+		null
+	);
 	const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(
 		null
 	);
-
-	// Export collection
-	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
 	const [selectedCollection, setSelectedCollection] =
 		useState<CollectionItem | null>(null);
-
-	// Import collection
+	const [isExportRequestOpen, setIsExportRequestOpen] = useState(false);
+	const [isExportCollectionOpen, setIsExportCollectionOpen] = useState(false);
 	const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
-
 	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
 
-	// Delete request
-	const [endpointToDelete, setEndpointToDelete] = useState<{
-		projectId: string;
-		collectionId: string;
-		endpointId: string;
-	} | null>(null);
+	const pathname = usePathname();
+	const currentProjectId = pathname.split("/")[2] || null;
 
 	useEffect(() => {
-		const saved = localStorage.getItem("openCollections");
-		setOpenCollections(saved ? JSON.parse(saved) : {});
-	}, []);
+		if (currentProjectId) {
+			try {
+				const projectKey = `project-data-${currentProjectId}`;
+				const savedProjectJSON = localStorage.getItem(projectKey);
+				setProject(savedProjectJSON ? JSON.parse(savedProjectJSON) : null);
+			} catch (error) {
+				console.error("Error parsing project data:", error);
+				setProject(null);
+			}
+		} else {
+			setProject(null);
+		}
+		const savedOpen = localStorage.getItem("openCollections");
+		setOpenCollections(savedOpen ? JSON.parse(savedOpen) : {});
+		setIsDataLoaded(true);
+	}, [currentProjectId]);
 
 	useEffect(() => {
-		if (openCollections !== null) {
+		if (isDataLoaded && project && currentProjectId) {
+			localStorage.setItem(
+				`project-data-${currentProjectId}`,
+				JSON.stringify(project)
+			);
+		}
+		if (isDataLoaded) {
 			localStorage.setItem("openCollections", JSON.stringify(openCollections));
 		}
-	}, [openCollections]);
+	}, [project, openCollections, isDataLoaded, currentProjectId]);
 
-	const pathname = usePathname();
-
-	const toggleCollection = (collectionId: string) => {
-		setOpenCollections((prev) => ({
-			...prev,
-			[collectionId]: !prev?.[collectionId],
-		}));
-	};
-
-	const handleAddEndpoint = (projectId: string, collectionId: string) => {
-		const newEndpoint: Endpoint = {
-			id: `endpoint-${Date.now()}`,
-			method: "GET",
-			path: "/new-request",
-		};
-
-		setCollectionsData((prev) =>
-			prev.map((project) => {
-				if (project.id !== projectId) return project;
-				return {
-					...project,
-					collections: project.collections.map((collection) =>
-						collection.id === collectionId
-							? {
-									...collection,
-									endpoints: [...collection.endpoints, newEndpoint],
-							  }
-							: collection
-					),
-				};
-			})
-		);
-
-		// Automatically start renaming the new endpoint
-		// setRenamingEndpointId(newEndpoint.id);
+	const updateProject = (updater: (prev: Project) => Project | null) => {
+		setProject((prev) => (prev ? updater(prev) : null));
 	};
 
 	const handleCreateCollection = (title: string) => {
+		if (!project) return;
 		const newCollection: CollectionItem = {
 			id: `collection-${Date.now()}`,
 			title,
 			endpoints: [],
 		};
+		updateProject((p) => ({
+			...p,
+			collections: [...(p.collections || []), newCollection],
+		}));
+	};
 
-		setCollectionsData((prev) => {
-			// Find the last project or use the first one if no projects exist
-			const lastProjectIndex = prev.length - 1;
-			return prev.map((project, index) => {
-				console.log(index);
-				if (index === lastProjectIndex) {
-					return {
-						...project,
-						collections: [...project.collections, newCollection],
-					};
-				}
-				return project;
-			});
+	const handleAddEndpoint = (collectionId: string) => {
+		const newEndpoint: Endpoint = {
+			id: `endpoint-${Date.now()}`,
+			method: "GET",
+			path: "/new-request",
+		};
+		updateProject((p) => ({
+			...p,
+			collections: p.collections.map((c) =>
+				c.id === collectionId
+					? { ...c, endpoints: [...(c.endpoints || []), newEndpoint] }
+					: c
+			),
+		}));
+		setOpenCollections((prev) => ({ ...prev, [collectionId]: true }));
+	};
+
+	const handleRenameCollection = (collectionId: string, newTitle: string) => {
+		updateProject((p) => ({
+			...p,
+			collections: p.collections.map((c) =>
+				c.id === collectionId ? { ...c, title: newTitle } : c
+			),
+		}));
+	};
+	const handleDuplicateCollection = (collectionId: string) => {
+		updateProject((p) => {
+			const collectionToDuplicate = p.collections.find(
+				(c) => c.id === collectionId
+			);
+			if (!collectionToDuplicate) return p;
+
+			const duplicated = {
+				...collectionToDuplicate,
+				// ID remains unique for React keys
+				id: crypto.randomUUID(),
+				// Append " copy" to the user-visible title
+				title: `${collectionToDuplicate.title} copy`,
+				// Endpoints inside also get new unique IDs
+				endpoints: (collectionToDuplicate.endpoints || []).map((ep) => ({
+					...ep,
+					id: crypto.randomUUID(),
+				})),
+			};
+			return { ...p, collections: [...p.collections, duplicated] };
 		});
 	};
-	const handleRename = (
-		projectId: string,
+	const handleRenameEndpoint = (
 		collectionId: string,
-		newTitle: string
+		endpointId: string,
+		newPath: string
 	) => {
-		setCollectionsData((prev) =>
-			prev.map((project) => {
-				if (project.id !== projectId) return project;
-				return {
-					...project,
-					collections: project.collections.map((collection) =>
-						collection.id === collectionId
-							? { ...collection, title: newTitle }
-							: collection
-					),
-				};
-			})
-		);
-	};
-
-	const handleDuplicateCollection = (
-		projectId: string,
-		collectionId: string
-	) => {
-		setCollectionsData((prev) =>
-			prev.map((project) => {
-				if (project.id !== projectId) return project;
-
-				const collectionToDuplicate = project.collections.find(
-					(collection) => collection.id === collectionId
-				);
-
-				if (!collectionToDuplicate) return project;
-
-				const duplicatedCollection = {
-					...collectionToDuplicate,
-					id: `${collectionId}-copy-${Date.now()}`,
-				};
-
-				return {
-					...project,
-					collections: [...project.collections, duplicatedCollection],
-				};
-			})
-		);
+		updateProject((p) => ({
+			...p,
+			collections: p.collections.map((c) =>
+				c.id === collectionId
+					? {
+							...c,
+							endpoints: (c.endpoints || []).map((ep) =>
+								ep.id === endpointId ? { ...ep, path: newPath } : ep
+							),
+					  }
+					: c
+			),
+		}));
 	};
 
 	const handleDuplicateEndpoint = (
-		projectId: string,
 		collectionId: string,
 		endpointId: string
 	) => {
-		setCollectionsData((prev) =>
-			prev.map((project) => {
-				if (project.id !== projectId) return project;
-				return {
-					...project,
-					collections: project.collections.map((collection) => {
-						if (collection.id !== collectionId) return collection;
+		updateProject((p) => ({
+			...p,
+			collections: p.collections.map((c) => {
+				if (c.id !== collectionId) return c;
+				const endpointToDuplicate = (c.endpoints || []).find(
+					(ep) => ep.id === endpointId
+				);
+				if (!endpointToDuplicate) return c;
 
-						const endpointToDuplicate = collection.endpoints.find(
-							(endpoint) => endpoint.id === endpointId
-						);
-
-						if (!endpointToDuplicate) return collection;
-
-						const duplicatedEndpoint = {
-							...endpointToDuplicate,
-							id: `${endpointToDuplicate.id}-copy-${Date.now()}`,
-						};
-
-						return {
-							...collection,
-							endpoints: [...collection.endpoints, duplicatedEndpoint],
-						};
-					}),
+				const duplicated = {
+					...endpointToDuplicate,
+					// ID remains unique for React keys
+					id: crypto.randomUUID(),
+					// Append " copy" to the user-visible path
+					path: `${endpointToDuplicate.path} copy`,
 				};
-			})
-		);
+
+				return { ...c, endpoints: [...(c.endpoints || []), duplicated] };
+			}),
+		}));
 	};
 
-	const handleRenameEndpoint = (
-		projectId: string,
-		collectionId: string,
-		endpointId: string,
-		newTitle: string
-	) => {
-		setCollectionsData((prev) =>
-			prev.map((project) => {
-				if (project.id !== projectId) return project;
-				return {
-					...project,
-					collections: project.collections.map((collection) => {
-						if (collection.id !== collectionId) return collection;
-						return {
-							...collection,
-							endpoints: collection.endpoints.map((endpoint) =>
-								endpoint.id === endpointId
-									? { ...endpoint, path: newTitle }
-									: endpoint
-							),
-						};
-					}),
-				};
-			})
-		);
-	};
-
-	const getCollectionMenuItems = (
-		collection: CollectionItem,
-		projectId: string
-	) => [
+	const getCollectionMenuItems = (collection: CollectionItem) => [
 		{
 			icon: <FilePlusIcon className="w-4 h-4" />,
 			label: "Add Request",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				console.log("Add request:", collection.id);
-				console.log(projectId);
-				handleAddEndpoint(projectId, collection.id);
-			},
+			onClick: () => handleAddEndpoint(collection.id),
 		},
 		{ isSeparator: true as const },
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
+			onClick: () => {
 				setSelectedCollection(collection);
 				setIsShareCollectionOpen(true);
 			},
-			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
 			icon: <EditIcon className="w-4 h-4" />,
 			label: "Rename",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setRenamingCollectionId(collection.id);
-			},
-			className: "cursor-pointer",
+			onClick: () => setRenamingCollectionId(collection.id),
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				handleDuplicateCollection(projectId, collection.id);
-			},
+			onClick: () => handleDuplicateCollection(collection.id),
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
 			label: "Export",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
+			onClick: () => {
 				setSelectedCollection(collection);
 				setIsExportCollectionOpen(true);
-				console.log("Export collection:", collection.id);
 			},
-			className: "cursor-pointer",
 		},
 		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
-			label: "Delete",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setTimeout(
-					() =>
-						setCollectionToDelete({ projectId, collectionId: collection.id }),
-					0
-				);
-			},
-			className:
-				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+			icon: <TrashIcon className="w-4 h-4 text-red-500" />,
+			label: <span className="text-red-500">Delete</span>,
+			onClick: () => setCollectionToDelete(collection),
 		},
 	];
 
-	const getEndpointMenuItems = (
-		endpoint: Endpoint,
-		collectionId: string,
-		projectId: string
-	) => [
+	const getEndpointMenuItems = (endpoint: Endpoint, collectionId: string) => [
 		{
 			icon: <Share2Icon className="w-4 h-4" />,
 			label: "Share",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
+			onClick: () => {
 				setSelectedEndpoint(endpoint);
 				setIsShareEndpointOpen(true);
-				console.log(selectedEndpoint);
 			},
-			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
 			icon: <EditIcon className="w-4 h-4" />,
 			label: "Rename",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setRenamingEndpointId(endpoint.id);
-			},
-			className: "cursor-pointer",
+			onClick: () => setRenamingEndpointId(endpoint.id),
 		},
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				e.preventDefault();
-				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
-			},
-			className: "cursor-pointer",
+			onClick: () => handleDuplicateEndpoint(collectionId, endpoint.id),
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
 			label: "Export",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
+			onClick: () => {
 				setSelectedEndpoint(endpoint);
 				setIsExportRequestOpen(true);
-				console.log(selectedEndpoint);
 			},
-			className: "cursor-pointer",
 		},
 		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
-			label: "Delete",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setTimeout(
-					() =>
-						setEndpointToDelete({
-							projectId,
-							collectionId,
-							endpointId: endpoint.id,
-						}),
-					0
-				);
-			},
-			className:
-				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+			icon: <TrashIcon className="w-4 h-4 text-red-500" />,
+			label: <span className="text-red-500">Delete</span>,
+			onClick: () => setEndpointToDelete(endpoint),
 		},
 	];
 
-	if (openCollections === null) return null;
-
-	if (!isCollectionSidebarOpen) {
+	if (!isDataLoaded)
 		return (
-			<div className="border-r bg-background h-full p-2 duration-75">
+			<div className="w-80 border-r bg-background h-full p-4 flex items-center justify-center">
+				Loading...
+			</div>
+		);
+	if (!isCollectionSidebarOpen)
+		return (
+			<div className="border-r bg-background h-full p-2">
 				<Button
 					variant="outline"
 					size="sm"
@@ -414,15 +307,15 @@ export const CollectionSidebar = () => {
 				</Button>
 			</div>
 		);
-	}
 
 	return (
 		<>
-			<div className="w-80 border-r bg-background duration-300">
-				{/* Header */}
+			<div className="w-80 border-r bg-background duration-300 flex flex-col h-full">
 				<div className="flex items-center justify-between p-4 border-b">
-					<CollectionForm onCollectionCreate={handleCreateCollection} />
-					{/* In the header section, add a close button after the dropdown menu: */}
+					<CollectionForm
+						onCollectionCreate={handleCreateCollection}
+						// disabled={!currentProjectId}
+					/>
 					<div className="flex items-center gap-1">
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -441,7 +334,7 @@ export const CollectionSidebar = () => {
 									onClick={() => setIsExportCollectionOpen(true)}
 									className="cursor-pointer"
 								>
-									Export
+									Export All
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -468,17 +361,18 @@ export const CollectionSidebar = () => {
 					</div>
 				</div>
 
-				{/* Collections */}
-				<div className="flex-1 custom-scrollbar">
-					{collectionsData.map((project) =>
-						project.collections.map((collection) => (
-							<div key={`${project.id}-${collection.id}`}>
+				<div className="flex-1 custom-scrollbar overflow-y-auto">
+					{project ? (
+						(project.collections || []).map((collection) => (
+							<div key={collection.id}>
 								<div
 									className="group flex items-center justify-between px-4 py-3 mb-2 hover:bg-muted/50 cursor-pointer"
-									onClick={(e) => {
-										toggleCollection(collection.id);
-										e.stopPropagation();
-									}}
+									onClick={() =>
+										setOpenCollections((prev) => ({
+											...prev,
+											[collection.id]: !prev[collection.id],
+										}))
+									}
 								>
 									<div className="flex items-center gap-3">
 										{openCollections[collection.id] ? (
@@ -492,22 +386,13 @@ export const CollectionSidebar = () => {
 												defaultValue={collection.title}
 												onClick={(e) => e.stopPropagation()}
 												onBlur={(e) => {
-													handleRename(
-														project.id,
-														collection.id,
-														e.target.value
-													);
+													handleRenameCollection(collection.id, e.target.value);
 													setRenamingCollectionId(null);
-													e.stopPropagation();
 												}}
 												onKeyDown={(e) => {
-													if (e.key === "Enter") {
+													if (e.key === "Enter")
 														(e.target as HTMLInputElement).blur();
-													}
-													if (e.key === "Escape") {
-														setRenamingCollectionId(null);
-													}
-													e.stopPropagation();
+													if (e.key === "Escape") setRenamingCollectionId(null);
 												}}
 												className="h-6"
 											/>
@@ -516,26 +401,21 @@ export const CollectionSidebar = () => {
 										)}
 									</div>
 									<ItemActionsDropdown
-										items={getCollectionMenuItems(collection, project.id)}
+										items={getCollectionMenuItems(collection)}
 									/>
 								</div>
-
 								{openCollections[collection.id] && (
 									<div className="pb-2">
-										{collection.endpoints.map((endpoint) => {
-											const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
-											const isActive = pathname === endpointPath;
+										{(collection.endpoints || []).map((endpoint) => {
+											const endpointPath = `/project/${project.id}/collection/${collection.id}/request/${endpoint.id}`;
 											return (
 												<div
-													key={`${collection.id}-${endpoint.id}`}
-													className={`group mx-4 mb-1 rounded-md ${
-														isActive ? "bg-muted" : "hover:bg-muted/50"
-													}`}
+													key={endpoint.id}
+													className="group mx-4 mb-1 rounded-md hover:bg-muted/50"
 												>
 													<Link
 														href={endpointPath}
 														className="flex items-center justify-between gap-2 p-2"
-														onMouseDown={(e) => e.stopPropagation()}
 													>
 														<div className="flex items-center gap-2 flex-grow min-w-0">
 															<Badge
@@ -552,29 +432,20 @@ export const CollectionSidebar = () => {
 																<Input
 																	autoFocus
 																	defaultValue={endpoint.path}
-																	onClick={(e) => {
-																		e.preventDefault();
-																		e.stopPropagation();
-																	}}
-																	onMouseDown={(e) => e.stopPropagation()}
+																	onClick={(e) => e.preventDefault()}
 																	onBlur={(e) => {
 																		handleRenameEndpoint(
-																			project.id,
 																			collection.id,
 																			endpoint.id,
 																			e.target.value
 																		);
 																		setRenamingEndpointId(null);
-																		e.stopPropagation();
 																	}}
 																	onKeyDown={(e) => {
-																		if (e.key === "Enter") {
+																		if (e.key === "Enter")
 																			(e.target as HTMLInputElement).blur();
-																		}
-																		if (e.key === "Escape") {
+																		if (e.key === "Escape")
 																			setRenamingEndpointId(null);
-																		}
-																		e.stopPropagation();
 																	}}
 																	className="h-6"
 																/>
@@ -587,8 +458,7 @@ export const CollectionSidebar = () => {
 														<ItemActionsDropdown
 															items={getEndpointMenuItems(
 																endpoint,
-																collection.id,
-																project.id
+																collection.id
 															)}
 														/>
 													</Link>
@@ -599,18 +469,24 @@ export const CollectionSidebar = () => {
 								)}
 							</div>
 						))
+					) : (
+						<div className="p-4 text-center text-muted-foreground">
+							No project selected or found.
+						</div>
 					)}
 				</div>
 			</div>
 
-			{/* All your existing dialogs */}
+			{/* Dialogs */}
 			<ExportEndpoint
 				open={isExportRequestOpen}
 				onOpenChange={setIsExportRequestOpen}
+				endpoint={selectedEndpoint}
 			/>
 			<ExportCollection
 				open={isExportCollectionOpen}
 				onOpenChange={setIsExportCollectionOpen}
+				// collection={selectedCollection}
 			/>
 			<ShareCollection
 				open={isShareCollectionOpen}
@@ -626,69 +502,35 @@ export const CollectionSidebar = () => {
 				open={isImportCollectionOpen}
 				onOpenChange={setIsImportCollectionOpen}
 			/>
-
 			{collectionToDelete && (
 				<DeleteCollection
 					open={!!collectionToDelete}
-					onOpenChange={(open) => {
-						if (!open) setCollectionToDelete(null);
-					}}
+					onOpenChange={(open) => !open && setCollectionToDelete(null)}
 					onConfirm={() => {
-						const { projectId, collectionId } = collectionToDelete;
-
-						setCollectionsData((prev) =>
-							prev.map((project) =>
-								project.id === projectId
-									? {
-											...project,
-											collections: project.collections.filter(
-												(collection) => collection.id !== collectionId
-											),
-									  }
-									: project
-							)
-						);
-						setOpenCollections((prev) => {
-							if (!prev) return prev;
-							const updated = { ...prev };
-							delete updated[collectionId];
-							return updated;
-						});
-
+						updateProject((p) => ({
+							...p,
+							collections: p.collections.filter(
+								(c) => c.id !== collectionToDelete.id
+							),
+						}));
 						setCollectionToDelete(null);
 					}}
 				/>
 			)}
-
 			{endpointToDelete && (
 				<DeleteEndpoint
 					open={!!endpointToDelete}
-					onOpenChange={(open) => {
-						if (!open) setEndpointToDelete(null);
-					}}
+					onOpenChange={(open) => !open && setEndpointToDelete(null)}
 					onConfirm={() => {
-						const { projectId, collectionId, endpointId } = endpointToDelete;
-
-						setCollectionsData((prev) =>
-							prev.map((project) =>
-								project.id === projectId
-									? {
-											...project,
-											collections: project.collections.map((collection) =>
-												collection.id === collectionId
-													? {
-															...collection,
-															endpoints: collection.endpoints.filter(
-																(endpoint) => endpoint.id !== endpointId
-															),
-													  }
-													: collection
-											),
-									  }
-									: project
-							)
-						);
-
+						updateProject((p) => ({
+							...p,
+							collections: p.collections.map((c) => ({
+								...c,
+								endpoints: (c.endpoints || []).filter(
+									(ep) => ep.id !== endpointToDelete.id
+								),
+							})),
+						}));
 						setEndpointToDelete(null);
 					}}
 				/>

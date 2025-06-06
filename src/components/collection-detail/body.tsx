@@ -50,9 +50,15 @@ export const Body = () => {
 				{selectedTab === "raw-body" && (
 					<Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
 						<TabsList className="w-full">
-							<TabsTrigger value="raw-body">Raw Body</TabsTrigger>
-							<TabsTrigger value="test-case">Test Case</TabsTrigger>
-							<TabsTrigger value="test-request">Test Request</TabsTrigger>
+							<TabsTrigger value="raw-body" className="cursor-pointer">
+								Raw Body
+							</TabsTrigger>
+							<TabsTrigger value="test-case" className="cursor-pointer">
+								Test Case
+							</TabsTrigger>
+							<TabsTrigger value="test-request" className="cursor-pointer">
+								Test Request
+							</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="raw-body">

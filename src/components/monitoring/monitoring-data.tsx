@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type TestStatus = "pending" | "loading" | "passed" | "failed";
 
@@ -47,11 +48,11 @@ export function MonitoringData({
 		switch (status) {
 			case "passed":
 				return (
-					<div className="flex items-center gap-2">
-						<h1 className="text-[#17C964]">passed</h1>
+					<div className="flex items-center gap-1 min-w-0">
+						<span className="text-[#17C964] text-sm truncate">passed</span>
 						<Badge
 							variant="outline"
-							className="text-[#17C964] text-xs font-medium"
+							className="text-[#17C964] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -59,11 +60,11 @@ export function MonitoringData({
 				);
 			case "failed":
 				return (
-					<div className="flex items-center gap-2">
-						<h1 className="text-[#EF4444]">failed</h1>
+					<div className="flex items-center gap-1 min-w-0">
+						<span className="text-[#EF4444] text-sm truncate">failed</span>
 						<Badge
 							variant="outline"
-							className="text-[#EF4444] text-xs font-medium"
+							className="text-[#EF4444] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -71,15 +72,15 @@ export function MonitoringData({
 				);
 			case "loading":
 				return (
-					<h1 className="flex items-center">
-						<Loader2 className="w-3 h-3 mr-1 animate-spin" />
-						running
-					</h1>
+					<div className="flex items-center gap-1 min-w-0">
+						<Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+						<span className="text-sm truncate">running</span>
+					</div>
 				);
 			case "pending":
-				return <h1>pending</h1>;
+				return <span className="text-sm truncate">pending</span>;
 			default:
-				return <h1>pending</h1>;
+				return <span className="text-sm truncate">pending</span>;
 		}
 	};
 
@@ -88,63 +89,96 @@ export function MonitoringData({
 	};
 
 	return (
-		<div className="space-y-4">
-			<div className="flex justify-between items-center">
-				<h3 className="text-2xl font-semibold">Test Results</h3>
-				<p className="text-sm text-[#94A3B8]">
-					Click on completed tests to view details
+		<div className="h-full flex flex-col overflow-hidden w-full">
+			<div className="flex justify-between items-center mb-4 flex-shrink-0 min-w-0 gap-1">
+				<h3 className="text-2xl font-semibold truncate">Test Results</h3>
+				<p className="text-sm text-[#94A3B8] hidden xl:block truncate">
+					Click completed tests
 				</p>
 			</div>
-			<Table>
-				<TableHeader>
-					<TableRow className="hover:bg-transparent">
-						<TableHead>Date</TableHead>
-						<TableHead>Method</TableHead>
-						<TableHead>Endpoint</TableHead>
-						<TableHead>Status</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody className="space-y-4">
-					{testResults.map((test) => (
-						<TableRow
-							key={test.id}
-							className={`
-                ${selectedTestId === test.id ? "bg-[#F1F5F9]" : ""}
-                ${
-									isClickable(test.status)
-										? "hover:bg-[#F8FAFC] cursor-pointer"
-										: "cursor-not-allowed opacity-60"
-								}
-                py-3 my-2
-              `}
-							onClick={() => isClickable(test.status) && onSelectTest(test.id)}
-						>
-							<TableCell className="font-medium py-4">{test.date}</TableCell>
-							<TableCell className="py-4">
-								<div
-									className={`inline-block border border-[#E2E8F0] rounded-md px-[10px] py-1 text-xs ${
-										test.method === "GET"
-											? "text-[#3B82F6]"
-											: test.method === "POST"
-											? "text-[#10B981]"
-											: test.method === "PUT"
-											? "text-[#006FEE]"
-											: test.method === "DELETE"
-											? "text-[#EF4444]"
-											: "text-[#8B5CF6]"
-									}`}
-								>
-									{test.method}
-								</div>
-							</TableCell>
-							<TableCell className="font-mono text-sm text-[#475569] max-w-[200px] truncate py-4">
-								{test.endpoint}
-							</TableCell>
-							<TableCell className="py-4">{getStatusBadge(test)}</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+
+			<div className="flex-1 overflow-hidden w-full">
+				<ScrollArea className="h-full w-full">
+					<div className="w-full overflow-hidden">
+						<Table>
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="w-[70px] min-w-[70px] truncate text-sm">
+										Date
+									</TableHead>
+									<TableHead className="w-[60px] min-w-[60px] truncate text-sm">
+										Method
+									</TableHead>
+									<TableHead className="min-w-[120px] truncate text-sm">
+										Endpoint
+									</TableHead>
+									<TableHead className="w-[100px] min-w-[100px] truncate text-sm">
+										Status
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{testResults.map((test) => (
+									<TableRow
+										key={test.id}
+										className={`
+                    ${selectedTestId === test.id ? "bg-[#F1F5F9]" : ""}
+                    ${
+											isClickable(test.status)
+												? "hover:bg-[#F8FAFC] cursor-pointer"
+												: "cursor-not-allowed opacity-60"
+										}
+                  `}
+										onClick={() =>
+											isClickable(test.status) && onSelectTest(test.id)
+										}
+									>
+										<TableCell className="py-3 w-[70px] min-w-[70px]">
+											<div
+												className="truncate font-medium text-sm"
+												title={test.date}
+											>
+												{test.date.split("-")[2]}/{test.date.split("-")[1]}
+											</div>
+										</TableCell>
+										<TableCell className="py-3 w-[60px] min-w-[60px]">
+											<div
+												className={`inline-block border border-[#E2E8F0] rounded-md px-2 py-1 text-sm truncate max-w-full ${
+													test.method === "GET"
+														? "text-[#3B82F6]"
+														: test.method === "POST"
+														? "text-[#10B981]"
+														: test.method === "PUT"
+														? "text-[#006FEE]"
+														: test.method === "DELETE"
+														? "text-[#EF4444]"
+														: "text-[#8B5CF6]"
+												}`}
+												title={test.method}
+											>
+												{test.method}
+											</div>
+										</TableCell>
+										<TableCell className="py-3 min-w-[120px]">
+											<div
+												className="font-mono text-sm text-[#475569] truncate"
+												title={test.endpoint}
+											>
+												{test.endpoint}
+											</div>
+										</TableCell>
+										<TableCell className="py-3 w-[100px] min-w-[100px]">
+											<div className="min-w-0 overflow-hidden">
+												{getStatusBadge(test)}
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				</ScrollArea>
+			</div>
 		</div>
 	);
 }

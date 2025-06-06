@@ -1,6 +1,6 @@
 // components/project-form.tsx
 "use client";
-import { ProjectFormProps, NewProjectPayload, ProjectItem } from "@/types"; // Import NewProjectPayload and ProjectItem
+import { ProjectFormProps, NewProjectPayload, ProjectItem } from "@/types";
 import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { FolderPlusIcon } from "lucide-react";
+import { FolderPlusIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { projectFormSchema } from "@/lib/zodSchema";
@@ -35,6 +35,7 @@ const ProjectForm = ({
 	onProjectUpdated,
 }: ProjectFormProps) => {
 	const [openCreated, setOpenCreated] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<z.infer<typeof projectFormSchema>>({
 		resolver: zodResolver(projectFormSchema),
@@ -45,47 +46,107 @@ const ProjectForm = ({
 	});
 
 	useEffect(() => {
-		if (mode === "edit" && initialData) {
-			form.reset({
-				projectName: initialData.title || "",
-				projectDescription: initialData.description || "",
-			});
-		} else if (mode === "create") {
-			form.reset({
-				projectName: "",
-				projectDescription: "",
-			});
+		if (isOpen || openCreated) {
+			if (mode === "edit" && initialData) {
+				form.reset({
+					projectName: initialData.title || "",
+					projectDescription: initialData.description || "",
+				});
+			} else if (mode === "create") {
+				form.reset({
+					projectName: "",
+					projectDescription: "",
+				});
+			}
 		}
-	}, [mode, initialData, form]);
+	}, [mode, initialData, form, isOpen, openCreated]);
 
 	async function onSubmit(values: z.infer<typeof projectFormSchema>) {
+		setIsSubmitting(true);
+
+		// Simulate API call delay
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		if (mode === "create") {
-			// Simulate API call for creating a new project
-			const newProject: ProjectItem = {
-				id: crypto.randomUUID(), // Generate a unique ID
+			const newProjectData = {
+				// Use a different name to avoid confusion with ProjectItem type if it differs
+				id: crypto.randomUUID(),
 				title: values.projectName,
 				description: values.projectDescription,
-				creationDate: new Date().toLocaleDateString("en-US"), // Set current date
-				userAvatarUrl: "/profile-img.png", // Default avatar for new projects
+				creationDate: new Date().toLocaleDateString("en-US", {
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				}),
+				userAvatarUrl: "/profile-img.png",
 			};
-			console.log("New project created:", newProject);
+
+			// This is the project shell that includes the collections
+			const newProjectWithCollections = {
+				...newProjectData,
+				collections: [], // Start with empty collections
+			};
+
+			// --- Start: Save to Local Storage ---
+			try {
+				// 1. Update the master list of projects (for the dashboard)
+				const masterListJSON = localStorage.getItem("projects");
+				const masterList = masterListJSON ? JSON.parse(masterListJSON) : [];
+				masterList.push(newProjectData); // Add only the metadata to the master list
+				localStorage.setItem("projects", JSON.stringify(masterList));
+
+				// 2. Create the separate, detailed entry for this new project
+				const projectKey = `project-data-${newProjectData.id}`;
+				localStorage.setItem(
+					projectKey,
+					JSON.stringify(newProjectWithCollections)
+				);
+
+				console.log(
+					`Project metadata and detailed entry for ${projectKey} saved.`
+				);
+			} catch (error) {
+				console.error("Failed to save project to local storage:", error);
+			}
+			// --- End: Updated Local Storage Logic ---
+
 			if (onProjectCreated) {
-				onProjectCreated(newProject);
-				setOpenCreated((prev) => !prev);
+				onProjectCreated(newProjectData as ProjectItem); // Pass the metadata item
+				setOpenCreated(false);
 			}
 		} else if (mode === "edit" && initialData) {
-			// Simulate API call for updating an existing project
 			const updatedProject: ProjectItem = {
 				...initialData,
 				title: values.projectName,
 				description: values.projectDescription,
 			};
-			console.log("Project updated:", updatedProject);
+
+			// Here you would also update local storage if needed
+			try {
+				const existingProjectsJSON = localStorage.getItem("projects");
+				const existingProjects: ProjectItem[] = existingProjectsJSON
+					? JSON.parse(existingProjectsJSON)
+					: [];
+
+				const projectIndex = existingProjects.findIndex(
+					(p) => p.id === updatedProject.id
+				);
+
+				if (projectIndex !== -1) {
+					existingProjects[projectIndex] = updatedProject;
+					localStorage.setItem("projects", JSON.stringify(existingProjects));
+					console.log("Project updated in local storage:", updatedProject);
+				}
+			} catch (error) {
+				console.error("Failed to update project in local storage:", error);
+			}
+
 			if (onProjectUpdated) {
 				onProjectUpdated(updatedProject);
 			}
 		}
 
+		setIsSubmitting(false);
 		if (onOpenChange) {
 			onOpenChange(false);
 		}
@@ -125,17 +186,26 @@ const ProjectForm = ({
 					)}
 				/>
 				<div className="w-full flex items-center justify-end gap-4">
-					{mode === "edit" && onOpenChange && (
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-							className="ml-2"
-						>
-							Cancel
-						</Button>
-					)}
-					<Button type="submit">Submit</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() =>
+							mode === "edit" ? onOpenChange?.(false) : setOpenCreated(false)
+						}
+						className="ml-2"
+					>
+						Cancel
+					</Button>
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Please wait
+							</>
+						) : (
+							"Submit"
+						)}
+					</Button>
 				</div>
 			</form>
 		</Form>

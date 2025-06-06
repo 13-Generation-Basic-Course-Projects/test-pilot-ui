@@ -3,13 +3,35 @@
 import { useState, useEffect } from "react";
 import { MonitoringData } from "./monitoring-data";
 import { RequestMetadataWithLogs } from "./request-metadata-with-logs";
-import { useRequestStore } from "@/store/request-url-slice";
 import { ProgressMonitoring } from "./progress";
+import { LiveLogConsole } from "./live-log-console";
+import {
+	ResizablePanelGroup,
+	ResizablePanel,
+	ResizableHandle,
+} from "@/components/ui/resizable";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Maximize2 } from "lucide-react";
 
 interface TestProgress {
 	completed: number;
 	total: number;
 	currentTest: number;
+}
+
+interface LogEntry {
+	timestamp: string;
+	level: "INFO" | "WARNING" | "ERROR" | "DEBUG";
+	message: string;
+	source?: string;
+	testId?: number;
+	testName?: string;
 }
 
 interface TestResult {
@@ -30,13 +52,14 @@ interface TestResult {
 }
 
 export default function Monitoring() {
-	const { method: userMethod, url: userUrl } = useRequestStore();
-
 	const [testProgress, setTestProgress] = useState<TestProgress>({
 		completed: 0,
 		total: 4,
 		currentTest: 0,
 	});
+
+	const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
+	const [logsModalOpen, setLogsModalOpen] = useState(false);
 
 	const [testResults, setTestResults] = useState<TestResult[]>([
 		{
@@ -44,8 +67,8 @@ export default function Monitoring() {
 			testName: "Response Time Check",
 			status: "pending",
 			date: "2025-05-20",
-			method: userMethod || "GET",
-			endpoint: userUrl || "http://localhost:8080/api/v1/habits",
+			method: "GET",
+			endpoint: "http://localhost:8080/api/v1/habits",
 			httpStatus: 200,
 			statusText: "OK",
 			metadata: {
@@ -68,9 +91,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: `Sending ${userMethod || "GET"} request to ${
-						userUrl || "/api/v1/habits"
-					}`,
+					message: "Sending GET request to /api/v1/habits",
 					source: "HttpClient",
 				},
 				{
@@ -95,8 +116,8 @@ export default function Monitoring() {
 			testName: "Status Code Validation",
 			status: "pending",
 			date: "2025-05-20",
-			method: userMethod || "POST",
-			endpoint: userUrl || "http://localhost:8080/api/v1/habits",
+			method: "POST",
+			endpoint: "http://localhost:8080/api/v1/habits",
 			httpStatus: 200,
 			statusText: "OK",
 			metadata: {
@@ -125,9 +146,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: `Sending ${userMethod || "POST"} request to ${
-						userUrl || "/api/v1/habits"
-					}`,
+					message: "Sending POST request to /api/v1/habits",
 					source: "HttpClient",
 				},
 				{
@@ -157,8 +176,8 @@ export default function Monitoring() {
 			testName: "Response Schema",
 			status: "pending",
 			date: "2025-05-20",
-			method: userMethod || "PUT",
-			endpoint: userUrl || "http://localhost:8080/api/v1/habits",
+			method: "PUT",
+			endpoint: "http://localhost:8080/api/v1/habits",
 			httpStatus: 200,
 			statusText: "OK",
 			metadata: {
@@ -187,9 +206,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: `Sending ${userMethod || "PUT"} request to ${
-						userUrl || "/api/v1/habits"
-					}`,
+					message: "Sending PUT request to /api/v1/habits",
 					source: "HttpClient",
 				},
 				{
@@ -224,8 +241,8 @@ export default function Monitoring() {
 			testName: "Authentication Check",
 			status: "pending",
 			date: "2025-05-20",
-			method: userMethod || "DELETE",
-			endpoint: userUrl || "http://localhost:8080/api/v1/habits",
+			method: "DELETE",
+			endpoint: "http://localhost:8080/api/v1/habits",
 			httpStatus: 204,
 			statusText: "No Content",
 			metadata: {
@@ -249,9 +266,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: `Sending ${userMethod || "DELETE"} request to ${
-						userUrl || "/api/v1/habits"
-					}`,
+					message: "Sending DELETE request to /api/v1/habits",
 					source: "HttpClient",
 				},
 				{
@@ -285,26 +300,26 @@ export default function Monitoring() {
 
 	const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
 
-	// Update test results when user changes method or URL
-	useEffect(() => {
-		setTestResults((prev) =>
-			prev.map((test) => ({
-				...test,
-				method: userMethod,
-				endpoint: userUrl || "http://localhost:8080/api/v1/habits",
-				logs: test.logs.map((log) =>
-					log.message.includes("Sending")
-						? {
-								...log,
-								message: `Sending ${userMethod} request to ${
-									userUrl || "/api/v1/habits"
-								}`,
-						  }
-						: log
-				),
-			}))
-		);
-	}, [userMethod, userUrl]);
+	const generateTimestamp = () => {
+		const now = new Date();
+		return `${now.getHours().toString().padStart(2, "0")}:${now
+			.getMinutes()
+			.toString()
+			.padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}.${now
+			.getMilliseconds()
+			.toString()
+			.padStart(3, "0")}`;
+	};
+
+	const addLogEntry = (log: Omit<LogEntry, "timestamp">) => {
+		setAllLogs((prev) => [
+			...prev,
+			{
+				...log,
+				timestamp: generateTimestamp(),
+			},
+		]);
+	};
 
 	// Simulate test execution progression
 	useEffect(() => {
@@ -317,54 +332,111 @@ export default function Monitoring() {
 
 		let currentIndex = 0;
 
+		// Add initial system log
+		setTimeout(() => {
+			addLogEntry({
+				level: "INFO",
+				message: "Test Pilot API initialized - Starting test execution",
+				source: "System",
+			});
+		}, 500);
+
 		const executeNextTest = () => {
 			if (currentIndex < testSequence.length) {
 				const testToUpdate = testSequence[currentIndex];
 				const testId = testToUpdate.id;
+				const test = testResults.find((t) => t.id === testId);
 
-				// First set to loading
-				setTestResults((prev) =>
-					prev.map((test) =>
-						test.id === testId ? { ...test, status: "loading" as const } : test
-					)
-				);
+				if (test) {
+					// Add test start log
+					addLogEntry({
+						level: "INFO",
+						message: `Starting test: ${test.testName}`,
+						source: "TestRunner",
+						testId: testId,
+						testName: test.testName,
+					});
 
-				// Then complete after delay
-				setTimeout(() => {
+					// First set to loading
 					setTestResults((prev) =>
 						prev.map((test) =>
 							test.id === testId
-								? {
-										...test,
-										status: testToUpdate.status,
-								  }
+								? { ...test, status: "loading" as const }
 								: test
 						)
 					);
 
-					setTestProgress((prev) => ({
-						...prev,
-						completed: prev.completed + 1,
-						currentTest: currentIndex + 1,
-					}));
+					// Stream logs for this test
+					const streamLogs = async () => {
+						for (let i = 0; i < test.logs.length; i++) {
+							await new Promise((resolve) =>
+								setTimeout(resolve, Math.random() * 300 + 100)
+							);
+							addLogEntry({
+								...test.logs[i],
+								testId: testId,
+								testName: test.testName,
+							});
+						}
+					};
 
-					// Auto-select the first completed test
-					if (selectedTestId === null && currentIndex === 0) {
-						setSelectedTestId(testId);
-					}
+					streamLogs().then(() => {
+						// Complete the test
+						setTimeout(() => {
+							setTestResults((prev) =>
+								prev.map((test) =>
+									test.id === testId
+										? {
+												...test,
+												status: testToUpdate.status,
+										  }
+										: test
+								)
+							);
 
-					currentIndex++;
+							setTestProgress((prev) => ({
+								...prev,
+								completed: prev.completed + 1,
+								currentTest: currentIndex + 1,
+							}));
 
-					// Schedule next test
-					if (currentIndex < testSequence.length) {
-						setTimeout(executeNextTest, Math.random() * 1000 + 500);
-					}
-				}, Math.random() * 2000 + 1000); // 1-3 seconds for test execution
+							// Add completion log
+							addLogEntry({
+								level: testToUpdate.status === "passed" ? "INFO" : "ERROR",
+								message: `Test ${testToUpdate.status}: ${test.testName}`,
+								source: "TestRunner",
+								testId: testId,
+								testName: test.testName,
+							});
+
+							// Auto-select the first completed test
+							if (selectedTestId === null && currentIndex === 0) {
+								setSelectedTestId(testId);
+							}
+
+							currentIndex++;
+
+							// Schedule next test
+							if (currentIndex < testSequence.length) {
+								setTimeout(executeNextTest, Math.random() * 1000 + 500);
+							} else {
+								// All tests completed
+								setTimeout(() => {
+									addLogEntry({
+										level: "INFO",
+										message: "All tests completed - Test execution finished",
+										source: "System",
+									});
+								}, 500);
+							}
+						}, 500);
+					});
+				}
 			}
 		};
 
 		// Start first test after initial delay
-		const initialTimer = setTimeout(executeNextTest, 1000);
+		const initialTimer = setTimeout(executeNextTest, 1500);
 
 		return () => clearTimeout(initialTimer);
 	}, []);
@@ -392,7 +464,7 @@ export default function Monitoring() {
 		);
 
 	return (
-		<div className="w-full mt-10 bg-white rounded-xl shadow p-8 space-y-8 px-20">
+		<div className="w-full mt-10 bg-white rounded-xl shadow p-8 space-y-8">
 			{/* Header */}
 			<div className="flex justify-between">
 				<div>
@@ -441,73 +513,146 @@ export default function Monitoring() {
 					/>
 				</div>
 
-				{/* Request Detail Section */}
-				<div className="grid grid-cols-12 gap-8">
-					{/* Left Panel: Request Info + Logs + Metadata */}
-					<div className="space-y-8 col-span-5 border-r pr-8">
-						{selectedTest ? (
-							<>
-								<div className="space-y-4">
-									<div className="flex space-x-2">
-										<p>Status:</p>
-										<div
-											className={`border border-[#E2E8F0] rounded-md px-[10px] ${
-												selectedTest.httpStatus === 200 ||
-												selectedTest.httpStatus === 204
-													? "text-[#17C964]"
-													: "text-[#EF4444]"
-											}`}
-										>
-											{selectedTest.httpStatus} {selectedTest.statusText}
+				{/* Two Panel Resizable Layout */}
+				<ResizablePanelGroup
+					direction="horizontal"
+					className="h-[600px] rounded-lg border"
+				>
+					{/* Left Panel: Live Logs + Test Details */}
+					<ResizablePanel defaultSize={40} minSize={25} maxSize={70}>
+						<div className="p-6 h-full flex flex-col overflow-hidden space-y-6">
+							{/* Live Logs Section */}
+							<div className="flex-shrink-0">
+								<div className="flex justify-between items-center mb-4">
+									<h3 className="text-xl font-semibold">Live Logs</h3>
+									<Button
+										variant="outline"
+										size="sm"
+										className="flex items-center gap-1"
+										onClick={() => setLogsModalOpen(true)}
+									>
+										<Maximize2 className="h-4 w-4" />
+										<span className="hidden sm:inline">Expand</span>
+									</Button>
+								</div>
+								<div className="h-48">
+									<LiveLogConsole logs={allLogs} compact={true} />
+								</div>
+							</div>
+
+							{/* Separator */}
+							<hr className="border-[#E2E8F0]" />
+
+							{/* Test Details Section */}
+							<div className="flex-1 overflow-hidden">
+								<h3 className="text-xl font-semibold mb-4 flex-shrink-0">
+									Test Details
+								</h3>
+								{selectedTest ? (
+									<div className="space-y-4 h-full overflow-y-auto min-h-0">
+										<div className="space-y-3">
+											<div className="flex flex-col space-y-3">
+												<div className="flex items-center space-x-2 min-w-0">
+													<p className="font-medium text-sm shrink-0">
+														Status:
+													</p>
+													<div
+														className={`border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 ${
+															selectedTest.httpStatus === 200 ||
+															selectedTest.httpStatus === 204
+																? "text-[#17C964]"
+																: "text-[#EF4444]"
+														}`}
+													>
+														{selectedTest.httpStatus} {selectedTest.statusText}
+													</div>
+												</div>
+												<div className="flex items-center space-x-2 min-w-0">
+													<p className="font-medium text-sm shrink-0">
+														Method:
+													</p>
+													<div
+														className={`border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 ${
+															selectedTest.method === "GET"
+																? "text-[#3B82F6]"
+																: selectedTest.method === "POST"
+																? "text-[#10B981]"
+																: selectedTest.method === "PUT"
+																? "text-[#006FEE]"
+																: selectedTest.method === "DELETE"
+																? "text-[#EF4444]"
+																: "text-[#8B5CF6]"
+														}`}
+													>
+														{selectedTest.method}
+													</div>
+												</div>
+												<div className="flex flex-col space-y-1 min-w-0">
+													<p className="font-medium text-sm shrink-0">
+														Test Name:
+													</p>
+													<p
+														className="text-[#475569] text-sm truncate"
+														title={selectedTest.testName}
+													>
+														{selectedTest.testName}
+													</p>
+												</div>
+												<div className="flex flex-col space-y-1 min-w-0">
+													<p className="font-medium text-sm shrink-0">
+														Endpoint:
+													</p>
+													<p
+														className="text-[#475569] font-mono text-sm truncate"
+														title={selectedTest.endpoint}
+													>
+														{selectedTest.endpoint}
+													</p>
+												</div>
+											</div>
 										</div>
+
+										<hr className="border-[#E2E8F0]" />
+
+										<RequestMetadataWithLogs selectedTest={selectedTest} />
 									</div>
-									<div className="flex space-x-2">
-										<p>Method:</p>
-										<div
-											className={`border border-[#E2E8F0] rounded-md px-[15px] ${
-												selectedTest.method === "GET"
-													? "text-[#3B82F6]"
-													: selectedTest.method === "POST"
-													? "text-[#10B981]"
-													: selectedTest.method === "PUT"
-													? "text-[#006FEE]"
-													: selectedTest.method === "DELETE"
-													? "text-[#EF4444]"
-													: "text-[#8B5CF6]"
-											}`}
-										>
-											{selectedTest.method}
-										</div>
-									</div>
-									<div className="flex space-x-2 items-end">
-										<p>Endpoint:</p>
-										<p className="text-[#475569] font-mono text-sm line-clamp-1">
-											{selectedTest.endpoint}
+								) : (
+									<div className="flex items-center justify-center h-64 text-[#94A3B8]">
+										<p className="text-sm">
+											Select a completed test to view details
 										</p>
 									</div>
-								</div>
-
-								<hr className="text-[#94A3B8]" />
-
-								<RequestMetadataWithLogs selectedTest={selectedTest} />
-							</>
-						) : (
-							<div className="flex items-center justify-center h-64 text-[#94A3B8]">
-								<p>Select a completed test to view details</p>
+								)}
 							</div>
-						)}
-					</div>
+						</div>
+					</ResizablePanel>
 
-					{/* Right Panel: Monitoring Table */}
-					<div className="col-span-7">
-						<MonitoringData
-							testResults={testResults}
-							onSelectTest={handleTestSelect}
-							selectedTestId={selectedTestId}
-						/>
-					</div>
-				</div>
+					<ResizableHandle withHandle />
+
+					{/* Right Panel: Test Results */}
+					<ResizablePanel defaultSize={60} minSize={30} maxSize={75}>
+						<div className="p-6 h-full flex flex-col overflow-hidden">
+							<MonitoringData
+								testResults={testResults}
+								onSelectTest={handleTestSelect}
+								selectedTestId={selectedTestId}
+							/>
+						</div>
+					</ResizablePanel>
+				</ResizablePanelGroup>
 			</div>
+
+			{/* Logs Modal */}
+			<Dialog open={logsModalOpen} onOpenChange={setLogsModalOpen}>
+				<DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+					<DialogHeader>
+						<DialogTitle>Live Logs</DialogTitle>
+					</DialogHeader>
+					<div className="flex-1 overflow-hidden">
+						<LiveLogConsole logs={allLogs} compact={false} />
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

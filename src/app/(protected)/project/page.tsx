@@ -1,7 +1,5 @@
 import { NavbarComponent } from "@/components/navbar";
-import ProjectForm from "@/components/project/project-form";
 import ProjectItems from "@/components/project/project-items";
-import { SearchForm } from "@/components/search-form";
 import React from "react";
 
 const ProjectPage = async ({

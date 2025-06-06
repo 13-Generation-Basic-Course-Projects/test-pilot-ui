@@ -10,10 +10,5 @@ interface ProjectItemsProps {
 export default function ProjectItems({ searchQuery = "" }: ProjectItemsProps) {
 	const typedProjectsData: ProjectItem[] = projectsData as ProjectItem[];
 
-	const filteredProjects = typedProjectsData.filter((project) => {
-		const lowerSearch = searchQuery.toLowerCase();
-		return project.title.toLowerCase().includes(lowerSearch) || false;
-	});
-
-	return <ProjectLists projects={filteredProjects} />;
+	return <ProjectLists searchQuery={searchQuery} />;
 }

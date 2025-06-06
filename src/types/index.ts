@@ -52,22 +52,21 @@ export interface Endpoint {
 export interface CollectionItem {
 	id: string;
 	title: string;
-	description?: string; // optional field
+	description?: string;
 	endpoints: Endpoint[];
 }
 
 export interface Project {
 	id: string;
-	iconType: string; // e.g., "folder"
-	title: string;
-	description: string; // required field
-	creationDate: string; // e.g., "2023-01-15"
-	userAvatarUrl: string; // e.g., "/profile-img.png"
-	name: string; // seems redundant with title but included in data
+	iconType?: string;
+	title?: string;
+	description?: string;
+	creationDate?: string;
+	userAvatarUrl?: string;
+	name?: string;
 	collections: CollectionItem[];
 }
 
-// types.ts
 export interface ProjectItem {
 	id: string;
 	title: string;
@@ -83,10 +82,10 @@ export interface ProjectProps {
 export interface ProjectFormProps {
 	mode: "create" | "edit";
 	initialData?: ProjectItem;
-	isOpen?: boolean; // Make isOpen optional for the create trigger
-	onOpenChange?: (open: boolean) => void; // Make onOpenChange optional for the create trigger
-	onProjectCreated?: (newProject: ProjectItem) => void; // New prop for create mode
-	onProjectUpdated?: (updatedProject: ProjectItem) => void; // New prop for edit mode
+	isOpen?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	onProjectCreated?: (newProject: ProjectItem) => void;
+	onProjectUpdated?: (updatedProject: ProjectItem) => void;
 }
 
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
