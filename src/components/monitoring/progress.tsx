@@ -1,11 +1,14 @@
 import { Progress } from "@/components/ui/progress";
 
-interface ProgressDemoProps {
+interface ProgressMonitoringProps {
 	completed: number;
 	total: number;
 }
 
-export function ProgressMonitoring({ completed, total }: ProgressDemoProps) {
+export function ProgressMonitoring({
+	completed,
+	total,
+}: ProgressMonitoringProps) {
 	const percentage = (completed / total) * 100;
 	return (
 		<div className="w-full space-y-2">

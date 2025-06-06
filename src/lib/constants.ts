@@ -12,31 +12,111 @@ export const projectsData: Project[] = [
 		name: "My Awesome Project",
 		collections: [
 			{
-				id: "collection-1",
-				title: "User Management",
-				description: "APIs for user operations",
+				id: "collection-auth",
+				title: "Authentication",
+				description: "Endpoints for user authentication",
 				endpoints: [
 					{
-						id: "endpoint-1",
-						method: "GET",
-						path: "/users",
-						value: "http://localhost:3000/api/users",
-						description: "Get all users",
-						url: "http://localhost:3000/api/users",
+						id: "endpoint-auth-1",
+						method: "POST",
+						path: "/api/v1/auth/login",
+						description: "Login user",
+						url: "http://localhost:3000/api/v1/auth/login",
 						status: 200,
 						statusText: "OK",
-						requestId: "req-123",
 					},
 					{
-						id: "endpoint-2",
+						id: "endpoint-auth-2",
+						method: "GET",
+						path: "/api/v1/auth/me",
+						description: "Get current user",
+						url: "http://localhost:3000/api/v1/auth/me",
+						status: 200,
+						statusText: "OK",
+					},
+				],
+			},
+			{
+				id: "collection-users",
+				title: "User Management",
+				description: "Manage application users",
+				endpoints: [
+					{
+						id: "endpoint-users-1",
+						method: "GET",
+						path: "/api/v1/users",
+						description: "Get all users",
+						url: "http://localhost:3000/api/v1/users",
+						status: 200,
+						statusText: "OK",
+					},
+					{
+						id: "endpoint-users-2",
 						method: "POST",
-						path: "/users",
-						value: "http://localhost:3000/api/users",
-						description: "create user",
-						url: "http://localhost:3000/api/users",
+						path: "/api/v1/users",
+						description: "Create a new user",
+						url: "http://localhost:3000/api/v1/users",
 						status: 201,
-						statusText: "CREATED",
-						requestId: "req-1234",
+						statusText: "Created",
+					},
+				],
+			},
+			{
+				id: "collection-inventory",
+				title: "Inventory",
+				description: "Manage stock levels for products",
+				endpoints: [
+					{
+						id: "endpoint-inventory-1",
+						method: "GET",
+						path: "/api/v1/inventory/{productId}",
+						description: "Get stock level for a product",
+						url: "http://localhost:3000/api/v1/inventory/{productId}",
+						status: 200,
+						statusText: "OK",
+					},
+					{
+						id: "endpoint-inventory-2",
+						method: "PUT",
+						path: "/api/v1/inventory/{productId}",
+						description: "Update stock level for a product",
+						url: "http://localhost:3000/api/v1/inventory/{productId}",
+						status: 200,
+						statusText: "OK",
+					},
+				],
+			},
+			{
+				id: "collection-products",
+				title: "Product Catalog",
+				description: "Manage products in the catalog",
+				endpoints: [
+					{
+						id: "endpoint-products-1",
+						method: "GET",
+						path: "/api/v1/products",
+						description: "Get all products",
+						url: "http://localhost:3000/api/v1/products",
+						status: 200,
+						statusText: "OK",
+					},
+					{
+						id: "endpoint-products-2",
+						method: "POST",
+						path: "/api/v1/products",
+						description: "Create a new product",
+						url: "http://localhost:3000/api/v1/products",
+						status: 201,
+						statusText: "Created",
+					},
+					{
+						id: "endpoint-products-3",
+						method: "GET",
+						path: "/api/v1/products/{id}",
+						description: "Get product by ID",
+						url: "http://localhost:3000/api/v1/products/{id}",
+						status: 200,
+						statusText: "OK",
 					},
 				],
 			},
@@ -437,43 +517,142 @@ export const caseByDataType: Record<string, string[]> = {
 
 export const generateValueForTestCase = (
 	originalValue: any,
-	dataType: string,
+	dataType: string, // This parameter is available if you need type-specific logic later
 	testCase: string
 ): any => {
 	switch (testCase) {
+		// --- String Cases ---
 		case "Empty String":
 			return "";
-		case "Null Value":
+		case "Null Value": // Covers "StringNullnull" and "IntegerNullnull" etc.
 			return null;
 		case "Undefined":
 			return undefined;
+		case "Length":
+			return "define length for validation";
+		case "Numeric String":
+			return "12345";
+		case "Alphanumeric Mix":
+			return "12345abc";
+		case "Only Space":
+			return "    ";
+		case "Special Character":
+			return "@#&*!";
+		case "String number":
+			return "12";
+
+		// --- Number Cases ---
 		case "Zero":
 			return 0;
-		case "Negative":
+		case "Negative Number": // Covers "Negative"
 			return -1;
 		case "Non-numeric String":
 			return "abc";
 		case "Large Number":
 			return 999999999999999;
+		case "Positive Number":
+			return 5;
+		case "Large Positive Number":
+			return 1000;
+		case "Float Number":
+			return 1.23;
+		case "Max boundary":
+			return Number.MAX_SAFE_INTEGER;
+		case "Min boundary":
+			return Number.MIN_SAFE_INTEGER;
+		case "High Precision Float":
+			return 0.12345678912345;
+
+		// --- Boolean Cases ---
 		case "True":
 			return true;
 		case "False":
 			return false;
 		case "Not Boolean":
 			return "not_a_boolean";
+		case "Boolean as Integer (1)":
+			return 1;
+		case "Boolean as Integer (0)":
+			return 0;
+		case "Boolean as String (true)":
+			return "true";
+		case "Boolean as String (false)":
+			return "false";
+
+		// --- Date Cases ---
+		case "Valid Date Format":
+			return "2023-01-01T10:00:00Z";
+		case "Invalid Date Format":
+			return "22/04/202aaa";
 		case "Invalid Date":
 			return "invalid-date";
 		case "Future Date":
-			return new Date(Date.now() + 86400000).toISOString();
+			return "2050-01-01";
 		case "Past Date":
-			return new Date(Date.now() - 86400000).toISOString();
+			return "1900-01-01";
 		case "ISO Format":
 			return new Date().toISOString();
+		case "Invalid Calendar Date":
+			return "2023-02-30";
+		case "Invalid Month Date":
+			return "2023-13-01";
+
+		// --- File Cases (represented as filenames) ---
+		case "Incorrect File Type":
+			return "document.exe";
+		case "Image File":
+			return "image.jpg";
+		case "Video File":
+			return "video.mp4";
+		case "Empty File":
+			return "empty_file.dat";
+		case "Max Size (single file)":
+			return "5mb_file.zip";
+		case "Max Size (multiple file)":
+			return "25mb_files.zip";
+
+		// --- UUID Cases ---
+		case "Valid UUID":
+			return "550e8400-e29b-41d4-a716-446655440000";
+		case "Invalid UUID":
+			return "550e8400-e29b-41d4-a716";
+
+		// --- Enum Cases ---
+		case "Valid Enum Value":
+			return "active";
+		case "Invalid Enum Value":
+			return "deleted"; // Or another value that is invalid in your context
+
+		// --- Array Cases ---
+		case "Empty Array":
+			return [];
+		case "Non-Empty Integer Array":
+			return [1, 2, 3];
+		case "Non-Empty String Array":
+			return ["one", "two", "three"];
+		case "Non-Empty Boolean Array":
+			return [true, false];
+		case "Mixed Data Type Array":
+			return [1, "string", true, null];
+		case "Nested Arrays":
+			return [
+				[1, 2],
+				[3, 4],
+			];
+		case "Duplicate Elements":
+			return [1, 2, 2, 3];
+		case "Array with Null Element (Number)":
+			return [1, null, 3];
+		case "Array with Null Element (String)":
+			return ["a", null, "c"];
+		case "Array with Null Element (Boolean)":
+			return [true, null, false];
+
+		// --- Default Fallback ---
 		default:
 			return originalValue;
 	}
 };
-
 export const getMethodColor = (method: string) => {
 	switch (method.toUpperCase()) {
 		case "GET":
