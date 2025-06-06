@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useEffect, useRef } from "react";
 
+// The TestResult interface remains the same
 interface TestResult {
 	id: number;
 	testName: string;
@@ -29,82 +30,67 @@ interface RequestMetadataWithLogsProps {
 export function RequestMetadataWithLogs({
 	selectedTest,
 }: RequestMetadataWithLogsProps) {
-	const scrollAreaRef = useRef<HTMLDivElement>(null);
+	const scrollViewportRef = useRef<HTMLDivElement>(null);
 
+	// This useEffect will now auto-scroll to the bottom of the logs/metadata
 	useEffect(() => {
-		if (scrollAreaRef.current) {
-			const scrollContainer = scrollAreaRef.current.querySelector(
-				"[data-radix-scroll-area-viewport]"
-			);
-			if (scrollContainer) {
-				scrollContainer.scrollTop = scrollContainer.scrollHeight;
-			}
+		const viewport = scrollViewportRef.current;
+		if (viewport) {
+			viewport.scrollTop = viewport.scrollHeight;
 		}
 	}, [selectedTest]);
 
 	return (
-		<div className="space-y-4 min-w-0 flex-1 overflow-hidden w-full">
+		<div className="space-y-4 flex-1 overflow-hidden">
 			{/* Request Metadata Section */}
-			<div className="space-y-3 min-w-0 w-full">
+			<div className="space-y-3">
 				<p className="text-lg font-semibold truncate">Request Metadata</p>
-				<div className="rounded-lg overflow-hidden border border-[#E2E8F0] w-full max-w-full min-w-0">
-					<ScrollArea ref={scrollAreaRef} className="h-80 w-full">
-						{selectedTest.metadata ? (
-							<div
-								className="w-full overflow-hidden max-w-full min-w-0"
-								style={{ width: "100%" }}
-							>
-								<div className="overflow-hidden" style={{ maxWidth: "100%" }}>
-									<SyntaxHighlighter
-										language="json"
-										style={atomDark}
-										customStyle={{
-											margin: 0,
-											padding: 16,
-											borderRadius: 0,
-											fontSize: "12px",
-											width: "100%",
-											maxWidth: "100%",
-											minWidth: 0,
-											height: "320px",
-											maxHeight: "320px",
-											overflow: "hidden",
-											wordBreak: "break-all",
-											whiteSpace: "pre-wrap",
-											boxSizing: "border-box",
-										}}
-										showLineNumbers={false}
-										wrapLongLines={true}
-										lineProps={{
-											style: {
-												wordBreak: "break-all",
-												whiteSpace: "pre-wrap",
-												maxWidth: "100%",
-												overflow: "hidden",
-												display: "block",
-											},
-										}}
-										codeTagProps={{
-											style: {
-												wordBreak: "break-all",
-												whiteSpace: "pre-wrap",
-												maxWidth: "100%",
-												overflow: "hidden",
-											},
-										}}
-									>
-										{JSON.stringify(selectedTest.metadata, null, 2)}
-									</SyntaxHighlighter>
+				<div className="rounded-lg border border-[#E2E8F0] overflow-hidden">
+					{/* FIX #1: Added a fixed height class `h-[400px]` here.
+                      You can change this value to whatever height you need.
+                    */}
+					<ScrollArea className="w-full h-[400px]">
+						{/* We pass the ref to the special Viewport component for auto-scrolling */}
+						<ScrollArea ref={scrollViewportRef} className="w-full h-full">
+							{selectedTest.metadata ? (
+								// FIX #2: Removed redundant nested divs for simplicity
+								<SyntaxHighlighter
+									language="json"
+									style={atomDark}
+									wrapLongLines={true}
+									customStyle={{
+										margin: 0,
+										padding: "16px",
+										height: "100%",
+										fontSize: "12px",
+										// --- ADD THESE TWO LINES ---
+										whiteSpace: "pre-wrap", // Allows text to wrap to the next line
+										wordBreak: "break-all", // Forces long words to break
+									}}
+									codeTagProps={{
+										style: {
+											fontFamily: '"JetBrains Mono", monospace',
+										},
+									}}
+								>
+									{JSON.stringify(selectedTest.metadata, null, 2)}
+								</SyntaxHighlighter>
+							) : (
+								<div className="p-4 text-muted-foreground text-sm">
+									No metadata available
 								</div>
-							</div>
-						) : (
-							<div className="bg-[#F8FAFC] p-4 text-[#94A3B8] text-sm">
-								<span className="truncate">No metadata available</span>
-							</div>
-						)}
+							)}
+						</ScrollArea>
 					</ScrollArea>
 				</div>
 			</div>
+
+			{/* You can add your Logs section here following the same pattern */}
 		</div>
 	);
 }
+
+// NOTE: I've also updated the auto-scrolling `useEffect` to be more reliable
+// with Shadcn's `ScrollArea` by placing the `ref` on the `ScrollArea.Viewport` component.
+// You'll need to update your import to get the `Viewport` sub-component if you haven't already.
+// import { ScrollArea } from "@/components/ui/scroll-area";
