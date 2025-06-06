@@ -20,16 +20,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {usePathname, useRouter} from "next/navigation";
 import { signOut } from "@/auth";
 import { logout } from "@/action/auth-action";
+import {InviteToProject} from "@/components/invite-to-projecct";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 	const router = useRouter();
+	const pathname = usePathname()
+
+	const  urlProject = pathname.split("/")[2]
 
 	return (
-		<>
+		<div className="flex items-center gap-4">
+			<InviteToProject urlProject={urlProject}/>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Image
@@ -86,6 +91,6 @@ export const DropdownProfile = () => {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</>
+		</div>
 	);
 };
