@@ -44,11 +44,13 @@ export const deleteCollectionByIdService = async (
 export const createCollectionService = async (
 	name: string,
 	projectId: string
-): Promise<{ id: string; name: string; projectId: string }> => {
-	//  Send POST request
-	const response = await fetchAPI(`${COLLECTION_ENDPOINT}`, {
-		method: "POST",
-		body: JSON.stringify({ name, projectId }),
-	});
-	throw new Error("Failed to create collection");
+) => {
+	try {
+		await fetchAPI(`${COLLECTION_ENDPOINT}`, {
+			method: "POST",
+			body: JSON.stringify({ name, projectId }),
+		});
+	} catch (error) {
+		throw new Error("Failed to create collection");
+	}
 };
