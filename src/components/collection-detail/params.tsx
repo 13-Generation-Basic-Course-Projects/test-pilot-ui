@@ -1,4 +1,3 @@
-// Params.tsx
 import React, { useState } from "react";
 import PathVariable, { ParamRow } from "./path-variable";
 import QueryParams from "./query-params";

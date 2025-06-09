@@ -13,52 +13,54 @@ import {
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { Skeleton } from "@/components/ui/skeleton"; // 1. Import the Skeleton component
 
-// 1. Define an interface for our structured data
 interface PredefinedCase {
 	case: string;
 	value: any;
 	type: string;
 }
 
-// The hardcoded `predefinedValues` is no longer needed as we are fetching from the backend.
-// const predefinedValues = [ ... ];
-
 export default function PredefinedTestCase() {
 	const [selectedType, setSelectedType] = useState<string>("");
 	const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-
-	// 2. Initialize state to hold data from the backend
 	const [predefined, setPredefined] = useState<PredefinedCase[]>([]);
 	const [filterTypes, setFilterTypes] = useState<string[]>([]);
 
+	// 2. Add the isLoading state
+	const [isLoading, setIsLoading] = useState(true);
+
 	useEffect(() => {
 		const handlePredefined = async () => {
-			// Fetch the raw data from your backend action
-			const backendData = await getAllPredefinedAction();
-
-			// 3. Check if data is valid and then transform it
-			if (backendData && Array.isArray(backendData)) {
-				const transformedData: PredefinedCase[] = backendData.map(
-					(item: any) => ({
-						case: item.name,
-						value: item.value,
-						type: item.dataType.name,
-					})
-				);
-
-				setPredefined(transformedData);
-
-				const uniqueTypes = [
-					...new Set(transformedData.map((item) => item.type)),
-				];
-				setFilterTypes(uniqueTypes);
+			// It's good practice to ensure loading is true at the start of a fetch.
+			setIsLoading(true);
+			try {
+				const backendData = await getAllPredefinedAction();
+				if (backendData && Array.isArray(backendData)) {
+					const transformedData: PredefinedCase[] = backendData.map(
+						(item: any) => ({
+							case: item.name,
+							value: item.value,
+							type: item.dataType.name,
+						})
+					);
+					setPredefined(transformedData);
+					const uniqueTypes = [
+						...new Set(transformedData.map((item) => item.type)),
+					];
+					setFilterTypes(uniqueTypes);
+				}
+			} catch (error) {
+				console.error("Failed to fetch predefined cases:", error);
+				// Optionally, you could set an error state here
+			} finally {
+				// 3. Set loading to false after the fetch is complete (or fails)
+				setIsLoading(false);
 			}
 		};
 		handlePredefined();
 	}, []);
 
-	// 5. Filter the data that is now in our state
 	const filteredValues = selectedType
 		? predefined.filter((item) => item.type === selectedType)
 		: predefined;
@@ -66,6 +68,7 @@ export default function PredefinedTestCase() {
 	return (
 		<div className="p-6 mx-auto space-y-6">
 			<div className="flex justify-end">
+				{/* ... your filter dropdown code remains the same ... */}
 				<div className="relative w-64 text-sm">
 					<button
 						onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -89,7 +92,6 @@ export default function PredefinedTestCase() {
 							>
 								All Predefined Cases
 							</li>
-							{/* Render the dynamically generated filter types */}
 							{filterTypes.map((type, index) => (
 								<li
 									key={index}
@@ -124,40 +126,51 @@ export default function PredefinedTestCase() {
 							</TableRowV2>
 						</TableHeader>
 						<TableBody>
-							{/* 6. Map over the filteredValues from the state */}
-							{filteredValues.map((item) => (
-								<TableRow
-									key={`${item.case}-${item.type}`}
-									className="border-b border-slate-200 last:border-b-0"
-								>
-									{/* NAME CELL - Clamped */}
-									<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200 max-w-md">
-										<div className="truncate" title={item.case}>
-											{item.case}
-										</div>
-									</TableCell>
-
-									{/* VALUE CELL - Clamped */}
-									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200 max-w-xs">
-										<div
-											className="truncate"
-											title={JSON.stringify(item.value)}
+							{/* 4. Conditional rendering: Show skeletons or data */}
+							{isLoading
+								? [...Array(5)].map((_, index) => (
+										<TableRow
+											key={index}
+											className="border-b border-slate-200 last:border-b-0"
 										>
-											{/* Handle rendering of different value types, e.g., null or arrays */}
-											{JSON.stringify(item.value)}
-										</div>
-									</TableCell>
-
-									<TableCell className="h-12 pl-6">
-										<Badge
-											variant="outline"
-											className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
+											<TableCell className="h-12 pl-6 border-r border-slate-200">
+												<Skeleton className="h-4 w-3/4" />
+											</TableCell>
+											<TableCell className="h-12 pl-6 border-r border-slate-200">
+												<Skeleton className="h-4 w-1/2" />
+											</TableCell>
+											<TableCell className="h-12 pl-6">
+												<Skeleton className="h-6 w-16 rounded-full" />
+											</TableCell>
+										</TableRow>
+								  ))
+								: filteredValues.map((item) => (
+										<TableRow
+											key={`${item.case}-${item.type}`}
+											className="border-b border-slate-200 last:border-b-0"
 										>
-											{item.type}
-										</Badge>
-									</TableCell>
-								</TableRow>
-							))}
+											<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200">
+												{item.case}
+											</TableCell>
+											<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200 max-w-xs">
+												<div
+													className="truncate"
+													title={JSON.stringify(item.value)}
+												>
+													{/* Handle rendering of different value types, e.g., null or arrays */}
+													{JSON.stringify(item.value)}
+												</div>
+											</TableCell>
+											<TableCell className="h-12 pl-6">
+												<Badge
+													variant="outline"
+													className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
+												>
+													{item.type}
+												</Badge>
+											</TableCell>
+										</TableRow>
+								  ))}
 						</TableBody>
 					</Table>
 				</CardContent>

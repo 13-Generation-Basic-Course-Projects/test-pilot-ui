@@ -1,7 +1,7 @@
 import { CollectionSidebar } from "@/components/app-sidebar-collection";
 import RequestContent from "@/components/collection-detail/request-content";
 import { SidebarCollectionProvider } from "@/components/ui/sidebar-collection";
-import { getAllPredefinedService } from "@/service/pre-defined-service";
+import { getRequestByCollectionId } from "@/service/request-service";
 import React from "react";
 
 const RequestDetail = async ({
@@ -14,6 +14,10 @@ const RequestDetail = async ({
 	}>;
 }) => {
 	const { projectId, requestId, collectionId } = await params;
+
+	const request = await getRequestByCollectionId({ collectionId });
+
+	console.log(request);
 
 	return (
 		<div className="flex h-screen overflow-hidden">
