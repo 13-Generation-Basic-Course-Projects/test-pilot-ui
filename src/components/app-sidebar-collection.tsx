@@ -263,7 +263,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     );
   };
 
-  
+
 
   const handleRenameEndpoint = async (
     projectId: string,
@@ -549,7 +549,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                 {openCollections[collection.id] && (
                   <div className="pb-2">
                     {collection.endpoints.map((endpoint) => {
-                      const endpointPath = `/project/${collection.id}/request/${endpoint.id}`;
+                      const endpointPath = `/project/${projectId}/collection/${collection.id}/request/${endpoint.id}`;
                       const isActive = pathname === endpointPath;
                       return (
                         <div

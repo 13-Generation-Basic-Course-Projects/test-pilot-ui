@@ -6,9 +6,13 @@ import React from "react";
 const RequestDetail = async ({
 	params,
 }: {
-	params: Promise<{ projectId: string; requestId: string; }>;
+	params: Promise<{
+		projectId: string;
+		collectionId: string;
+		requestId: string;
+	}>;
 }) => {
-	const { projectId, requestId } = await params;
+	const { projectId, requestId, collectionId } = await params;
 	return (
 		<div className="flex h-screen overflow-hidden">
 			<SidebarCollectionProvider>
