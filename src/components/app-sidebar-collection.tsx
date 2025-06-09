@@ -34,7 +34,7 @@ import { ImportCollection } from "./import/import-collection";
 import { DeleteCollection } from "./delete/delete-collection";
 import { DeleteEndpoint } from "./delete/delete-endpoint";
 import { fetchCollectionsForProject } from "@/actions/collection-action";
-import { fetchRequestForCollection, deleteRequestAction, updateRequestByIdAction, createRequestByCollectionIdAction } from "@/actions/request-action";
+import { fetchRequestForCollection, deleteRequestAction, updateRequestByIdAction, createRequestByCollectionIdAction, duplicateRequestAction } from "@/actions/request-action";
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
@@ -302,6 +302,52 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }
   };
 
+  const handleDuplicateEndpoint = async (
+    projectId: string,
+    collectionId: string,
+    endpointId: string
+  ) => {
+    try {
+      const newEndpoint = await duplicateRequestAction(collectionId, endpointId);
+
+      if (!newEndpoint) {
+        throw new Error("Failed to duplicate endpoint");
+      }
+
+      setCollectionsData((prev) =>
+        prev.map((project) => {
+          if (project.id !== projectId) return project;
+          return {
+            ...project,
+            collections: project.collections.map((collection) => {
+              if (collection.id !== collectionId) return collection;
+
+              return {
+                ...collection,
+                endpoints: [
+                  ...collection.endpoints,
+                  {
+                    id: newEndpoint.id,
+                    method: newEndpoint.method || "GET",
+                    path: newEndpoint.name || "New Request",
+                    name: newEndpoint.name || "New Request",
+                  },
+                ],
+              };
+            }),
+          };
+        })
+      );
+
+      toast.success("Endpoint duplicated successfully");
+    } catch (error: any) {
+      console.error("Failed to duplicate endpoint:", error);
+      toast.error(`Failed to duplicate endpoint: ${error.message || "Unknown error"}`);
+    }
+  };
+
+
+
   const getCollectionMenuItems = (collection: CollectionItem, projectId: string) => [
     {
       icon: <FilePlusIcon className="w-4 h-4" />,
@@ -396,7 +442,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation();
           e.preventDefault();
-          // handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+          handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
         },
         className: "cursor-pointer",
       },
@@ -633,6 +679,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       <ExportEndpoint
         open={isExportRequestOpen}
         onOpenChange={setIsExportRequestOpen}
+        endpoint={selectedEndpoint}
       />
       <ExportCollection
         open={isExportCollectionOpen}

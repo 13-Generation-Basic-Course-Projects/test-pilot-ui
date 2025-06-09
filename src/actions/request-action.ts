@@ -1,4 +1,4 @@
-import {  createRequestByCollectionId, deleteRequestByIdService, getRequestByCollectionId, updateRequestByIdService } from "@/service/request-service";
+import {  createRequestByCollectionId, deleteRequestByIdService, duplicateRequest, getRequestByCollectionId, updateRequestByIdService } from "@/service/request-service";
 import { EndpointItem } from "@/types";
 
 export const fetchRequestForCollection = async (collectionId: string): Promise<EndpointItem[]> => {
@@ -78,4 +78,32 @@ export const updateRequestByIdAction = async (
     throw error;
   }
 };
+
+
+//duplicate ennpoint
+export const duplicateRequestAction = async (
+  collectionId: string,
+  requestId: string
+): Promise<EndpointItem | null> => {
+  try {
+    const response = await duplicateRequest({
+      requestId,
+      collectionId,
+    });
+
+    if (!response) return null;
+
+    return {
+      id: response.requestId,
+      name: response.name || "New Request",
+      method: response.method || "GET",
+      path: response.name || "New Request",
+    };
+  } catch (error) {
+    console.error("Error duplicating request:", error);
+    throw error;
+  }
+};
+
+
 
