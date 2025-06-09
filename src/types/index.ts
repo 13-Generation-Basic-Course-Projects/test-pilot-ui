@@ -49,11 +49,23 @@ export interface Endpoint {
 	requestId?: string; // optional field
 }
 
+export interface EndpointItem {
+  id: string;
+  name : string;
+  method?: string; // Optional, as API might not return it
+  path?: string;   // Optional, as API might not return it
+}
+
 export interface CollectionItem {
 	id: string;
 	title: string;
-	description?: string; // optional field
 	endpoints: Endpoint[];
+}
+
+
+
+export interface ProjectDetailPageProps {
+  params: Promise<{ projectId: string }>;
 }
 
 export interface Project {
@@ -73,8 +85,10 @@ export interface ProjectItem {
 	title: string;
 	description: string;
 	creationDate: string;
-	userAvatarUrl: string;
+	userAvatarUrl?: string
 }
+
+
 
 export interface ProjectProps {
 	projects: ProjectItem[];
@@ -100,6 +114,9 @@ export interface User {
 
 
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
+
+export type NewRequestPayload = Omit<EndpointItem, "id" | "creationDate">;
+
 
 export type LoginResponseType = {
 	message: string;

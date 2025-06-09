@@ -8,7 +8,7 @@ export async function userUpdateService(data: { name: string; email: string }) {
         body: JSON.stringify(data),
     });
 
-    return res.data;
+    return res.payload;
 }
 
 export async function uploadProfileImageService(file: File) {
@@ -20,7 +20,7 @@ export async function uploadProfileImageService(file: File) {
         body: formData,
     });
 
-    return res.data.profileImage;
+    return res.payload.profileImage;
 }
 export async function getUserProfileService(): Promise<{
     username: string;
