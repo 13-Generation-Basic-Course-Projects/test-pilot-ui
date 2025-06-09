@@ -1,8 +1,24 @@
+"use client";
+
 import { CollectionSidebar } from "@/components/app-sidebar-collection";
 import { SidebarCollectionProvider } from "@/components/ui/sidebar-collection";
-import React from "react";
+import { useProjectStore } from "@/store/project-store";
+import React, { use, useEffect } from "react";
 
-const ProjectDetailPage = () => {
+const ProjectDetailPage = ({
+	params,
+}: {
+	params: Promise<{ projectId: string }>;
+}) => {
+	const { projectId } = use(params);
+
+	console.log(projectId);
+
+	const { setProjectByProjectId } = useProjectStore();
+
+	useEffect(() => {
+		setProjectByProjectId(projectId);
+	}, [projectId, setProjectByProjectId]);
 	return (
 		<div className="flex h-full w-full">
 			<SidebarCollectionProvider>

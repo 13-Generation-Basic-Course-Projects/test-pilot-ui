@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Check, ChevronDown, ChevronUp, CodeXml } from "lucide-react";
-// Remove: import { projectsData } from "@/lib/constants"; // We'll get data from localStorage
 
 import { cn, getMethodColor } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ import { Input } from "./ui/input";
 import CodeSnippet from "./code-snippet/code-snippet";
 import { useRequestStore } from "@/store/request-url-slice";
 import { useEffect } from "react";
-import type { Project, Endpoint, CollectionItem } from "@/types"; // Ensure these types are correctly defined
+import { useProjectStore } from "@/store/project-store"; // <-- Import the main project store
 
 const endpointMethods = [
 	{ value: "GET", label: "GET" },
@@ -47,67 +46,25 @@ export function EndpointDropdownUrl({
 	requestId: string;
 }) {
 	const [open, setOpen] = React.useState(false);
-	const { method, url, setMethod, setUrl } = useRequestStore();
-	const [localEndpoint, setLocalEndpoint] = React.useState<
-		Endpoint | null | undefined
-	>(null);
 
-	useEffect(() => {
-		// Read collectionsData from localStorage
-		const savedCollectionsJSON = localStorage.getItem("collectionsData");
-		// Optionally read openCollections if needed, though it's not used in this component's current logic
-		// const savedOpenCollectionsJSON = localStorage.getItem("openCollections");
+	// Get the specific action and the project data from the store
+	const { project, updateEndpoint } = useProjectStore();
 
-		let foundEndpoint: Endpoint | null | undefined = null;
+	// This store can be used for the temporary state of the URL input field
+	const { url, setUrl } = useRequestStore();
 
-		if (savedCollectionsJSON) {
-			try {
-				const allProjects = JSON.parse(savedCollectionsJSON) as Project[];
-				const currentProject = allProjects.find((p) => p.id === projectId);
-				if (currentProject) {
-					for (const collection of currentProject.collections) {
-						const ep = collection.endpoints.find((e) => e.id === requestId);
-						if (ep) {
-							foundEndpoint = ep;
-							break;
-						}
-					}
-				}
-			} catch (error) {
-				console.error(
-					"Error parsing collectionsData from localStorage in EndpointDropdownUrl:",
-					error
-				);
-				foundEndpoint = null; // Reset on error
-			}
+	// Find the current endpoint from the central store's data
+	const currentEndpoint = React.useMemo(() => {
+		if (!project) return null;
+		for (const collection of project.collections) {
+			const ep = collection.endpoints.find((e) => e.id === requestId);
+			if (ep) return ep;
 		}
-		setLocalEndpoint(foundEndpoint);
+		return null;
+	}, [project, requestId]);
 
-		if (foundEndpoint) {
-			setMethod(foundEndpoint.method);
-			setUrl(
-				foundEndpoint.url || foundEndpoint.value || foundEndpoint.path || ""
-			);
-		} else {
-			// If endpoint not found in localStorage data (e.g., new or error),
-			// useRequestStore will retain its current values or defaults.
-			// You might want to explicitly set defaults here if needed.
-			// For example, if navigating to a new unsaved request:
-			// setMethod("GET");
-			// setUrl("");
-		}
-
-		// If you were to use openCollections:
-		// if (savedOpenCollectionsJSON) {
-		// try {
-		// const openCollectionsData = JSON.parse(savedOpenCollectionsJSON);
-		// console.log("Open collections data in EndpointDropdownUrl:", openCollectionsData);
-		// Process openCollectionsData if this component needed it
-		// } catch (error) {
-		// console.error("Error parsing openCollections from localStorage:", error);
-		// }
-		// }
-	}, [projectId, requestId, setMethod, setUrl]); // Re-run if IDs change
+	// Use the method from the central store as the source of truth
+	const method = currentEndpoint?.method || "GET";
 
 	return (
 		<div className="flex items-center gap-4">
@@ -120,15 +77,7 @@ export function EndpointDropdownUrl({
 							aria-expanded={open}
 							className="w-[150px] h-[40px] justify-between rounded-r-none"
 						>
-							<span
-								className={`${getMethodColor(
-									method // Display method from useRequestStore
-								)}`}
-							>
-								{endpointMethods.find((item) => item.value === method)?.label ||
-									method ||
-									"GET"}
-							</span>
+							<span className={`${getMethodColor(method)}`}>{method}</span>
 							{open ? (
 								<ChevronUp className="opacity-50" />
 							) : (
@@ -145,11 +94,9 @@ export function EndpointDropdownUrl({
 											key={item.value}
 											value={item.value}
 											onSelect={() => {
-												setMethod(item.value);
-												// If method changes, you might want to update the actual endpoint data
-												// in localStorage via a function passed from context or a global action.
-												// For now, this just updates the local request store.
 												setOpen(false);
+												// Call the store action to update the method globally
+												updateEndpoint(requestId, item.value);
 											}}
 										>
 											<span className={getMethodColor(item.label)}>
@@ -185,8 +132,7 @@ export function EndpointDropdownUrl({
 					</SheetTrigger>
 					<SheetContentV2>
 						<SheetHeader>
-							<SheetTitleV2>Generated Code Snippet</SheetTitleV2>{" "}
-							{/* Updated title */}
+							<SheetTitleV2>Generated Code Snippet</SheetTitleV2>
 							<CodeSnippet />
 						</SheetHeader>
 					</SheetContentV2>

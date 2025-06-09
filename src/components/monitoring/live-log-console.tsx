@@ -123,7 +123,7 @@ export function LiveLogConsole({ logs, compact = false }: LiveLogConsoleProps) {
 							logs.map((log, index) => (
 								<div
 									key={index}
-									className="flex items-center gap-1 text-sm min-w-0 h-5"
+									className="flex items-center gap-1 text-sm min-w-0 h-5 my-5"
 								>
 									<span
 										className="text-[#94A3B8] shrink-0 w-[50px] truncate"
@@ -132,15 +132,15 @@ export function LiveLogConsole({ logs, compact = false }: LiveLogConsoleProps) {
 									>
 										{log.timestamp.split(".")[0]}
 									</span>
-									<span
+									{/* <span
 										className={`${getLogLevelClass(
 											log.level
 										)} shrink-0 font-medium w-[35px] truncate`}
 										title={`[${log.level}]`}
 									>
 										[{log.level.charAt(0)}]
-									</span>
-									{log.source && (
+									</span> */}
+									{/* {log.source && (
 										<span
 											className="text-[#A78BFA] shrink-0 w-[45px] truncate"
 											title={`[${log.source}]`}
@@ -148,7 +148,7 @@ export function LiveLogConsole({ logs, compact = false }: LiveLogConsoleProps) {
 										>
 											[{log.source.substring(0, 3)}]
 										</span>
-									)}
+									)} */}
 									{log.testId && log.testName && (
 										<span
 											className={`px-1 py-0.5 rounded text-sm font-medium shrink-0 ${getTestBadgeClass(
@@ -156,11 +156,11 @@ export function LiveLogConsole({ logs, compact = false }: LiveLogConsoleProps) {
 											)}`}
 											title={`Test ${log.testId}: ${log.testName}`}
 										>
-											T{log.testId}
+											TEST-{log.testId}
 										</span>
 									)}
 									<span
-										className="text-white flex-1 min-w-0 truncate"
+										className="text-white flex-1 min-w-0 truncate ml-2"
 										title={log.message}
 									>
 										{log.message}

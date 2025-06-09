@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 
+// Shadcn UI Components
 import {
 	Table,
 	TableBody,
@@ -9,14 +10,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,10 +34,20 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-import { Trash2, Plus, X } from "lucide-react";
-import { useParamsApiStore } from "@/store/params-api-slice";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+
+// Icons & Utils
+import { Trash2, Plus, X, Check } from "lucide-react";
+import { useParamsApiStore } from "@/store/params-api-slice";
+import { cn } from "@/lib/utils";
+import { ALL_TEST_CASES } from "@/lib/constants";
 
 export interface ParamRow {
 	key: string;
@@ -57,16 +73,16 @@ export default function PathVariable() {
 		setPathVariables(updatedRows);
 	};
 
-	const handleToggleCase = (index: number, selectedCase: string) => {
+	const handleToggleCase = (index: number, caseName: string) => {
 		const updatedRows = [...pathVariables];
 		const currentCases = updatedRows[index].cases;
-
-		const exists = currentCases.includes(selectedCase);
+		const exists = currentCases.includes(caseName);
 		updatedRows[index].cases = exists
-			? currentCases.filter((c) => c !== selectedCase)
-			: [...currentCases, selectedCase];
+			? currentCases.filter((c) => c !== caseName)
+			: [...currentCases, caseName];
 		setPathVariables(updatedRows);
 	};
+
 	const handleRemoveCase = (index: number, caseToRemove: string) => {
 		const updatedRows = [...pathVariables];
 		updatedRows[index].cases = updatedRows[index].cases.filter(
@@ -74,16 +90,6 @@ export default function PathVariable() {
 		);
 		setPathVariables(updatedRows);
 	};
-
-	const caseOptions = [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"Number String",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	];
 
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
@@ -94,44 +100,40 @@ export default function PathVariable() {
 
 	return (
 		<div className="space-y-5">
-			{/* Bordered & Rounded Table Container */}
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full m mx-auto">
-				<Table className="w-full">
+				{/* FIX 2: Added `table-fixed` to better control column widths */}
+				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
 								Key
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
 								Value
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
 								Case
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700">
+							<TableHead className="px-4 py-3 font-semibold text-center text-sm text-gray-700 w-[10%]">
 								Action
 							</TableHead>
 						</TableRow>
 					</TableHeader>
-
 					<TableBody>
 						{pathVariables.map((row, index) => (
 							<TableRow
 								key={index}
 								className="hover:bg-gray-50 border-b border-gray-200"
 							>
-								{/* Key Input */}
 								<TableCell className="py-2 border-r border-gray-200">
 									<input
 										type="text"
 										value={row.key}
 										onChange={(e) => handleChange(index, "key", e.target.value)}
-										className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
+										className="w-full px-2 py-1 text-sm bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
 										placeholder="Enter key"
 									/>
 								</TableCell>
-
-								{/* Value Input */}
 								<TableCell className="px-4 py-2 border-r border-gray-200">
 									<input
 										type="text"
@@ -139,23 +141,21 @@ export default function PathVariable() {
 										onChange={(e) =>
 											handleChange(index, "value", e.target.value)
 										}
-										className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
+										className="w-full px-2 py-1 text-sm bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
 										placeholder="Enter value"
 									/>
 								</TableCell>
-
-								{/* Case Selection */}
-								<TableCell className="px-4 py-2 border-r border-gray-200 flex items-center justify-end gap-6 flex-row-reverse">
-									<div className="flex flex-wrap items-center">
-										{row.cases.slice(0, 1).map((c, i) => (
+								<TableCell className="px-4 py-2 border-r border-gray-200">
+									<div className="flex items-center gap-2 flex-wrap">
+										{row.cases.slice(0, 1).map((caseName) => (
 											<span
-												key={i}
+												key={caseName}
 												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
 											>
-												{c}
+												{caseName}
 												<X
 													className="w-3 h-3 cursor-pointer"
-													onClick={() => handleRemoveCase(index, c)}
+													onClick={() => handleRemoveCase(index, caseName)}
 												/>
 											</span>
 										))}
@@ -163,66 +163,99 @@ export default function PathVariable() {
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button
-														className="cursor-pointer size-3"
-														variant="link"
+														size="sm"
+														variant="ghost"
+														className="h-auto p-1 text-xs cursor-pointer"
 													>
-														+{row.cases.length - 1}
+														+ {row.cases.length - 1}
 													</Button>
 												</DropdownMenuTrigger>
-												<DropdownMenuContent className="max-h-48 overflow-y-auto w-[200px] space-y-3">
-													{row.cases.map((c, i) => (
-														<div
-															key={i}
-															className="flex items-center justify-between px-2 py-1 text-sm hover:bg-gray-100"
+												<DropdownMenuContent>
+													{row.cases.slice(1).map((caseName) => (
+														<DropdownMenuItem
+															key={caseName}
+															className="flex justify-between"
+															onSelect={(e) => e.preventDefault()}
 														>
-															<span>{c}</span>
-															<X
+															{caseName}
+															<Button
+																onClick={() =>
+																	handleRemoveCase(index, caseName)
+																}
 																className="w-3 h-3 cursor-pointer"
-																onClick={() => handleRemoveCase(index, c)}
-															/>
-														</div>
+																variant="ghost"
+															>
+																<X />
+															</Button>
+														</DropdownMenuItem>
 													))}
 												</DropdownMenuContent>
 											</DropdownMenu>
 										)}
-									</div>
-
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="secondary" className="size-6">
-												<Plus />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px] space-y-4">
-											{caseOptions.map((option) => (
-												<DropdownMenuItem
-													key={option}
-													onClick={() => handleToggleCase(index, option)}
-													className={`cursor-pointer ${
-														row.cases.includes(option)
-															? "bg-blue-100 font-semibold rounded"
-															: ""
-													}`}
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													variant="outline"
+													size="icon"
+													className="h-6 w-6 shrink-0"
 												>
-													{option}
-												</DropdownMenuItem>
-											))}
-										</DropdownMenuContent>
-									</DropdownMenu>
+													<Plus className="h-4 w-4" />
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="p-0 w-[300px]" align="start">
+												<Command>
+													<CommandInput placeholder="Search test cases..." />
+													<CommandList>
+														<CommandEmpty>No results found.</CommandEmpty>
+														<CommandGroup>
+															{ALL_TEST_CASES.map((testCase) => (
+																<CommandItem
+																	key={testCase.name}
+																	value={testCase.name}
+																	onSelect={() =>
+																		handleToggleCase(index, testCase.name)
+																	}
+																>
+																	<Check
+																		className={cn(
+																			"mr-2 h-4 w-4",
+																			row.cases.includes(testCase.name)
+																				? "opacity-100"
+																				: "opacity-0"
+																		)}
+																	/>
+																	<div className="flex flex-col">
+																		<span className="font-medium">
+																			{testCase.name}
+																		</span>
+																		<span className="text-xs text-muted-foreground">
+																			{testCase.description}
+																		</span>
+																	</div>
+																	<Badge variant="outline" className="ml-auto">
+																		{testCase.type}
+																	</Badge>
+																</CommandItem>
+															))}
+														</CommandGroup>
+													</CommandList>
+												</Command>
+											</PopoverContent>
+										</Popover>
+									</div>
 								</TableCell>
-
-								{/* Action Button */}
-								<TableCell className="px-4 py-2">
+								<TableCell className="text-center px-4 py-2">
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button
 												variant="ghost"
-												className="flex justify-center items-center"
+												size="icon"
+												className="w-full h-8 cursor-pointer"
 												onClick={() => setDeleteIndex(index)}
 											>
 												<Trash2
-													className="text-[#E2001A] cursor-pointer"
-													width={20}
+													className="text-red-600 cursor-pointer"
+													width={18}
 												/>
 											</Button>
 										</AlertDialogTrigger>
@@ -232,14 +265,11 @@ export default function PathVariable() {
 													Are you absolutely sure?
 												</AlertDialogTitle>
 												<AlertDialogDescription>
-													This action cannot be undone. This will permanently
-													delete your variable.
+													This will permanently delete the variable.
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter>
-												<AlertDialogCancel onClick={() => setDeleteIndex(null)}>
-													Cancel
-												</AlertDialogCancel>
+												<AlertDialogCancel>Cancel</AlertDialogCancel>
 												<AlertDialogAction onClick={handleDeleteRow}>
 													Delete
 												</AlertDialogAction>
@@ -249,14 +279,13 @@ export default function PathVariable() {
 								</TableCell>
 							</TableRow>
 						))}
-
 						<TableRow
 							onClick={handleAddRow}
-							className="cursor-pointer border-t border-gray-200"
+							className="cursor-pointer border-t-2 border-gray-300 bg-gray-50/50 hover:bg-gray-100"
 						>
 							<TableCell
 								colSpan={4}
-								className="px-4 py-3 text-sm text-gray-500"
+								className="px-4 py-3 text-sm text-gray-600 font-medium"
 							>
 								+ Add Variable
 							</TableCell>

@@ -7,35 +7,35 @@ export const projectsData: Project[] = [
 		iconType: "folder",
 		title: "My Awesome Project",
 		description: "This is a description for My Awesome Project.",
-		creationDate: "2023-01-15",
+		creationDate: "June 3, 2025",
 		userAvatarUrl: "/profile-img.png",
 		name: "My Awesome Project",
 		collections: [
-			{
-				id: "collection-auth",
-				title: "Authentication",
-				description: "Endpoints for user authentication",
-				endpoints: [
-					{
-						id: "endpoint-auth-1",
-						method: "POST",
-						path: "/api/v1/auth/login",
-						description: "Login user",
-						url: "http://localhost:3000/api/v1/auth/login",
-						status: 200,
-						statusText: "OK",
-					},
-					{
-						id: "endpoint-auth-2",
-						method: "GET",
-						path: "/api/v1/auth/me",
-						description: "Get current user",
-						url: "http://localhost:3000/api/v1/auth/me",
-						status: 200,
-						statusText: "OK",
-					},
-				],
-			},
+			// {
+			// 	id: "collection-auth",
+			// 	title: "Authentication",
+			// 	description: "Endpoints for user authentication",
+			// 	endpoints: [
+			// 		{
+			// 			id: "endpoint-auth-1",
+			// 			method: "POST",
+			// 			path: "/api/v1/auth/login",
+			// 			description: "Login user",
+			// 			url: "http://localhost:3000/api/v1/auth/login",
+			// 			status: 200,
+			// 			statusText: "OK",
+			// 		},
+			// 		{
+			// 			id: "endpoint-auth-2",
+			// 			method: "GET",
+			// 			path: "/api/v1/auth/me",
+			// 			description: "Get current user",
+			// 			url: "http://localhost:3000/api/v1/auth/me",
+			// 			status: 200,
+			// 			statusText: "OK",
+			// 		},
+			// 	],
+			// },
 			{
 				id: "collection-users",
 				title: "User Management",
@@ -397,100 +397,96 @@ greet
 
 export const mockHistoryResponses = [
 	{
-		method: "PUT",
-		endpoint: "http://localhost:8080/api/v1/habits",
-		status: "200 OK",
+		method: "POST",
+		endpoint: "http://96.9.81.187:8787/login",
+		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
 		requestBody: JSON.stringify(
-			{ habitName: "Morning Run", completed: true },
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ message: "Habit updated successfully" },
+			{ response: 400, statusText: "Bad Request" },
 			null,
 			2
 		),
 	},
 	{
 		method: "POST",
-		endpoint: "http://localhost:8080/api/v1/users/register",
-		status: "201 Created",
+		endpoint: "http://96.9.81.187:8787/login",
+		status: "200 OK",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: null,
+		responseBody: JSON.stringify(
+			{
+				message: "Login successful",
+				token:
+					"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				user: {
+					id: 1,
+					email: "testpilot@gmail.com",
+					password: null,
+				},
+			},
+			null,
+			2
+		),
+	},
+	{
+		method: "POST",
+		endpoint: "http://96.9.81.187:8787/login",
+		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
 		requestBody: JSON.stringify(
-			{ username: "john_doe", email: "john@example.com" },
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ userId: "user_123", token: "abcxyz123" },
+			{ response: 400, statusText: "Bad Request" },
 			null,
 			2
 		),
 	},
-	{
-		method: "GET",
-		endpoint: "http://localhost:8080/api/v1/tasks",
-		status: "200 OK",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: true,
-		failureReason: "Backend accepts invalid inputs like undefined",
-		requestBody: "",
-		responseBody: JSON.stringify(
-			{
-				error: "Invalid user permissions",
-				data: null,
-			},
-			null,
-			2
-		),
-	},
-	{
-		method: "DELETE",
-		endpoint: "http://localhost:8080/api/v1/habits/123",
-		status: "404 Not Found",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: true,
-		failureReason: "Resource not found",
-		requestBody: "",
-		responseBody: JSON.stringify({ error: "Habit not found" }, null, 2),
-	},
-	{
-		method: "POST",
-		endpoint: "http://localhost:8080/api/v1/tasks",
-		status: "200 OK",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: true,
-		failureReason: "Backend doesn't validate undefined taskId",
-		requestBody: JSON.stringify({ taskId: undefined }, null, 2),
-		responseBody: JSON.stringify(
-			{
-				message: "Task created with taskId: undefined", // 🚫 Invalid behavior
-			},
-			null,
-			2
-		),
-	},
-	{
-		method: "GET",
-		endpoint: "http://localhost:8080/api/v1/corrupted-data",
-		status: "500 Internal Server Error",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: false, // 🚫 No preview
-		failureReason: "Internal server error — no data returned",
-		requestBody: "",
-		responseBody: "", // 👈 No valid JSON
-	},
+	// {
+	// 	method: "DELETE",
+	// 	endpoint: "http://localhost:8080/api/v1/habits/123",
+	// 	status: "404 Not Found",
+	// 	badgeStatus: "failed" as const,
+	// 	isSuccess: false,
+	// 	shouldShowPreview: true,
+	// 	failureReason: "Resource not found",
+	// 	requestBody: "",
+	// 	responseBody: JSON.stringify({ error: "Habit not found" }, null, 2),
+	// },
+	// {
+	// 	method: "POST",
+	// 	endpoint: "http://localhost:8080/api/v1/tasks",
+	// 	status: "200 OK",
+	// 	badgeStatus: "failed" as const,
+	// 	isSuccess: false,
+	// 	shouldShowPreview: true,
+	// 	failureReason: "Backend doesn't validate undefined taskId",
+	// 	requestBody: JSON.stringify({ taskId: undefined }, null, 2),
+	// 	responseBody: JSON.stringify(
+	// 		{
+	// 			message: "Task created with taskId: undefined", // 🚫 Invalid behavior
+	// 		},
+	// 		null,
+	// 		2
+	// 	),
+	// },
+	// {
+	// 	method: "GET",
+	// 	endpoint: "http://localhost:8080/api/v1/corrupted-data",
+	// 	status: "500 Internal Server Error",
+	// 	badgeStatus: "failed" as const,
+	// 	isSuccess: false,
+	// 	shouldShowPreview: false, // 🚫 No preview
+	// 	failureReason: "Internal server error — no data returned",
+	// 	requestBody: "",
+	// 	responseBody: "", // 👈 No valid JSON
+	// },
 ];
 
 // utils/data-type-cases.ts
@@ -669,3 +665,336 @@ export const getMethodColor = (method: string) => {
 			return "text-gray-600";
 	}
 };
+
+export interface TestCase {
+	name: string;
+	value: string;
+	type:
+		| "String"
+		| "Date"
+		| "File"
+		| "Integer"
+		| "Boolean"
+		| "UUID"
+		| "ENUM"
+		| "Array";
+	description: string;
+}
+
+export const ALL_TEST_CASES: TestCase[] = [
+	// String Cases
+	{
+		name: "Empty String",
+		value: "",
+		type: "String",
+		description: "An empty string value.",
+	},
+	{
+		name: "Null String",
+		value: "null",
+		type: "String",
+		description: "A null value represented as a string.",
+	},
+	{
+		name: "Length Validation",
+		value: "define length",
+		type: "String",
+		description: "A string for length validation.",
+	},
+	{
+		name: "Numeric String",
+		value: "12345",
+		type: "String",
+		description: "A string containing only numbers.",
+	},
+	{
+		name: "Alphanumeric Mix",
+		value: "12345abc",
+		type: "String",
+		description: "A mix of letters and numbers.",
+	},
+	{
+		name: "Only Space",
+		value: " ",
+		type: "String",
+		description: "A string containing only spaces.",
+	},
+	{
+		name: "Special Character",
+		value: "@#&*!",
+		type: "String",
+		description: "A string with special characters.",
+	},
+
+	// Date Cases
+	{
+		name: "Valid Date Format",
+		value: "2023-01-01T10:00:00Z",
+		type: "Date",
+		description: "A date in ISO 8601 format.",
+	},
+	{
+		name: "Invalid Date Format",
+		value: "22/04/202aaa",
+		type: "Date",
+		description: "An invalid date format.",
+	},
+	{
+		name: "Past Date",
+		value: "1900-01-01",
+		type: "Date",
+		description: "A date in the past.",
+	},
+	{
+		name: "Future Date",
+		value: "2050-01-01",
+		type: "Date",
+		description: "A date in the future.",
+	},
+	{
+		name: "Invalid Calendar Date",
+		value: "2023-02-30",
+		type: "Date",
+		description: "A non-existent calendar date.",
+	},
+	{
+		name: "Invalid Month",
+		value: "2023-13-01",
+		type: "Date",
+		description: "A date with an invalid month.",
+	},
+
+	// File Cases
+	{
+		name: "Incorrect File Type",
+		value: ".exe",
+		type: "File",
+		description: "An executable file type.",
+	},
+	{
+		name: "Image File",
+		value: ".jpg",
+		type: "File",
+		description: "A common image file type.",
+	},
+	{
+		name: "Video File",
+		value: ".mp4",
+		type: "File",
+		description: "A common video file type.",
+	},
+	{
+		name: "Empty File",
+		value: "0 bytes",
+		type: "File",
+		description: "Represents a zero-byte file.",
+	},
+	{
+		name: "Max Size (Single)",
+		value: "5MB",
+		type: "File",
+		description: "A file at the size limit.",
+	},
+	{
+		name: "Max Size (Multiple)",
+		value: "25MB",
+		type: "File",
+		description: "Multiple files at the size limit.",
+	},
+
+	// Integer Cases
+	{
+		name: "Positive Number",
+		value: "5",
+		type: "Integer",
+		description: "A standard positive integer.",
+	},
+	{
+		name: "Large Positive Number",
+		value: "1000000",
+		type: "Integer",
+		description: "A large positive integer.",
+	},
+	{
+		name: "Null Integer",
+		value: "null",
+		type: "Integer",
+		description: "A null value for an integer field.",
+	},
+	{
+		name: "Float Number",
+		value: "1.23",
+		type: "Integer",
+		description: "A float number string.",
+	},
+	{
+		name: "Negative Number",
+		value: "-1",
+		type: "Integer",
+		description: "A negative integer.",
+	},
+	{
+		name: "Zero",
+		value: "0",
+		type: "Integer",
+		description: "The number zero.",
+	},
+	{
+		name: "Max Boundary",
+		value: "max",
+		type: "Integer",
+		description: "Represents the maximum integer value.",
+	},
+	{
+		name: "Min Boundary",
+		value: "min",
+		type: "Integer",
+		description: "Represents the minimum integer value.",
+	},
+	{
+		name: "String Number",
+		value: "'12'",
+		type: "Integer",
+		description: "A number represented as a string.",
+	},
+	{
+		name: "High Precision Float",
+		value: "0.12345678912345",
+		type: "Integer",
+		description: "A high-precision float.",
+	},
+
+	// Boolean Cases
+	{
+		name: "Null Boolean",
+		value: "null",
+		type: "Boolean",
+		description: "A null value for a boolean field.",
+	},
+	{
+		name: "True",
+		value: "true",
+		type: "Boolean",
+		description: "A true boolean value.",
+	},
+	{
+		name: "False",
+		value: "false",
+		type: "Boolean",
+		description: "A false boolean value.",
+	},
+	{
+		name: "Boolean as Integer (1)",
+		value: "1",
+		type: "Boolean",
+		description: "Boolean true as an integer.",
+	},
+	{
+		name: "Boolean as Integer (0)",
+		value: "0",
+		type: "Boolean",
+		description: "Boolean false as an integer.",
+	},
+	{
+		name: "Boolean as String (true)",
+		value: "'true'",
+		type: "Boolean",
+		description: "Boolean true as a string.",
+	},
+	{
+		name: "Boolean as String (false)",
+		value: "'false'",
+		type: "Boolean",
+		description: "Boolean false as a string.",
+	},
+
+	// UUID Cases
+	{
+		name: "Valid UUID",
+		value: "550e8400-e29b-41d4-a716-446655440000",
+		type: "UUID",
+		description: "A valid UUID.",
+	},
+	{
+		name: "Invalid UUID",
+		value: "550e8400-e29b-41d4-a716",
+		type: "UUID",
+		description: "An invalid or incomplete UUID.",
+	},
+
+	// ENUM Cases
+	{
+		name: "Valid Enum Value",
+		value: "active",
+		type: "ENUM",
+		description: "A valid value from an enumeration.",
+	},
+	{
+		name: "Invalid Enum Value",
+		value: "deleted",
+		type: "ENUM",
+		description: "An invalid value from an enumeration.",
+	},
+
+	// Array Cases
+	{
+		name: "Empty Array",
+		value: "[]",
+		type: "Array",
+		description: "An empty array.",
+	},
+	{
+		name: "Non-Empty Integer Array",
+		value: "[1]",
+		type: "Array",
+		description: "An array with integers.",
+	},
+	{
+		name: "Non-Empty String Array",
+		value: "['1']",
+		type: "Array",
+		description: "An array with strings.",
+	},
+	{
+		name: "Non-Empty Boolean Array",
+		value: "[true,false]",
+		type: "Array",
+		description: "An array with booleans.",
+	},
+	{
+		name: "Mixed Data Type Array",
+		value: "[1, 'string', true]",
+		type: "Array",
+		description: "An array with mixed data types.",
+	},
+	{
+		name: "Nested Arrays",
+		value: "[[1,2], [3,4]]",
+		type: "Array",
+		description: "An array containing other arrays.",
+	},
+	{
+		name: "Duplicate Elements",
+		value: "[1, 2, 2]",
+		type: "Array",
+		description: "An array with duplicate elements.",
+	},
+	{
+		name: "Array with Null (Number)",
+		value: "[1, null]",
+		type: "Array",
+		description: "A numeric array with a null element.",
+	},
+	{
+		name: "Array with Null (String)",
+		value: "['1', null]",
+		type: "Array",
+		description: "A string array with a null element.",
+	},
+	{
+		name: "Array with Null (Boolean)",
+		value: "[true, null]",
+		type: "Array",
+		description: "A boolean array with a null element.",
+	},
+];

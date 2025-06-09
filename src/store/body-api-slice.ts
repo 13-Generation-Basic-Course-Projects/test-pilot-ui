@@ -15,16 +15,24 @@ export interface ApiBodyState {
 	setApiBodyRows: (rows: ApiBodyRow[]) => void;
 }
 
-// Helper function to guess data type from a value
+// FIX: A more robust function to guess the data type
 const guessDataType = (value: any): string => {
-	if (typeof value === "boolean") return "boolean";
-	if (typeof value === "number") return "number";
-	// A simple check for ISO 8601 date format
-	if (
-		typeof value === "string" &&
-		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)
-	)
-		return "date";
+	// 1. Get the actual type from the parsed JSON. This is the most reliable check.
+	const type = typeof value;
+	if (type === "boolean") return "boolean";
+	if (type === "number") return "number";
+
+	// 2. If it's a string, then we can check for more specific string formats like dates.
+	if (type === "string") {
+		if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+			return "date";
+		}
+		// If it's a string but not a date, it remains a string.
+		// This correctly handles "1123456" as a string.
+		return "string";
+	}
+
+	// 3. For anything else (like null), default to "string".
 	return "string";
 };
 
@@ -32,7 +40,6 @@ export const useApiBodyStore = create<ApiBodyState>((set) => ({
 	rawBody: "",
 	apiBodyRows: [],
 
-	// This function now also handles parsing and setting up the structured rows
 	setRawBody: (value, parsedBody) => {
 		if (!parsedBody || typeof parsedBody !== "object") {
 			set({ rawBody: value, apiBodyRows: [] });
@@ -43,15 +50,15 @@ export const useApiBodyStore = create<ApiBodyState>((set) => ({
 			([key, val]) => ({
 				id: key,
 				value: val,
+				// Use the new, more reliable function here
 				dataType: guessDataType(val),
-				testCases: [], // Start with empty test cases
+				testCases: [],
 			})
 		);
 
 		set({ rawBody: value, apiBodyRows: newApiBodyRows });
 	},
 
-	// A dedicated function to update a specific row by its ID (the field name)
 	updateRow: (rowId, newValues) => {
 		set((state) => ({
 			apiBodyRows: state.apiBodyRows.map((row) =>
@@ -60,6 +67,5 @@ export const useApiBodyStore = create<ApiBodyState>((set) => ({
 		}));
 	},
 
-	// A function to replace all rows if needed
 	setApiBodyRows: (rows) => set({ apiBodyRows: rows }),
 }));

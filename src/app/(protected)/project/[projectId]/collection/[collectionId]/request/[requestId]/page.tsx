@@ -1,14 +1,26 @@
+"use client";
+
+import React, { useEffect, use } from "react";
 import { CollectionSidebar } from "@/components/app-sidebar-collection";
 import RequestContent from "@/components/collection-detail/request-content";
 import { SidebarCollectionProvider } from "@/components/ui/sidebar-collection";
-import React from "react";
+import { useProjectStore } from "@/store/project-store";
 
-const RequestDetail = async ({
+const RequestDetail = ({
 	params,
 }: {
 	params: Promise<{ projectId: string; requestId: string }>;
 }) => {
-	const { projectId, requestId } = await params;
+	const { projectId, requestId } = use(params);
+
+	console.log(projectId);
+
+	const { setProjectByProjectId } = useProjectStore();
+
+	useEffect(() => {
+		setProjectByProjectId(projectId);
+	}, [projectId, setProjectByProjectId]);
+
 	return (
 		<div className="flex h-screen overflow-hidden">
 			<SidebarCollectionProvider>

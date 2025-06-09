@@ -1,6 +1,8 @@
 "use client";
 
 import { type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -10,8 +12,6 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useProjectPath } from "@/hooks/use-project-path";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function SideMain({
@@ -44,8 +44,10 @@ export function SideMain({
 
 					const isActive =
 						(Href !== "#" && pathname === Href) ||
+						// ▼▼▼ THIS LINE IS THE FIX ▼▼▼
 						(item.path === "collection" &&
-							pathname.startsWith(`/project/${projectId}/request`));
+							pathname.startsWith(`/project/${projectId}/collection/`));
+					// ▲▲▲ THIS LINE IS THE FIX ▲▲▲
 
 					return (
 						<Collapsible

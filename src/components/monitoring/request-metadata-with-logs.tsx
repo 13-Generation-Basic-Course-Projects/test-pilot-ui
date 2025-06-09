@@ -58,6 +58,7 @@ export function RequestMetadataWithLogs({
 									language="json"
 									style={atomDark}
 									wrapLongLines={true}
+									showLineNumbers
 									customStyle={{
 										margin: 0,
 										padding: "16px",
