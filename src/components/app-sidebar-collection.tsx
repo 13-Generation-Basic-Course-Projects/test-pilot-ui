@@ -619,6 +619,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       <ExportCollection
         open={isExportCollectionOpen}
         onOpenChange={setIsExportCollectionOpen}
+        collection={selectedCollection}
       />
       <ShareCollection
         open={isShareCollectionOpen}
