@@ -1,6 +1,6 @@
 "use server";
 
-import {getUserProfileService, uploadProfileImageService, userUpdateService} from "@/service/user-service";
+import { uploadProfileImageService, userUpdateService} from "@/service/user-service";
 
 
 export const handleUserUpdate = async (

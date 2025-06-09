@@ -1,6 +1,6 @@
 // components/project-lists.tsx
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { ProjectProps, ProjectItem } from "@/types";
 import {
 	DropdownMenu,
@@ -32,9 +32,11 @@ import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { deleteProjectAction } from "@/actions/project-action";
 import { Button } from "../ui/button";
+import {getUserProfileService} from "@/service/user-service";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
+
 
 	const [selectedProjectForEdit, setSelectedProjectForEdit] =
 		useState<ProjectItem | null>(null);
@@ -129,9 +131,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const filteredProjects = projects.filter((project) =>
 		project.title.toLowerCase().includes(searchQuery)
 	);
+	const [profile, setProfile] = useState({ username: '', email: '', profileImage: '' });
 
+	useEffect(() => {
+		const fetchProfile = async () => {
+			const data = await getUserProfileService();
+			setProfile(data);
+		};
 
-
+		fetchProfile();
+	}, []);
 	return (
 		<>
 			<div className="mb-6 flex flex-col justify-between items-center">
@@ -227,13 +236,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 											{project.creationDate || "N/A"}
 										</p>
 									</div>
-									<Image
-										src={"/profile.png"} // not yet to fetch
-										alt="user profile"
-										width={35}
-										height={35}
-										className="rounded-full"
-									/>
+									{profile.profileImage && (
+										<Image
+											src={profile.profileImage.replace('http://', 'https://')}
+
+											alt="user profile"
+											width={35}
+											height={35}
+											className="rounded-[50px]"
+										/>
+									)}
 								</CardFooter>
 							</Link>
 						</Card>

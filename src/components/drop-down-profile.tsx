@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -24,6 +24,7 @@ import {usePathname, useRouter} from "next/navigation";
 import { signOut } from "@/auth";
 import { logout } from "@/action/auth-action";
 import {InviteToProject} from "@/components/invite-to-projecct";
+import {getUserProfileService} from "@/service/user-service";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -32,18 +33,33 @@ export const DropdownProfile = () => {
 
 	const  urlProject = pathname.split("/")[2]
 
+	const [profile, setProfile] = useState({ username: '', email: '', profileImage: '' });
+
+	useEffect(() => {
+		const fetchProfile = async () => {
+			const data = await getUserProfileService();
+			setProfile(data);
+		};
+
+		fetchProfile();
+	}, []);
+
 	return (
 		<div className="flex items-center gap-4">
 			<InviteToProject urlProject={urlProject}/>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Image
-						src="/profile.png"
-						alt="profile"
-						width={40}
-						height={40}
-						className="rounded-full cursor-pointer"
-					/>
+					{profile.profileImage && (
+						<Image
+							src={profile.profileImage.replace('http://', 'https://')}
+
+							alt="profile"
+							width={40}
+							height={40}
+							className="rounded-full"
+						/>
+					)}
+
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-48" align="end">
 					<DropdownMenuGroup>

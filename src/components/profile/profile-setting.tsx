@@ -4,18 +4,16 @@ import Image from "next/image";
 import { BreadcrumbProfile } from "../breadcrumb-profile";
 import EditProfile from "../profile/edit-profile-setting";
 import { handleUploadProfileImage, handleUserUpdate } from "@/action/user-action";
-import {getUserProfileService} from "@/service/user-service";
+import { getUserProfileService } from "@/service/user-service";
 
 export default function ProfileSetting() {
-
 	const [profile, setProfile] = useState({
 		username: "",
 		email: "",
 		password: "********",
-		imageUrl: "/default-image.png",
+		profileImage: "/default-image.png",
 	});
 
-	// Fetch user profile on mount
 	useEffect(() => {
 		async function fetchProfile() {
 			const userData = await getUserProfileService();
@@ -23,8 +21,8 @@ export default function ProfileSetting() {
 				setProfile({
 					username: userData.username,
 					email: userData.email,
-					password: "********", // You don't get password from API, keep it masked
-					imageUrl: userData.profileImage || "/default-image.png",
+					password: "********",
+					profileImage: userData.profileImage || "/default-image.png",
 				});
 			}
 		}
@@ -34,35 +32,39 @@ export default function ProfileSetting() {
 	const handleUpdateProfile = async (updatedData: {
 		username: string;
 		email: string;
-		password: string;
-		image?: File | null;
+		password?: string;
+		profileImage?: File | null;
 	}) => {
 		try {
-			let imageUrl = profile.imageUrl;
+			let profileImageUrl = profile.profileImage;
 
-			if (updatedData.image) {
-				const uploadedImageUrl = await handleUploadProfileImage(updatedData.image);
+			// STEP 1: Upload image (if selected)
+			if (updatedData.profileImage) {
+				const uploadedImageUrl = await handleUploadProfileImage(updatedData.profileImage);
 				if (uploadedImageUrl) {
-					imageUrl = uploadedImageUrl;
+					profileImageUrl = uploadedImageUrl; // ✅ Get the image URL
 				}
 			}
 
+			// STEP 2: Now update user profile (with or without updated image URL)
 			await handleUserUpdate({
 				name: updatedData.username,
 				email: updatedData.email,
-				profileImage: imageUrl,
+				profileImage: profileImageUrl, // ✅ Send as a string URL
 			});
 
-			setProfile({
+			// Update state locally
+			setProfile((prev) => ({
+				...prev,
 				username: updatedData.username,
 				email: updatedData.email,
-				password: updatedData.password,
-				imageUrl,
-			});
+				profileImage: profileImageUrl,
+			}));
 		} catch (error) {
 			console.error("Failed to update profile:", error);
 		}
 	};
+
 
 	return (
 		<div className="min-w-screen">
@@ -77,11 +79,15 @@ export default function ProfileSetting() {
 				<div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-8">
 					<div className="flex items-center gap-5">
 						<Image
-							src={profile.imageUrl}
+							src={
+								profile.profileImage.startsWith("http://")
+									? profile.profileImage.replace("http://", "https://")
+									: profile.profileImage
+							}
 							alt="Profile"
-							className="w-20 h-20 rounded-full object-cover"
 							width={80}
 							height={80}
+							className="w-20 h-20 rounded-full object-cover"
 						/>
 						<div>
 							<p className="text-lg font-semibold text-gray-900">{profile.username}</p>
