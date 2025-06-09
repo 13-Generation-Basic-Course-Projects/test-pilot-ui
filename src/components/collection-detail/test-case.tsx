@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import {
 	Table,
@@ -11,6 +11,21 @@ import {
 } from "@/components/ui/table";
 
 import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+
+// 1. Re-import DropdownMenu components
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -20,29 +35,46 @@ import {
 import { Plus, X } from "lucide-react";
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 
-// Available data types
-const dataTypeOptions = ["string", "number", "boolean", "date"] as const;
-type DataType = (typeof dataTypeOptions)[number];
-
-// Predefined case options by data type
-const caseByDataType: Record<DataType, string[]> = {
-	string: [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	],
-	number: ["Zero", "Negative", "Non-numeric String", "Large Number"],
-	boolean: ["True", "False", "Not Boolean"],
-	date: ["Invalid Date", "Future Date", "Past Date", "ISO Format"],
-};
+interface TestCase {
+	type: string;
+	case: string;
+	value: any;
+}
 
 export const TestCase = () => {
-	// The component now consumes the simplified state
 	const { apiBodyRows, updateRow } = useApiBodyStore();
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+	const [dataTypeOptions, setDataTypeOptions] = useState<string[]>([]);
+	const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			const backendData = await getAllPredefinedAction();
+			if (backendData && Array.isArray(backendData)) {
+				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				}));
+				setTestCases(transformedData);
+				const uniqueTypes = [
+					...new Set(transformedData.map((item) => item.type)),
+				];
+				setDataTypeOptions(uniqueTypes);
+			}
+		};
+		fetchTestCases();
+	}, []);
 
 	if (!apiBodyRows || apiBodyRows.length === 0) {
 		return (
@@ -50,7 +82,6 @@ export const TestCase = () => {
 		);
 	}
 
-	// Handlers are now simpler, calling the centralized `updateRow` function
 	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
 		const newTestCases = row.testCases.includes(selectedCase)
 			? row.testCases.filter((c) => c !== selectedCase)
@@ -64,7 +95,7 @@ export const TestCase = () => {
 	};
 
 	const handleChangeDataType = (rowId: string, newType: string) => {
-		updateRow(rowId, { dataType: newType });
+		updateRow(rowId, { dataType: newType, testCases: [] });
 	};
 
 	return (
@@ -107,84 +138,123 @@ export const TestCase = () => {
 
 								{/* Data Type Dropdown */}
 								<TableCell className="px-4 py-2 border-r border-gray-200">
-									<select
+									<Select
 										value={row.dataType}
-										onChange={(e) =>
-											handleChangeDataType(row.id, e.target.value)
+										onValueChange={(value) =>
+											handleChangeDataType(row.id, value)
 										}
-										className="w-full px-2 py-1 text-sm bg-transparent focus:outline-none"
 									>
-										{dataTypeOptions.map((type) => (
-											<option key={type} value={type}>
-												{type.charAt(0).toUpperCase() + type.slice(1)}
-											</option>
-										))}
-									</select>
+										<SelectTrigger className="w-[180px]">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{dataTypeOptions.map((type) => (
+												<SelectItem key={type} value={type}>
+													{type.charAt(0).toUpperCase() + type.slice(1)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 								</TableCell>
 
-								{/* Test Cases */}
-								<TableCell className="px-4 py-2 border-r border-gray-200 flex items-center justify-end gap-6 flex-row-reverse">
-									<div className="flex flex-wrap items-center">
+								{/* 2. This is the updated Test Case cell */}
+								<TableCell className="px-4 py-2 flex items-center justify-start gap-2">
+									{/* The "Add Case" popover button */}
+									<Popover
+										open={openPopoverId === row.id}
+										onOpenChange={(isOpen) =>
+											setOpenPopoverId(isOpen ? row.id : null)
+										}
+									>
+										<div className="py-2">
+											<PopoverTrigger asChild className="py-2">
+												<Button variant="secondary" className="size-6 py-2 ">
+													<Plus />
+												</Button>
+											</PopoverTrigger>
+										</div>
+										<PopoverContent className="w-[300px] p-0" align="end">
+											<Command>
+												<CommandInput placeholder="Search test case..." />
+												<CommandList>
+													<CommandEmpty>No test case found.</CommandEmpty>
+													<CommandGroup>
+														{testCases
+															.filter((tc) => tc.type === row.dataType)
+															.map((testCase) => (
+																<CommandItem
+																	key={testCase.case}
+																	value={testCase.case}
+																	onSelect={() => {
+																		handleToggleCase(row, testCase.case);
+																	}}
+																	className={cn(
+																		"cursor-pointer",
+																		row.testCases.includes(testCase.case) &&
+																			"bg-accent text-accent-foreground"
+																	)}
+																>
+																	{testCase.case}
+																</CommandItem>
+															))}
+													</CommandGroup>
+												</CommandList>
+											</Command>
+										</PopoverContent>
+									</Popover>
+
+									{/* Container for the selected case badges */}
+									<div className="flex flex-wrap items-center justify-end gap-2 py-2">
+										{/* Display the first selected case as a badge */}
 										{row.testCases.slice(0, 1).map((c) => (
 											<span
 												key={c}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 max-w-[120px]"
 											>
-												{c}
+												<span className="truncate" title={c}>
+													{c}
+												</span>
 												<X
-													className="w-3 h-3 cursor-pointer"
+													className="w-3 h-3 cursor-pointer flex-shrink-0"
 													onClick={() => handleRemoveCase(row, c)}
 												/>
 											</span>
 										))}
+
+										{/* If more than one case is selected, show the "+N" dropdown */}
 										{row.testCases.length > 1 && (
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
-													<Button variant="link" size="sm">
+													<Button
+														variant="link"
+														className="h-auto p-0 text-xs font-semibold"
+													>
 														+{row.testCases.length - 1}
 													</Button>
 												</DropdownMenuTrigger>
-												<DropdownMenuContent>
+												<DropdownMenuContent
+													align="end"
+													className="max-h-48 overflow-y-auto w-[200px]"
+												>
 													{row.testCases.map((c) => (
-														<div
+														<DropdownMenuItem
 															key={c}
-															className="flex items-center justify-between px-2 py-1 text-sm hover:bg-gray-100"
+															className="flex items-center justify-between text-xs"
+															onSelect={(e) => e.preventDefault()}
 														>
-															<span>{c}</span>
+															<span className="truncate" title={c}>
+																{c}
+															</span>
 															<X
-																className="w-3 h-3 cursor-pointer"
+																className="w-3 h-3 cursor-pointer text-muted-foreground hover:text-foreground"
 																onClick={() => handleRemoveCase(row, c)}
 															/>
-														</div>
+														</DropdownMenuItem>
 													))}
 												</DropdownMenuContent>
 											</DropdownMenu>
 										)}
 									</div>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="secondary" className="size-6">
-												<Plus />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px] space-y-1">
-											{(caseByDataType[row.dataType as DataType] || []).map(
-												(option) => (
-													<DropdownMenuItem
-														key={option}
-														onClick={() => handleToggleCase(row, option)}
-														className={`cursor-pointer ${
-															row.testCases.includes(option)
-																? "bg-blue-100 font-semibold rounded"
-																: ""
-														}`}
-													>
-														{option}
-													</DropdownMenuItem>
-												)
-											)}
-										</DropdownMenuContent>
-									</DropdownMenu>
 								</TableCell>
 							</TableRow>
 						))}

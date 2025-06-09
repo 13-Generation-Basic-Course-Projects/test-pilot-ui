@@ -4,3 +4,4 @@ export const PROJECT_ENDPOINT = `${API_BASE_URL}/projects`;
 export const COLLECTION_ENDPOINT = `${API_BASE_URL}/collections`;
 export const USER_ENDPOINT = `${API_BASE_URL}/users`;
 export const REQUEST_ENDPOINT = `${API_BASE_URL}/requests`;
+export const PREDEFINED_ENDPOINT = `${API_BASE_URL}/test-cases`;

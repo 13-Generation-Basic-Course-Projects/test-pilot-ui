@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react"; // 1. Import useEffect and useState
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
@@ -7,83 +7,17 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
 
-// FIX: Add the testCases constant so we can look up the value from the case name.
-const testCases = [
-	{ type: "String", case: "Empty String", value: "" },
-	{ type: "String", case: "Null", value: null },
-	{
-		type: "String",
-		case: "String length define length for validation",
-		value: "StringLength",
-	},
-	{ type: "String", case: "Numeric String", value: "12345" },
-	{ type: "String", case: "Alphanumeric Mix", value: "12345abc" },
-	{ type: "String", case: "Only Space", value: " " },
-	{ type: "String", case: "Special Character", value: "@#&*!" },
-	{ type: "Date", case: "Valid Date Format", value: "2023-01-01T10:00:00Z" },
-	{ type: "Date", case: "Invalid Date Format", value: "22/04/202aaa" },
-	{ type: "Date", case: "Past Date", value: "1900-01-01" },
-	{ type: "Date", case: "Future Date", value: "2050-01-01" },
-	{ type: "Date", case: "Invalid Calendar Date", value: "2023-02-30" },
-	{ type: "Date", case: "Invalid Month Date", value: "2023-13-01" },
-	{ type: "File", case: "Incorrect File Type", value: ".exe" },
-	{ type: "File", case: "Image File", value: ".jpg" },
-	{ type: "File", case: "Video File", value: ".mp4" },
-	{ type: "File", case: "Empty File", value: "0 byte file" },
-	{ type: "File", case: "MaxSize (single file)", value: "5Mb (limit 5Mb)" },
-	{ type: "File", case: "MaxSize (multiple file)", value: "25Mb (limit 5Mb)" },
-	{ type: "Integer", case: "Positive Number", value: 5 },
-	{ type: "Integer", case: "Large Positive Number", value: 1000 },
-	{ type: "Integer", case: "Null", value: null },
-	{ type: "Integer", case: "Float Number", value: 1.23 },
-	{ type: "Integer", case: "Negative Number", value: -1 },
-	{ type: "Integer", case: "Zero", value: 0 },
-	{ type: "Integer", case: "Max boundary", value: "max" },
-	{ type: "Integer", case: "Min boundary", value: "min" },
-	{ type: "Integer", case: "String number", value: "12" },
-	{ type: "Integer", case: "High Precision Float", value: 0.12345678912345 },
-	{ type: "Boolean", case: "Null", value: null },
-	{ type: "Boolean", case: "True", value: true },
-	{ type: "Boolean", case: "False", value: false },
-	{ type: "Boolean", case: "Boolean as Integer (1)", value: 1 },
-	{ type: "Boolean", case: "Boolean as Integer (0)", value: 0 },
-	{ type: "Boolean", case: "Boolean as String (true)", value: "true" },
-	{ type: "Boolean", case: "Boolean as String (false)", value: "false" },
-	{
-		type: "UUID",
-		case: "Valid UUID",
-		value: "550e8400-e29b-41d4-a716-446655440000",
-	},
-	{ type: "UUID", case: "Invalid UUID", value: "550e8400-e29b-41d4-a716" },
-	{ type: "ENUM", case: "Valid Enum Value", value: "active" },
-	{ type: "ENUM", case: "Invalid Enum Value", value: "deleted" },
-	{ type: "Array", case: "Empty Array", value: [] },
-	{ type: "Array", case: "Non-Empty Integer Array", value: [1] },
-	{ type: "Array", case: "Non-Empty String Array", value: ["1"] },
-	{ type: "Array", case: "Non-Empty Boolean Array", value: [true, false] },
-	{ type: "Array", case: "Mixed Data Type Array", value: [1, "string", true] },
-	{
-		type: "Array",
-		case: "Nested Arrays",
-		value: [
-			[1, 2],
-			[3, 4],
-		],
-	},
-	{ type: "Array", case: "Duplicate Elements", value: [1, 2, 2] },
-	{ type: "Array", case: "Array with Null Element (Number)", value: [1, null] },
-	{
-		type: "Array",
-		case: "Array with Null Element (String)",
-		value: ["1", null],
-	},
-	{
-		type: "Array",
-		case: "Array with Null Element (Boolean)",
-		value: [true, null],
-	},
-];
+// The static `testCases` array is no longer needed.
+// const testCases = [ ... ];
+
+// 3. Define interfaces for our data structures
+interface TestCase {
+	type: string;
+	case: string;
+	value: any;
+}
 
 interface ValidTestCase {
 	key: string;
@@ -98,6 +32,25 @@ export default function TestRequest() {
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
+
+	// 4. Add state to hold the test cases from the backend
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+
+	// 5. Fetch and set the test cases when the component mounts
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			const backendData = await getAllPredefinedAction();
+			if (backendData && Array.isArray(backendData)) {
+				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				}));
+				setTestCases(transformedData);
+			}
+		};
+		fetchTestCases();
+	}, []);
 
 	const getValidTestCases = (variables: any[], type: "path" | "query") => {
 		return (
@@ -141,7 +94,7 @@ export default function TestRequest() {
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
-			// FIX: Look up the actual value from the testCases constant
+			// This logic now uses the `testCases` state variable automatically
 			const valueToUse = isCurrentVariable
 				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value ??
 				  ""
@@ -163,7 +116,7 @@ export default function TestRequest() {
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
-			// FIX: Look up the actual value from the testCases constant
+			// This logic also uses the `testCases` state variable
 			const valueToUse = isCurrentVariable
 				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value
 				: variable.value;
