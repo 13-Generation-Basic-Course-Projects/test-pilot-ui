@@ -6,7 +6,7 @@ import { CollectionResponseTypes } from "@/types/collection-type";
 //Get ll 
 export const getAllCollection = async (projectId: string): Promise<CollectionItem[]> => {
   try {
-    const response = await fetchAPI<CollectionResponseTypes>(`${COLLECTION_ENDPOINT}/${projectId}`);
+    const response = await fetchAPI<CollectionResponseTypes>(`${COLLECTION_ENDPOINT}/by-project/${projectId}`);
     if (response.success && response.payload) {
       return response.payload.map((item: any) => ({
         id: item.id,

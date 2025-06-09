@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 const headerToken = async () => {
 	const session = await auth();
 
-	console.log("header", session?.accessToken);
+	// console.log("header", session?.accessToken);
 
 	return {
 		accept: "*/*",

@@ -6,13 +6,17 @@ import React from "react";
 const RequestDetail = async ({
 	params,
 }: {
-	params: Promise<{ projectId: string; requestId: string }>;
+	params: Promise<{
+		projectId: string;
+		collectionId: string;
+		requestId: string;
+	}>;
 }) => {
-	const { projectId, requestId } = await params;
+	const { projectId, requestId, collectionId } = await params;
 	return (
 		<div className="flex h-screen overflow-hidden">
 			<SidebarCollectionProvider>
-				<CollectionSidebar projectId={""} />
+				<CollectionSidebar projectId={projectId} />
 			</SidebarCollectionProvider>
 			<div className="flex-1 min-w-0 overflow-auto">
 				<RequestContent projectId={projectId} requestId={requestId} />

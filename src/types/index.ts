@@ -49,11 +49,20 @@ export interface Endpoint {
 	requestId?: string; // optional field
 }
 
+export interface EndpointItem {
+  id: string;
+  name : string;
+  method?: string; // Optional, as API might not return it
+  path?: string;   // Optional, as API might not return it
+}
+
 export interface CollectionItem {
 	id: string;
 	title: string;
 	endpoints: Endpoint[];
 }
+
+
 
 export interface ProjectDetailPageProps {
   params: Promise<{ projectId: string }>;
@@ -81,12 +90,6 @@ export interface ProjectItem {
 
 
 
-export interface Endpoint {
-  id: string;
-  method: string;
-  path: string;
-}
-
 export interface ProjectProps {
 	projects: ProjectItem[];
 }
@@ -100,7 +103,20 @@ export interface ProjectFormProps {
 	onProjectUpdated?: (updatedProject: ProjectItem) => void; // New prop for edit mode
 }
 
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  token?: string;
+  avatarUrl?: string;
+  role?: string;
+}
+
+
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
+
+export type NewRequestPayload = Omit<EndpointItem, "id" | "creationDate">;
+
 
 export type LoginResponseType = {
 	message: string;
