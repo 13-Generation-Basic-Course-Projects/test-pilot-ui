@@ -37,6 +37,7 @@ import { DeleteEndpoint } from "./delete/delete-endpoint";
 import { getMethodColor } from "@/lib/utils";
 import {
   createCollectionAction,
+  duplicateCollectionAction,
   fetchCollectionsForProject,
 } from "@/actions/collection-action";
 import { deleteCollectionByIdService } from "@/service/collection-service";
@@ -184,28 +185,21 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     );
   };
 
-  const handleDuplicateCollection = (
+  const handleDuplicateCollection = async (
     projectId: string,
-    collectionId: string
+    collection: CollectionItem
   ) => {
+    const duplicated = await duplicateCollectionAction(collection, projectId);
+
+    if (!duplicated) return;
+
     setCollectionsData((prev) =>
       prev.map((project) => {
         if (project.id !== projectId) return project;
 
-        const collectionToDuplicate = project.collections.find(
-          (collection) => collection.id === collectionId
-        );
-
-        if (!collectionToDuplicate) return project;
-
-        const duplicatedCollection = {
-          ...collectionToDuplicate,
-          id: `${collectionId}-copy-${Date.now()}`,
-        };
-
         return {
           ...project,
-          collections: [...project.collections, duplicatedCollection],
+          collections: [...project.collections, duplicated],
         };
       })
     );
@@ -310,7 +304,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       label: "Duplicate",
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation();
-        handleDuplicateCollection(projectId, collection.id);
+        handleDuplicateCollection(projectId, collection);
       },
     },
     {
