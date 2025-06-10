@@ -61,10 +61,10 @@ export function MonitoringData({
 			case "failed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
-						<span className="text-[#EF4444] text-sm truncate">failed</span>
+						<span className="text-[#17C964] text-sm truncate">passed</span>
 						<Badge
 							variant="outline"
-							className="text-[#EF4444] text-sm font-medium shrink-0"
+							className="text-[#17C964] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>

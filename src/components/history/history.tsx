@@ -87,19 +87,19 @@ export default function History() {
 							<hr className="text-[#94A3B8]" />
 
 							{/* Request Metadata */}
-							<h3 className="text-xl">Request Metadata</h3>
+							{/* <h3 className="text-xl">Request Metadata</h3>
 							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
 								<pre className="whitespace-pre-wrap">
 									{previewData.requestBody || "No request body"}
 								</pre>
-							</div>
+							</div> */}
 
 							{/* Response */}
 							<h3 className="text-xl">Response</h3>
-							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
+							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60 no-scrollbar">
 								{previewData.responseBody ? (
 									isValidJSON(previewData.responseBody) ? (
-										<pre className="whitespace-pre-wrap">
+										<pre className="whitespace-pre-wrap break-words">
 											{previewData.responseBody}
 										</pre>
 									) : (

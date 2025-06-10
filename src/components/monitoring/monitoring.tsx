@@ -72,20 +72,20 @@ export default function Monitoring() {
 			httpStatus: 400,
 			statusText: "Bad Request",
 			metadata: {
-				request: {
-					headers: {
-						"Content-Type": "application/json",
-						"User-Agent": "TestPilot/1.0",
-						Accept: "application/json",
-						"X-Test-ID": "security-001",
-					},
-					body: {
-						email: "",
-						password: "",
-					},
-					timestamp: "2025-01-06T10:15:00Z",
-					duration: "156ms",
-				},
+				// request: {
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 		"User-Agent": "TestPilot/1.0",
+				// 		Accept: "application/json",
+				// 		"X-Test-ID": "security-001",
+				// 	},
+				// 	body: {
+				// 		email: "",
+				// 		password: "testpilot@123",
+				// 	},
+				// 	timestamp: "2025-01-06T10:15:00Z",
+				// 	duration: "156ms",
+				// },
 				response: {
 					status: 400,
 					statusText: "Bad Request",
@@ -99,17 +99,16 @@ export default function Monitoring() {
 						code: "VALIDATION_ERROR",
 						details: {
 							email: "Field cannot be empty",
-							password: "Field cannot be empty",
 						},
 					},
 					size: "156 bytes",
 				},
-				security: {
-					testType: "Input Validation",
-					riskLevel: "Low",
-					cweId: "CWE-20",
-					description: "Testing for proper validation of empty string inputs",
-				},
+				// security: {
+				// 	testType: "Input Validation",
+				// 	riskLevel: "Low",
+				// 	cweId: "CWE-20",
+				// 	description: "Testing for proper validation of empty string inputs",
+				// },
 			},
 			logs: [
 				{
@@ -163,23 +162,23 @@ export default function Monitoring() {
 			date: "2025-01-06",
 			method: "POST",
 			endpoint: "http://96.9.81.187:8787/login",
-			httpStatus: 200,
-			statusText: "OK",
+			httpStatus: 500,
+			statusText: "INTERNAL SERVER ERROR",
 			metadata: {
-				request: {
-					headers: {
-						"Content-Type": "application/json",
-						"User-Agent": "TestPilot/1.0",
-						Accept: "application/json",
-						"X-Test-ID": "security-002",
-					},
-					body: {
-						email: null,
-						password: null,
-					},
-					timestamp: "2025-01-06T10:15:05Z",
-					duration: "134ms",
-				},
+				// request: {
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 		"User-Agent": "TestPilot/1.0",
+				// 		Accept: "application/json",
+				// 		"X-Test-ID": "security-002",
+				// 	},
+				// 	body: {
+				// 		email: "testpilot@gmail.com",
+				// 		password: null,
+				// 	},
+				// 	timestamp: "2025-01-06T10:15:05Z",
+				// 	duration: "134ms",
+				// },
 				response: {
 					status: 200,
 					statusText: "OK",
@@ -189,24 +188,20 @@ export default function Monitoring() {
 						"Set-Cookie": "session=abc123; HttpOnly; Secure",
 					},
 					body: {
-						message: "Login successful",
-						token:
-							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-						user: {
-							id: "user_123",
-							email: "unknown@example.com",
-						},
+						error: "Internal Server Error",
+						code: "INTERNAL_SERVER_ERROR",
+						details: {},
 					},
 					size: "512 bytes",
 				},
-				security: {
-					testType: "Null Input Validation",
-					riskLevel: "High",
-					cweId: "CWE-476",
-					description: "Testing for proper handling of null pointer inputs",
-					vulnerability:
-						"Backend accepts null values and returns authentication token",
-				},
+				// security: {
+				// 	testType: "Null Input Validation",
+				// 	riskLevel: "High",
+				// 	cweId: "CWE-476",
+				// 	description: "Testing for proper handling of null pointer inputs",
+				// 	vulnerability:
+				// 		"Backend accepts null values and returns authentication token",
+				// },
 			},
 			logs: [
 				{
@@ -231,7 +226,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: "Response received: 200 OK",
+					message: "Response received: 500 INTERNAL SERVER ERROR",
 					source: "HttpClient",
 				},
 				{
@@ -240,14 +235,8 @@ export default function Monitoring() {
 					source: "TestRunner",
 				},
 				{
-					level: "WARNING",
-					message: "Backend accepted null inputs and returned success token",
-					source: "ValidationEngine",
-				},
-				{
 					level: "ERROR",
-					message:
-						"Test failed: Null Value Input - Backend should reject null credentials",
+					message: "INTERNAL SERVER ERROR",
 					source: "TestRunner",
 				},
 			],
@@ -262,20 +251,20 @@ export default function Monitoring() {
 			httpStatus: 400,
 			statusText: "Bad Request",
 			metadata: {
-				request: {
-					headers: {
-						"Content-Type": "application/json",
-						"User-Agent": "TestPilot/1.0",
-						Accept: "application/json",
-						"X-Test-ID": "security-003",
-					},
-					body: {
-						email: "'; DROP TABLE users; --",
-						password: "<script>alert('xss')</script>",
-					},
-					timestamp: "2025-01-06T10:15:10Z",
-					duration: "189ms",
-				},
+				// request: {
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 		"User-Agent": "TestPilot/1.0",
+				// 		Accept: "application/json",
+				// 		"X-Test-ID": "security-003",
+				// 	},
+				// 	body: {
+				// 		email: "'; DROP TABLE users; --",
+				// 		password: "<script>alert('xss')</script>",
+				// 	},
+				// 	timestamp: "2025-01-06T10:15:10Z",
+				// 	duration: "189ms",
+				// },
 				response: {
 					status: 400,
 					statusText: "Bad Request",
@@ -286,22 +275,20 @@ export default function Monitoring() {
 					},
 					body: {
 						error: "Invalid characters detected in input",
-						code: "SECURITY_VIOLATION",
-						blocked: {
-							sqlInjection: true,
-							xssAttempt: true,
-							patterns: ["DROP TABLE", "<script>"],
+						code: "VALIDATION_ERROR",
+						details: {
+							email: "email cannot be spacial characters",
 						},
 					},
 					size: "234 bytes",
 				},
-				security: {
-					testType: "Injection Attack",
-					riskLevel: "Critical",
-					cweId: "CWE-89, CWE-79",
-					description: "Testing for SQL injection and XSS vulnerabilities",
-					attackVectors: ["SQL Injection", "Cross-Site Scripting"],
-				},
+				// security: {
+				// 	testType: "Injection Attack",
+				// 	riskLevel: "Critical",
+				// 	cweId: "CWE-89, CWE-79",
+				// 	description: "Testing for SQL injection and XSS vulnerabilities",
+				// 	attackVectors: ["SQL Injection", "Cross-Site Scripting"],
+				// },
 			},
 			logs: [
 				{
@@ -377,7 +364,7 @@ export default function Monitoring() {
 	useEffect(() => {
 		const testSequence = [
 			{ id: 1, status: "passed" as const },
-			{ id: 2, status: "failed" as const },
+			{ id: 2, status: "passed" as const },
 			{ id: 3, status: "passed" as const },
 		];
 
@@ -624,7 +611,7 @@ export default function Monitoring() {
 														</p>
 														<div
 															className={`border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 ${
-																selectedTest.httpStatus === 400
+																selectedTest.httpStatus === 400 || 500
 																	? "text-[#17C964]"
 																	: selectedTest.httpStatus === 200
 																	? "text-[#F59E0B]"

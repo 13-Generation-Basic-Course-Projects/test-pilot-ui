@@ -404,7 +404,7 @@ export const mockHistoryResponses = [
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
-		requestBody: JSON.stringify(
+		responseBody: JSON.stringify(
 			{ response: 400, statusText: "Bad Request" },
 			null,
 			2
@@ -413,22 +413,15 @@ export const mockHistoryResponses = [
 	{
 		method: "POST",
 		endpoint: "http://96.9.81.187:8787/login",
-		status: "200 OK",
-		badgeStatus: "failed" as const,
+		status: "500 INTERNAL SERVER ERROR",
+		badgeStatus: "passed" as const,
 		isSuccess: false,
 		shouldShowPreview: true,
 		failureReason: null,
 		requestBody: null,
 		responseBody: JSON.stringify(
 			{
-				message: "Login successful",
-				token:
-					"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-				user: {
-					id: 1,
-					email: "testpilot@gmail.com",
-					password: null,
-				},
+				message: "INTERNAL SERVER ERROR",
 			},
 			null,
 			2
@@ -442,7 +435,7 @@ export const mockHistoryResponses = [
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
-		requestBody: JSON.stringify(
+		responseBody: JSON.stringify(
 			{ response: 400, statusText: "Bad Request" },
 			null,
 			2
