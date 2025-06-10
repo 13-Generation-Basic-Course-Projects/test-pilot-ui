@@ -1,6 +1,7 @@
 import { EndpointItem } from "@/types";
 
 export interface RequestResponseTypes {
+  id: any;
   path: any;
   requestId: string;
   name: any;

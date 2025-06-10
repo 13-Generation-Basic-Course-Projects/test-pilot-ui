@@ -1,3 +1,4 @@
+
 "use client";
 
 import type React from "react";
@@ -38,7 +39,6 @@ import { fetchRequestForCollection, deleteRequestAction, updateRequestByIdAction
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
-import { createRequestByCollectionId } from "@/service/request-service";
 
 interface Project {
   id: string;
@@ -58,6 +58,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
   const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
   const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
   const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+  const [openEndpoint, setOpenEndpoint] = useState<Record<string, boolean>>({});
   const [endpointToDelete, setEndpointToDelete] = useState<{
     projectId: string;
     collectionId: string;
@@ -192,6 +193,17 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }
   }, [openCollections]);
 
+  // Load openEndpoint from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("openEndpoint");
+    setOpenEndpoint(saved ? JSON.parse(saved) : {});
+  }, []);
+
+  // Save openEndpoint to localStorage
+  useEffect(() => {
+    localStorage.setItem("openEndpoint", JSON.stringify(openEndpoint));
+  }, [openEndpoint]);
+
   const pathname = usePathname();
 
   const toggleCollection = (collectionId: string) => {
@@ -200,7 +212,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       [collectionId]: !prev?.[collectionId],
     }));
   };
-
 
   const handleCreateCollection = (title: string) => {
     const newCollection: CollectionItem = {
@@ -262,8 +273,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       })
     );
   };
-
-
 
   const handleRenameEndpoint = async (
     projectId: string,
@@ -329,8 +338,8 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                   {
                     id: newEndpoint.id,
                     method: newEndpoint.method || "GET",
-                    path: newEndpoint.name || "New Request",
-                    name: newEndpoint.name || "New Request",
+                    path: newEndpoint.name || "New Request (Copy)",
+                    name: newEndpoint.name || "New Request (Copy)",
                   },
                 ],
               };
@@ -345,8 +354,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       toast.error(`Failed to duplicate endpoint: ${error.message || "Unknown error"}`);
     }
   };
-
-
 
   const getCollectionMenuItems = (collection: CollectionItem, projectId: string) => [
     {
@@ -416,64 +423,64 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     collectionId: string,
     projectId: string
   ) => [
-      {
-        icon: <Share2Icon className="w-4 h-4" />,
-        label: "Share",
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          setSelectedEndpoint(endpoint);
-          setIsShareEndpointOpen(true);
-        },
-        className: "cursor-pointer",
+    {
+      icon: <Share2Icon className="w-4 h-4" />,
+      label: "Share",
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setSelectedEndpoint(endpoint);
+        setIsShareEndpointOpen(true);
       },
-      { isSeparator: true as const },
-      {
-        icon: <EditIcon className="w-4 h-4" />,
-        label: "Rename",
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          setRenamingEndpointId(endpoint.id);
-        },
-        className: "cursor-pointer",
+      className: "cursor-pointer",
+    },
+    { isSeparator: true as const },
+    {
+      icon: <EditIcon className="w-4 h-4" />,
+      label: "Rename",
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setRenamingEndpointId(endpoint.id);
       },
-      {
-        icon: <FilePlus2Icon className="w-4 h-4" />,
-        label: "Duplicate",
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
-        },
-        className: "cursor-pointer",
+      className: "cursor-pointer",
+    },
+    {
+      icon: <FilePlus2Icon className="w-4 h-4" />,
+      label: "Duplicate",
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
+        handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
       },
-      {
-        icon: <FileOutput className="w-4 h-4" />,
-        label: "Export",
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          setSelectedEndpoint(endpoint);
-          setIsExportRequestOpen(true);
-        },
-        className: "cursor-pointer",
+      className: "cursor-pointer",
+    },
+    {
+      icon: <FileOutput className="w-4 h-4" />,
+      label: "Export",
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setSelectedEndpoint(endpoint);
+        setIsExportRequestOpen(true);
       },
-      {
-        icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
-        label: "Delete",
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          setTimeout(
-            () =>
-              setEndpointToDelete({
-                projectId,
-                collectionId,
-                endpointId: endpoint.id,
-              }),
-            0
-          );
-        },
-        className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+      className: "cursor-pointer",
+    },
+    {
+      icon: <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />,
+      label: "Delete",
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setTimeout(
+          () =>
+            setEndpointToDelete({
+              projectId,
+              collectionId,
+              endpointId: endpoint.id,
+            }),
+          0
+        );
       },
-    ];
+      className: "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
+    },
+  ];
 
   if (openCollections === null) return null;
 
@@ -587,21 +594,23 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                     )}
                   </div>
                   <ItemActionsDropdown
-                    items={getCollectionMenuItems(collection, project.id)}
-                  />
+                    items={getCollectionMenuItems(collection, project.id)} open={false} />
                 </div>
 
                 {/* Endpoints */}
                 {openCollections[collection.id] && (
                   <div className="pb-2">
-                    {collection.endpoints.map((endpoint) => {
+                    {collection.endpoints.map((endpoint, index) => {
                       const endpointPath = `/project/${projectId}/collection/${collection.id}/request/${endpoint.id}`;
                       const isActive = pathname === endpointPath;
+                      const timestamp = Date.now();
+                      const uniqueKey = endpoint.id
+                        ? `${collection.id}-${endpoint.id}`
+                        : `${collection.id}-temp-${timestamp}-${index}`;
                       return (
                         <div
-                          key={`${collection.id}-${endpoint.id}`}
-                          className={`group mx-4 mb-1 rounded-md ${isActive ? "bg-muted" : "hover:bg-muted/50"
-                            }`}
+                          key={uniqueKey}
+                          className={`group mx-4 mb-1 rounded-md ${isActive ? "bg-muted" : "hover:bg-muted/50"}`}
                         >
                           <Link
                             href={endpointPath}
@@ -662,6 +671,10 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                             </div>
                             <ItemActionsDropdown
                               items={getEndpointMenuItems(endpoint, collection.id, project.id)}
+                              open={openEndpoint[endpoint.id] || false}
+                              onOpenChange={(open) => {
+                                setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: open }));
+                              }}
                             />
                           </Link>
                         </div>

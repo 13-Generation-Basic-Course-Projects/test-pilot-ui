@@ -32,19 +32,30 @@ export const createRequestByCollectionIdAction = async (
     };
   }
 ): Promise<EndpointItem | null> => {
-  const response = await createRequestByCollectionId({
-    collectionId: payload.collectionId,
-    name: payload.requestName.trim(),
-    method: payload.method,
-    details: payload.details,
-  });
+  try {
+    const response = await createRequestByCollectionId({
+      collectionId: payload.collectionId,
+      name: payload.requestName.trim(),
+      method: payload.method,
+      details: payload.details,
+    });
 
-  if (!response) return null;
+    if (!response || !response.id) {
+      console.error("createRequestByCollectionIdAction: Invalid response", response);
+      return null;
+    }
 
-  return {
-    id: response.requestId,
-    name: response.name || payload.requestName, 
-  };
+    console.log("createRequestByCollectionIdAction response:", response);
+    return {
+      id: response.id, 
+      name: response.name || payload.requestName,
+      method: response.method || payload.method,
+      path: response.name || payload.requestName,
+    };
+  } catch (error) {
+    console.error("createRequestByCollectionIdAction error:", error);
+    throw error;
+  }
 };
 
 
@@ -86,24 +97,32 @@ export const duplicateRequestAction = async (
   requestId: string
 ): Promise<EndpointItem | null> => {
   try {
+    if (!requestId) {
+      console.error("duplicateRequestAction: Invalid requestId", requestId);
+      throw new Error("Invalid request ID");
+    }
+
     const response = await duplicateRequest({
       requestId,
       collectionId,
     });
 
-    if (!response) return null;
+    if (!response || !response.id) {
+      console.error("duplicateRequestAction: Invalid response", response);
+      return null;
+    }
 
+    console.log("duplicateRequestAction response:", response);
     return {
-      id: response.requestId,
-      name: response.name || "New Request",
+      id: response.id, 
+      name: response.name || "New Request (Copy)",
       method: response.method || "GET",
-      path: response.name || "New Request",
+      path: response.name || "New Request (Copy)",
     };
   } catch (error) {
-    console.error("Error duplicating request:", error);
+    console.error("duplicateRequestAction error:", error);
     throw error;
   }
 };
-
 
 

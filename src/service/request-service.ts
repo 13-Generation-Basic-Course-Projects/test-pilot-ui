@@ -34,21 +34,26 @@ export const createRequestByCollectionId = async ({
     description: string;
   };
 }) => {
-  const newRequest = {
-    name: name.trim(), // ✅ Changed from requestName to name
-    collectionId,
-    method,
-    details,
-  };
+ try {
+    const newRequest = {
+      name: name.trim(),
+      collectionId,
+      method,
+      details,
+    };
 
-  const response = await fetchAPI<RequestResponseTypes>(`${REQUEST_ENDPOINT}`, {
-    method: "POST",
-    body: JSON.stringify(newRequest),
-  });
+    const response = await fetchAPI<RequestResponseTypes>(`${REQUEST_ENDPOINT}`, {
+      method: "POST",
+      body: JSON.stringify(newRequest),
+    });
 
-  return response;
+    console.log("createRequestByCollectionId response:", response);
+    return response.payload;
+  } catch (error) {
+    console.error("createRequestByCollectionId error:", error);
+    throw error;
+  }
 };
-
 
 
 // Delete request by ID
@@ -99,6 +104,10 @@ export const duplicateRequest = async ({
   collectionId: string;
 }): Promise<RequestResponseTypes> => {
   try {
+    if (!requestId) {
+      throw new Error("Invalid request ID provided");
+    }
+
     const existingRequest = await fetchAPI<RequestResponseTypes>(`${REQUEST_ENDPOINT}/${requestId}`);
 
     if (!existingRequest.payload) {
@@ -106,7 +115,7 @@ export const duplicateRequest = async ({
     }
 
     const newRequest = {
-      name: `${existingRequest.payload.name}`,
+      name: `${existingRequest.payload.name} (Copy)`,
       collectionId,
       method: existingRequest.payload.method || "GET",
       details: existingRequest.payload.details || {
@@ -124,7 +133,7 @@ export const duplicateRequest = async ({
       body: JSON.stringify(newRequest),
     });
 
-    console.log("Duplicate request response:", response);
+    console.log("duplicateRequest response:", response);
     return response.payload;
   } catch (error) {
     console.error("duplicateRequest error:", error);
