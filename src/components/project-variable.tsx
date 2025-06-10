@@ -9,7 +9,6 @@ import {
 	TableRowV2,
 	TableV2,
 } from "@/components/ui/table";
-
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -31,6 +30,7 @@ export default function ProjectVariable() {
 	const [originalVariable, setOriginalVariable] = useState("");
 	const [originalValue, setOriginalValue] = useState("");
 	const [editField, setEditField] = useState<"variable" | "value" | null>(null);
+	
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
 	const handleAddRow = () => {

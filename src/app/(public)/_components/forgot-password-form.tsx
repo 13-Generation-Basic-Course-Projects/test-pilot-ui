@@ -18,7 +18,6 @@ export function ForgotPasswordForm({
 					Enter your email to reset your account
 				</p>
 			</div>
-
 			{/* Email Input */}
 			<div className="grid gap-6">
 				<div className="grid gap-2">
@@ -33,13 +32,11 @@ export function ForgotPasswordForm({
 						className="text-[#94A3B8]"
 					/>
 				</div>
-
 				{/* Submit Button */}
 				<Button type="submit" className="w-full">
 					Send
 				</Button>
 			</div>
-
 			<div className="text-center text-sm text-[#94A3B8]">
 				Remember your password?{" "}
 				<Link href="/login" className="text-[#0973DC] hover:underline">

@@ -42,12 +42,11 @@ export function VerifyOtpConfirmForm({
 		},
 	});
 
-	const { registeredEmail } = useRegister(); // Get clearRegisteredEmail if you have it
+	const { registeredEmail } = useRegister(); 
 
-	const [isResending, setIsResending] = useState(false); // State for resend loading
-	const [resendCooldown, setResendCooldown] = useState(0); // State for cooldown timer
+	const [isResending, setIsResending] = useState(false); 
+	const [resendCooldown, setResendCooldown] = useState(0); 
 
-	// Redirect if no email is registered (good practice from previous feedback)
 	useEffect(() => {
 		if (!registeredEmail) {
 			toast.error("No email found for verification. Please register again.");

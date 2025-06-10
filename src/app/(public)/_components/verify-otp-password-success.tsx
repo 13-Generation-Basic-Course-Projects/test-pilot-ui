@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link"; // ✅ Correct import for routing
-import Image from "next/image"; // ✅ Use next/image instead of lucide-react
+import Link from "next/link"; 
+import Image from "next/image"; 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
