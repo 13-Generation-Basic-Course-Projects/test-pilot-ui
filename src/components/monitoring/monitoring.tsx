@@ -157,13 +157,13 @@ export default function Monitoring() {
 		},
 		{
 			id: 2,
-			testName: "Null Value Input",
+			testName: "String Too Long",
 			status: "pending",
 			date: "2025-01-06",
 			method: "POST",
 			endpoint: "http://96.9.81.187:8787/login",
-			httpStatus: 500,
-			statusText: "INTERNAL SERVER ERROR",
+			httpStatus: 401,
+			statusText: "UNAUTHORIZED",
 			metadata: {
 				// request: {
 				// 	headers: {
@@ -188,8 +188,9 @@ export default function Monitoring() {
 						"Set-Cookie": "session=abc123; HttpOnly; Secure",
 					},
 					body: {
-						error: "Internal Server Error",
-						code: "INTERNAL_SERVER_ERROR",
+						message: "401 UNAUTHORIZED",
+						error: "UNAUTHORIZED",
+						code: "UNAUTHORIZED_ERROR",
 						details: {},
 					},
 					size: "512 bytes",
@@ -206,7 +207,7 @@ export default function Monitoring() {
 			logs: [
 				{
 					level: "INFO",
-					message: "Starting Null Value Input test",
+					message: "Starting String Too Long test",
 					source: "TestRunner",
 				},
 				{
@@ -216,7 +217,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "DEBUG",
-					message: "Request payload prepared with null values",
+					message: "Request payload prepared with long string value",
 					source: "HttpClient",
 				},
 				{
@@ -226,7 +227,7 @@ export default function Monitoring() {
 				},
 				{
 					level: "INFO",
-					message: "Response received: 500 INTERNAL SERVER ERROR",
+					message: "Response received: 200 OK",
 					source: "HttpClient",
 				},
 				{
@@ -235,8 +236,8 @@ export default function Monitoring() {
 					source: "TestRunner",
 				},
 				{
-					level: "ERROR",
-					message: "INTERNAL SERVER ERROR",
+					level: "INFO",
+					message: "200 OK",
 					source: "TestRunner",
 				},
 			],
@@ -364,7 +365,7 @@ export default function Monitoring() {
 	useEffect(() => {
 		const testSequence = [
 			{ id: 1, status: "passed" as const },
-			{ id: 2, status: "passed" as const },
+			{ id: 2, status: "failed" as const },
 			{ id: 3, status: "passed" as const },
 		];
 
@@ -611,7 +612,7 @@ export default function Monitoring() {
 														</p>
 														<div
 															className={`border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 ${
-																selectedTest.httpStatus === 400 || 500
+																selectedTest.httpStatus === 400
 																	? "text-[#17C964]"
 																	: selectedTest.httpStatus === 200
 																	? "text-[#F59E0B]"

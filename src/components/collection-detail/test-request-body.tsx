@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { jsonStringifyWithTruncation } from "@/lib/utils";
 
 export const TestRequestBody = () => {
 	const { apiBodyRows } = useApiBodyStore();
@@ -140,8 +141,10 @@ export const TestRequestBody = () => {
 							</Button>
 						</CardHeader>
 						<CardContent>
-							<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">
-								<code>{JSON.stringify(testCaseItem.payload, null, 2)}</code>
+							<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto whitespace-pre-wrap break-words">
+								<code>
+									{jsonStringifyWithTruncation(testCaseItem.payload, 1, 90)}
+								</code>
 							</pre>
 						</CardContent>
 					</Card>

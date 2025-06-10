@@ -24,7 +24,7 @@ import { Separator } from "../ui/separator";
 import { Edit, Trash } from "lucide-react";
 import { z } from "zod";
 import { customValueSchema } from "@/lib/zodSchema";
-import { DeleteCustomValue } from "../delete/delete-custom-value";
+import { DeleteCustomValue } from "../history/delete/delete-custom-value";
 import { CustomValueForm } from "./custom-value-form";
 
 interface RequestParam {

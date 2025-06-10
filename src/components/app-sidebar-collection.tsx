@@ -11,9 +11,10 @@ import {
 	FolderOpenIcon,
 	Share2Icon,
 	TrashIcon,
+	X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // 1. Import useRouter
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +25,8 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-
 import { getMethodColor } from "@/lib/utils";
-import { CollectionItem, Endpoint, Project } from "@/types";
+import { CollectionItem, Endpoint } from "@/types";
 import { CollectionForm } from "./collection/collection-form";
 import { ItemActionsDropdown } from "./dropdown-more-menu";
 import { ExportEndpoint } from "./export/export-endpoint";
@@ -34,12 +34,36 @@ import { ExportCollection } from "./export/export-collection";
 import { ShareCollection } from "./share/share-collection";
 import { ShareEndpoint } from "./share/share-endpoint";
 import { ImportCollection } from "./import/import-collection";
-import { DeleteCollection } from "./delete/delete-collection";
-import { DeleteEndpoint } from "./delete/delete-endpoint";
+import { DeleteCollection } from "./history/delete/delete-collection";
+import { DeleteEndpoint } from "./history/delete/delete-endpoint";
 import { useProjectStore } from "@/store/project-store";
+
+// A new component for the loading skeleton
+const CollectionSidebarSkeleton = () => {
+	return (
+		<div className="w-80 border-r bg-background p-4 animate-pulse">
+			<div className="flex items-center justify-between border-b pb-4">
+				<div className="h-8 w-32 rounded-md bg-muted" />
+				<div className="flex items-center gap-2">
+					<div className="h-8 w-8 rounded-md bg-muted" />
+					<div className="h-8 w-8 rounded-md bg-muted" />
+				</div>
+			</div>
+			<div className="mt-4 space-y-4">
+				{[...Array(4)].map((_, i) => (
+					<div key={i} className="flex items-center gap-3">
+						<div className="h-6 w-6 rounded bg-muted" />
+						<div className="h-6 flex-1 rounded bg-muted" />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+};
 
 export const CollectionSidebar = () => {
 	const { project, updateProject } = useProjectStore();
+	const router = useRouter(); // 2. Initialize the router
 
 	const [isCollectionSidebarOpen, setIsCollectionSidebarOpen] = useState(true);
 	const [openCollections, setOpenCollections] = useState<
@@ -69,12 +93,17 @@ export const CollectionSidebar = () => {
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
 
 	const pathname = usePathname();
-	const pathParts = pathname.split("/");
-	const currentRequestId = pathParts[6] || null;
+	const currentRequestId = pathname.split("/")[6] || null;
 
 	useEffect(() => {
 		const savedOpen = localStorage.getItem("openCollections");
-		setOpenCollections(savedOpen ? JSON.parse(savedOpen) : {});
+		if (savedOpen) {
+			try {
+				setOpenCollections(JSON.parse(savedOpen));
+			} catch (error) {
+				setOpenCollections({});
+			}
+		}
 		setIsDataLoaded(true);
 	}, []);
 
@@ -84,9 +113,28 @@ export const CollectionSidebar = () => {
 		}
 	}, [openCollections, isDataLoaded]);
 
+	useEffect(() => {
+		if (project && currentRequestId) {
+			let parentCollectionId: string | null = null;
+			for (const collection of project.collections) {
+				if (collection.endpoints?.some((ep) => ep.id === currentRequestId)) {
+					parentCollectionId = collection.id;
+					break;
+				}
+			}
+
+			if (parentCollectionId && !openCollections[parentCollectionId]) {
+				setOpenCollections((prev) => ({
+					...prev,
+					[parentCollectionId as string]: true,
+				}));
+			}
+		}
+	}, [project, currentRequestId]);
+
 	const handleCreateCollection = (title: string) => {
 		const newCollection: CollectionItem = {
-			id: `collection-${Date.now()}`,
+			id: crypto.randomUUID(),
 			title,
 			endpoints: [],
 		};
@@ -96,11 +144,13 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
+	// 3. Update handleAddEndpoint to navigate
 	const handleAddEndpoint = (collectionId: string) => {
 		const newEndpoint: Endpoint = {
-			id: `endpoint-${Date.now()}`,
+			id: crypto.randomUUID(),
 			method: "GET",
 			path: "/new-request",
+			name: "New Request",
 		};
 		updateProject((p) => ({
 			...p,
@@ -111,6 +161,11 @@ export const CollectionSidebar = () => {
 			),
 		}));
 		setOpenCollections((prev) => ({ ...prev, [collectionId]: true }));
+		if (project) {
+			router.push(
+				`/project/${project.id}/collection/${collectionId}/request/${newEndpoint.id}`
+			);
+		}
 	};
 
 	const handleRenameCollection = (collectionId: string, newTitle: string) => {
@@ -122,23 +177,20 @@ export const CollectionSidebar = () => {
 		}));
 	};
 
-	const handleDuplicateCollection = (collectionId: string) => {
-		updateProject((p) => {
-			const collectionToDuplicate = p.collections.find(
-				(c) => c.id === collectionId
-			);
-			if (!collectionToDuplicate) return p;
-			const duplicated = {
-				...collectionToDuplicate,
+	const handleDuplicateCollection = (collection: CollectionItem) => {
+		const duplicatedCollection = {
+			...collection,
+			id: crypto.randomUUID(),
+			title: `${collection.title} copy`,
+			endpoints: (collection.endpoints || []).map((ep) => ({
+				...ep,
 				id: crypto.randomUUID(),
-				title: `${collectionToDuplicate.title} copy`,
-				endpoints: (collectionToDuplicate.endpoints || []).map((ep) => ({
-					...ep,
-					id: crypto.randomUUID(),
-				})),
-			};
-			return { ...p, collections: [...p.collections, duplicated] };
-		});
+			})),
+		};
+		updateProject((p) => ({
+			...p,
+			collections: [...p.collections, duplicatedCollection],
+		}));
 	};
 
 	const handleRenameEndpoint = (
@@ -153,7 +205,9 @@ export const CollectionSidebar = () => {
 					? {
 							...c,
 							endpoints: (c.endpoints || []).map((ep) =>
-								ep.id === endpointId ? { ...ep, path: newPath } : ep
+								ep.id === endpointId
+									? { ...ep, path: newPath, name: newPath }
+									: ep
 							),
 					  }
 					: c
@@ -163,23 +217,21 @@ export const CollectionSidebar = () => {
 
 	const handleDuplicateEndpoint = (
 		collectionId: string,
-		endpointId: string
+		endpoint: Endpoint
 	) => {
+		const duplicatedEndpoint = {
+			...endpoint,
+			id: crypto.randomUUID(),
+			path: `${endpoint.path} copy`,
+			name: `${endpoint.name} copy`,
+		};
 		updateProject((p) => ({
 			...p,
-			collections: p.collections.map((c) => {
-				if (c.id !== collectionId) return c;
-				const endpointToDuplicate = (c.endpoints || []).find(
-					(ep) => ep.id === endpointId
-				);
-				if (!endpointToDuplicate) return c;
-				const duplicated = {
-					...endpointToDuplicate,
-					id: crypto.randomUUID(),
-					path: `${endpointToDuplicate.path} copy`,
-				};
-				return { ...c, endpoints: [...(c.endpoints || []), duplicated] };
-			}),
+			collections: p.collections.map((c) =>
+				c.id === collectionId
+					? { ...c, endpoints: [...(c.endpoints || []), duplicatedEndpoint] }
+					: c
+			),
 		}));
 	};
 
@@ -207,7 +259,7 @@ export const CollectionSidebar = () => {
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
-			onClick: () => handleDuplicateCollection(collection.id),
+			onClick: () => handleDuplicateCollection(collection),
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
@@ -242,7 +294,7 @@ export const CollectionSidebar = () => {
 		{
 			icon: <FilePlus2Icon className="w-4 h-4" />,
 			label: "Duplicate",
-			onClick: () => handleDuplicateEndpoint(collectionId, endpoint.id),
+			onClick: () => handleDuplicateEndpoint(collectionId, endpoint),
 		},
 		{
 			icon: <FileOutput className="w-4 h-4" />,
@@ -259,13 +311,9 @@ export const CollectionSidebar = () => {
 		},
 	];
 
-	if (!project)
-		return (
-			<div className="w-80 border-r bg-background h-full p-4 flex items-center justify-center">
-				Loading Project...
-			</div>
-		);
-	if (!isCollectionSidebarOpen)
+	if (!project) return <CollectionSidebarSkeleton />;
+
+	if (!isCollectionSidebarOpen) {
 		return (
 			<div className="border-r bg-background h-full p-2">
 				<Button
@@ -278,19 +326,49 @@ export const CollectionSidebar = () => {
 				</Button>
 			</div>
 		);
+	}
 
 	return (
 		<>
 			<div className="w-80 border-r bg-background duration-300 flex flex-col h-full">
 				<div className="flex items-center justify-between p-4 border-b">
 					<CollectionForm onCollectionCreate={handleCreateCollection} />
-					{/* ... other top bar buttons ... */}
+					<div className="flex items-center gap-1">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon" className="h-8 w-8">
+									<FolderDownIcon className="w-4 h-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem
+									onClick={() => setIsImportCollectionOpen(true)}
+									className="cursor-pointer"
+								>
+									Import
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => setIsExportCollectionOpen(true)}
+									className="cursor-pointer"
+								>
+									Export
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 cursor-pointer"
+							onClick={() => setIsCollectionSidebarOpen(false)}
+						>
+							<X />
+						</Button>
+					</div>
 				</div>
 
 				<div className="flex-1 custom-scrollbar overflow-y-auto">
 					{(project.collections || []).map((collection) => (
 						<div key={collection.id}>
-							{/* THIS IS THE COLLECTION "FOLDER" PART THAT WAS MISSING */}
 							<div
 								className="group flex items-center justify-between px-4 py-3 mb-2 hover:bg-muted/50 cursor-pointer"
 								onClick={() =>
@@ -331,7 +409,6 @@ export const CollectionSidebar = () => {
 								/>
 							</div>
 
-							{/* THIS PART CONDITIONALLY RENDERS THE ENDPOINTS INSIDE THE FOLDER */}
 							{openCollections[collection.id] && (
 								<div className="pb-2">
 									{(collection.endpoints || []).map((endpoint) => {
@@ -380,7 +457,7 @@ export const CollectionSidebar = () => {
 															/>
 														) : (
 															<span className="text-sm text-muted-foreground truncate">
-																{endpoint.path}
+																{endpoint.name || endpoint.path}
 															</span>
 														)}
 													</div>
@@ -401,7 +478,6 @@ export const CollectionSidebar = () => {
 				</div>
 			</div>
 
-			{/* Dialogs */}
 			<ExportEndpoint
 				open={isExportRequestOpen}
 				onOpenChange={setIsExportRequestOpen}

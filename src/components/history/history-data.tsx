@@ -80,9 +80,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "http://96.9.81.187:8787/login",
 			status: (
 				<div className="flex justify-between max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
-						500
+					<p className="text-[#EF4444]">failed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+						401
 					</div>
 				</div>
 			),

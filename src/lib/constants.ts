@@ -413,15 +413,15 @@ export const mockHistoryResponses = [
 	{
 		method: "POST",
 		endpoint: "http://96.9.81.187:8787/login",
-		status: "500 INTERNAL SERVER ERROR",
-		badgeStatus: "passed" as const,
+		status: "401 UNAUTHORIZED",
+		badgeStatus: "failed" as const,
 		isSuccess: false,
 		shouldShowPreview: true,
 		failureReason: null,
 		requestBody: null,
 		responseBody: JSON.stringify(
 			{
-				message: "INTERNAL SERVER ERROR",
+				message: "UNAUTHORIZED",
 			},
 			null,
 			2
@@ -529,6 +529,9 @@ export const generateValueForTestCase = (
 			return "@#&*!";
 		case "String number":
 			return "12";
+		case "String Too Long":
+			// Creates a very long string (2000+ characters). You can adjust the length as needed.
+			return "a_very_long_string_".repeat(100);
 
 		// --- Number Cases ---
 		case "Zero":

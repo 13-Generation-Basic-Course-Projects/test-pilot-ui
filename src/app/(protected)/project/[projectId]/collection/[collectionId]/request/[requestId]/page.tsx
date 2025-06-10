@@ -12,12 +12,13 @@ const RequestDetail = ({
 	params: Promise<{ projectId: string; requestId: string }>;
 }) => {
 	const { projectId, requestId } = use(params);
-
-	console.log(projectId);
-
 	const { setProjectByProjectId } = useProjectStore();
 
 	useEffect(() => {
+		// --- THIS IS THE FIX ---
+		// 1. First, make sure the data exists in localStorage.
+
+		// 2. Then, tell the store to load it.
 		setProjectByProjectId(projectId);
 	}, [projectId, setProjectByProjectId]);
 

@@ -62,6 +62,7 @@ const caseByDataType: Record<DataType, string[]> = {
 		"Empty String",
 		"Null Value",
 		"Length",
+		"String Too Long",
 		"Alphanumeric Mix",
 		"Only Space",
 		"Special Character",

@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import {
 	Table,
 	TableBody,
@@ -61,10 +62,10 @@ export function MonitoringData({
 			case "failed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
-						<span className="text-[#17C964] text-sm truncate">passed</span>
+						<span className="text-[#F31260] text-sm truncate">failed</span>
 						<Badge
 							variant="outline"
-							className="text-[#17C964] text-sm font-medium shrink-0"
+							className="text-[#F31260] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -138,7 +139,7 @@ export function MonitoringData({
 												className="truncate font-medium text-sm"
 												title={test.date}
 											>
-												{test.date.split("-")[2]}/{test.date.split("-")[1]}
+												{format(new Date(test.date), "d MMM yyyy")}
 											</div>
 										</TableCell>
 										<TableCell className="py-3 w-[60px] min-w-[60px]">

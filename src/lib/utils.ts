@@ -37,3 +37,37 @@ export function isValidJSON(jsonString: string): boolean {
 		return false;
 	}
 }
+
+export function formatReadableDate(dateString: string): string {
+	const date = new Date(dateString);
+	const options: Intl.DateTimeFormatOptions = {
+		day: "numeric", // "6"
+		month: "short", // "Jan"
+		year: "numeric", // "2025"
+		hour: "numeric", // "10"
+		minute: "2-digit", // "15"
+		hour12: true, // Use AM/PM
+	};
+	return new Intl.DateTimeFormat("en-US", options).format(date);
+}
+
+/**
+ * A custom JSON stringifier that truncates long string values.
+ * @param obj The object to stringify.
+ * @param space The number of spaces for indentation.
+ * @param limit The character limit for string values before truncation.
+ * @returns A formatted JSON string with long values truncated.
+ */
+export const jsonStringifyWithTruncation = (
+	obj: any,
+	space: number = 2,
+	limit: number = 256
+) => {
+	const replacer = (key: string, value: any) => {
+		if (typeof value === "string" && value.length > limit) {
+			return value.substring(0, limit) + "...";
+		}
+		return value;
+	};
+	return JSON.stringify(obj, replacer, space);
+};

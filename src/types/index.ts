@@ -42,6 +42,7 @@ export interface Endpoint {
 	method: string;
 	path: string;
 	value?: string; // optional field
+	name?: string;
 	description?: string; // optional field
 	url?: string; // optional field
 	status?: number; // optional field
@@ -73,6 +74,7 @@ export interface ProjectItem {
 	description: string;
 	creationDate: string;
 	userAvatarUrl: string;
+	defaultRequestUrl?: string; // <-- ADD THIS NEW OPTIONAL FIELD
 }
 
 export interface ProjectProps {

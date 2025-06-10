@@ -1,7 +1,6 @@
-// components/project-lists.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import { ProjectProps, ProjectItem } from "@/types";
+import { ProjectItem } from "@/types";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -26,13 +25,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import ProjectForm from "./project-form";
-import { DeleteProject } from "../delete/delete-project";
+import { DeleteProject } from "../history/delete/delete-project";
 import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { projectsData } from "@/lib/constants";
 
 const ProjectLists = ({ searchQuery = "" }) => {
-	// This state will hold all projects loaded from local storage
 	const [projects, setProjects] = useState<ProjectItem[]>([]);
 
 	const [selectedProjectForEdit, setSelectedProjectForEdit] =
@@ -47,59 +45,50 @@ const ProjectLists = ({ searchQuery = "" }) => {
 		useState<ProjectItem | null>(null);
 	const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
 
-	// Effect to load projects from local storage on component mount
-	useEffect(() => {
-		try {
-			const storedProjectsJSON = localStorage.getItem("projects");
-			const storedProjects: ProjectItem[] = storedProjectsJSON
-				? JSON.parse(storedProjectsJSON)
-				: [];
-			setProjects(storedProjects);
-		} catch (error) {
-			console.error("Failed to load projects from local storage:", error);
-			setProjects([]); // Default to an empty array on error
-		}
-	}, []); // Empty dependency array ensures this runs only once
-
 	useEffect(() => {
 		try {
 			const masterListJSON = localStorage.getItem("projects");
 
-			// Check if local storage is empty or doesn't have projects
 			if (!masterListJSON || masterListJSON === "[]") {
-				// --- THIS IS THE NEW SEEDING LOGIC ---
 				console.log("Local storage is empty. Seeding with initial data...");
 
-				// 1. Prepare the master list (metadata like id, title, etc.)
-				const masterListForStorage = projectsData.map((p) => ({
-					id: p.id,
-					title: p.title as string,
-					description: p.description as string,
-					creationDate: p.creationDate as string,
-					userAvatarUrl: p.userAvatarUrl as string,
-				}));
+				// --- NEW SEEDING LOGIC ---
+				// 1. Prepare the master list with a calculated default URL
+				const masterListForStorage = projectsData.map((p) => {
+					let defaultRequestUrl = `/project/${p.id}`; // Fallback URL
+
+					if (p.collections && p.collections.length > 0) {
+						const firstCollection = p.collections[0];
+						if (
+							firstCollection.endpoints &&
+							firstCollection.endpoints.length > 0
+						) {
+							const firstEndpoint = firstCollection.endpoints[0];
+							defaultRequestUrl = `/project/${p.id}/collection/${firstCollection.id}/request/${firstEndpoint.id}`;
+						}
+					}
+
+					return {
+						id: p.id,
+						title: p.title as string,
+						description: p.description as string,
+						creationDate: p.creationDate as string,
+						userAvatarUrl: p.userAvatarUrl as string,
+						defaultRequestUrl: defaultRequestUrl, // Add the new property
+					};
+				});
 				localStorage.setItem("projects", JSON.stringify(masterListForStorage));
 
-				// 2. Create a separate, detailed entry for EACH project from the constant
+				// 2. Create a separate, detailed entry for EACH project
 				projectsData.forEach((project) => {
 					const projectKey = `project-data-${project.id}`;
-					// Ensure the project from the constant has a `collections` property
-					const projectWithCollections = {
-						...project,
-						// If your constant doesn't have `collections`, it will be added here
-						collections: project.collections || [],
-					};
-					localStorage.setItem(
-						projectKey,
-						JSON.stringify(projectWithCollections)
-					);
+					localStorage.setItem(projectKey, JSON.stringify(project));
 				});
 
-				// 3. Set the component's state to display the seeded projects immediately
+				// 3. Set the component's state to display the seeded projects
 				setProjects(masterListForStorage);
 				// --- END OF SEEDING LOGIC ---
 			} else {
-				// If data already exists, just load it as before
 				const storedProjects: ProjectItem[] = JSON.parse(masterListJSON);
 				setProjects(storedProjects);
 			}
@@ -108,11 +97,10 @@ const ProjectLists = ({ searchQuery = "" }) => {
 				"Failed to load or seed projects from local storage:",
 				error
 			);
-			setProjects([]); // Default to an empty array on any error
+			setProjects([]);
 		}
 	}, []);
 
-	// Helper function to update both state and local storage
 	const updateProjectsAndStorage = (updatedProjects: ProjectItem[]) => {
 		setProjects(updatedProjects);
 		localStorage.setItem("projects", JSON.stringify(updatedProjects));
@@ -159,12 +147,11 @@ const ProjectLists = ({ searchQuery = "" }) => {
 			(project) => project.id !== projectId
 		);
 		updateProjectsAndStorage(updatedProjects);
-		console.log(
-			`Project with ID: ${projectId} deleted from state and local storage.`
-		);
 	};
 
 	const handleProjectCreated = (newProject: ProjectItem) => {
+		// Here, you would ideally calculate the defaultRequestUrl for the new project as well
+		// For simplicity, we'll just add it without it for now.
 		const updatedProjects = [...projects, newProject];
 		updateProjectsAndStorage(updatedProjects);
 	};
@@ -176,7 +163,6 @@ const ProjectLists = ({ searchQuery = "" }) => {
 		updateProjectsAndStorage(updatedProjects);
 	};
 
-	// Filter projects based on the search query before rendering
 	const filteredProjects = projects.filter((project) =>
 		project.title.toLowerCase().includes(searchQuery.toLowerCase())
 	);
@@ -196,7 +182,6 @@ const ProjectLists = ({ searchQuery = "" }) => {
 				<SearchForm className="mt-10" />
 			</div>
 
-			{/* Use the filteredProjects for rendering */}
 			{filteredProjects.length === 0 ? (
 				<div className="text-center text-slate-500 mt-10 justify-center">
 					<p className="text-lg font-medium ">No projects found</p>
@@ -205,7 +190,6 @@ const ProjectLists = ({ searchQuery = "" }) => {
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 					{filteredProjects.map((project) => (
 						<Card key={project.id}>
-							{/* Card content remains the same... */}
 							<CardHeader>
 								<div className="flex justify-between items-start">
 									<Image
@@ -229,7 +213,6 @@ const ProjectLists = ({ searchQuery = "" }) => {
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
 												</DropdownMenuItem>
-
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
 													onSelect={(e) => {
@@ -257,7 +240,10 @@ const ProjectLists = ({ searchQuery = "" }) => {
 									<h1 className="text-lg">{project.title}</h1>
 								</CardTitle>
 							</CardHeader>
-							<Link href={`/project/${project.id}`}>
+							{/* UPDATED LINK: Points to the default request URL with a fallback */}
+							<Link
+								href={project.defaultRequestUrl || `/project/${project.id}`}
+							>
 								<CardContent>
 									<p className="text-clip line-clamp-2 h-12">
 										{project.description}
