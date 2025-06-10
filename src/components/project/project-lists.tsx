@@ -30,7 +30,7 @@ import ProjectForm from "./project-form";
 import { DeleteProject } from "../delete/delete-project";
 import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
-import { deleteProjectAction } from "@/actions/project-action";
+import { deleteProjectAction } from "@/action/project-action";
 import { Button } from "../ui/button";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
@@ -50,7 +50,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-	const [searchQuery, setSearchQuery] = useState("")
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const handleShare = (project: ProjectItem) => {
 		setSelectedProjectForShare(project);
@@ -110,7 +110,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 		setIsCreateDialogOpen(false);
 	};
 
-
 	//Update project
 	const handleProjectUpdated = (updatedProject: ProjectItem) => {
 		console.log("handleProjectUpdated called with:", updatedProject);
@@ -130,8 +129,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 		project.title.toLowerCase().includes(searchQuery)
 	);
 
-
-
 	return (
 		<>
 			<div className="mb-6 flex flex-col justify-between items-center">
@@ -148,9 +145,8 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 						onOpenChange={handleDialogCloseCreate}
 						onProjectCreated={handleProjectCreated}
 					/>
-
 				</div>
-				<SearchForm className="mt-10" onSearch={handleSearchChange}/>
+				<SearchForm className="mt-10" onSearch={handleSearchChange} />
 			</div>
 
 			{filteredProjects.length === 0 ? (
@@ -250,7 +246,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 					onProjectUpdated={handleProjectUpdated}
 				/>
 			)}
-
 
 			<DeleteProject
 				open={isDeleteDialogOpen}

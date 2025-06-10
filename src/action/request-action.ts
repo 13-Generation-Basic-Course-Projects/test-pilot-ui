@@ -1,10 +1,14 @@
+"use server";
+
 import {
 	createRequestByCollectionId,
 	deleteRequestByIdService,
 	getRequestByCollectionId,
 	updateRequestByIdService,
+	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
+import { revalidatePath } from "next/cache";
 
 export const fetchRequestForCollection = async (
 	collectionId: string
@@ -84,6 +88,27 @@ export const updateRequestByIdAction = async (
 		await getRequestByCollectionId({ collectionId }); // Refetch for consistency
 	} catch (error) {
 		console.error("Error updating endpoint:", error);
+		throw error;
+	}
+};
+
+export const updateRequestUrlAndMethodAction = async (params: {
+	projectId: string;
+	collectionId: string;
+	requestId: string;
+	method: string;
+	url: string;
+}) => {
+	try {
+		await updateRequestUrlAndMethodService(params.requestId, {
+			method: params.method,
+			url: params.url,
+		});
+
+		const path = `/projects/${params.projectId}/collections/${params.collectionId}/requests/${params.requestId}`;
+		revalidatePath(path);
+	} catch (error) {
+		console.error("Error in updateRequestUrlAndMethodAction:", error);
 		throw error;
 	}
 };

@@ -9,7 +9,6 @@ const ProjectPage = async ({
 	searchParams: Promise<{ query?: string }>;
 }) => {
 	const { query } = await searchParams;
-	// const project = await getAllProjectService();
 
 	return (
 		<div>

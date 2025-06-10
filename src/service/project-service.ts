@@ -62,7 +62,7 @@ export const updateProjectByIdService = async (
     body: JSON.stringify(updateProject),
   });
 
-  console.log("API response:", response);
+  // console.log("API response:", response);
   return response;
 };
 

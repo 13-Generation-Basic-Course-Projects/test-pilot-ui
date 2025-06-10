@@ -41,11 +41,15 @@ export const createProjectAction = async(
 };
 
 //Update project
-export const updateProjectByIdAction = async(
+export const updateProjectByIdAction = async (
   projectId: string,
   payload: { projectName: string; projectDescription: string }
 ): Promise<ProjectItem | null> => {
-  const response = await updateProjectByIdService(projectId, {title : payload.projectName, description : payload.projectName});
+  // Fix: Use payload.projectDescription for description
+  const response = await updateProjectByIdService(projectId, {
+    title: payload.projectName,
+    description: payload.projectDescription // Corrected from payload.projectName
+  });
 
   const project = response;
 
@@ -58,7 +62,6 @@ export const updateProjectByIdAction = async(
       userAvatarUrl: "/defaultAvatar.png",
     };
   }
-  // console.log(project)
 
   return {
     id: project.payload.projectId,

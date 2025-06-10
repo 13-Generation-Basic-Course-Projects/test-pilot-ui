@@ -74,6 +74,8 @@ export const updateRequestByIdService = async (
 			`${REQUEST_ENDPOINT}/${requestId}`
 		);
 
+		console.log("existingRequest", existingRequest);
+
 		if (!existingRequest.payload.method || !existingRequest.payload.details) {
 			throw new Error(
 				"Existing request is missing required fields: method or details"
@@ -95,6 +97,38 @@ export const updateRequestByIdService = async (
 		console.log("Update response:", response);
 	} catch (error) {
 		console.error("updateRequestByIdService error:", error);
+		throw error;
+	}
+};
+
+export const updateRequestUrlAndMethodService = async (
+	requestId: string,
+	payload: { method: string; url: string }
+): Promise<void> => {
+	try {
+		// First, get the current state of the request to preserve other fields
+		const existingRequest = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/${requestId}`
+		);
+
+		// Prepare the updated payload by merging new details
+		const updatedPayload = {
+			...existingRequest.payload, // Keep existing fields like name, path etc.
+			method: payload.method, // Set the new method from the payload
+			details: {
+				...existingRequest.payload.details, // Keep other existing details
+				url: payload.url, // Set the new URL from the payload
+			},
+		};
+
+		// Send the final, merged payload to your backend
+		await fetchAPI(`${REQUEST_ENDPOINT}/${requestId}`, {
+			method: "PUT",
+			body: JSON.stringify(updatedPayload),
+			headers: { "Content-Type": "application/json" },
+		});
+	} catch (error) {
+		console.error("updateRequestDetails service error:", error);
 		throw error;
 	}
 };

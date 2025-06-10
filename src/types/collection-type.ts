@@ -1,7 +1,8 @@
 export type CollectionResponseTypes = {
-
   // Quick fix
-  map(arg0: (item: any) => { id: any; title: any; endpoints: never[]; }): import(".").CollectionItem[] | PromiseLike<import(".").CollectionItem[]>;
+  map(
+    arg0: (item: any) => { id: any; title: any; endpoints: never[] }
+  ): import(".").CollectionItem[] | PromiseLike<import(".").CollectionItem[]>;
   payload: {
     id: string;
     name: string;
@@ -29,4 +30,10 @@ export type CollectionResponseType = {
     hasNext: boolean;
     limit: number;
   };
+};
+
+export type CollectionItem = {
+  id: string;
+  title: string;
+  endpoints: any[];
 };

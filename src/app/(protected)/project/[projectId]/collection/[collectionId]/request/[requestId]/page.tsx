@@ -25,7 +25,12 @@ const RequestDetail = async ({
 				<CollectionSidebar projectId={projectId} />
 			</SidebarCollectionProvider>
 			<div className="flex-1 min-w-0 overflow-auto">
-				<RequestContent projectId={projectId} requestId={requestId} />
+				<RequestContent
+					projectId={projectId}
+					requestId={requestId}
+					request={request}
+					collectionId={collectionId}
+				/>
 			</div>
 		</div>
 	);
