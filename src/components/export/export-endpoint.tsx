@@ -30,9 +30,7 @@ export function ExportEndpoint({ open, onOpenChange, endpoint }: ExportProps) {
       return;
     }
 
-    // Prepare the endpoint data for export
     const exportData = {
-      id: endpoint.id,
       method: endpoint.method || "GET",
       path: endpoint.path || "/new-request",
       name: endpoint.name || endpoint.path || "/new-request",
