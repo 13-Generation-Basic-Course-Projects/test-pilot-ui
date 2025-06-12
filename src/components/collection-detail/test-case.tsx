@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useMemo } from "react";
 
 // --- Shadcn UI Imports ---
 import {
@@ -53,44 +54,32 @@ import { Plus, X, Check } from "lucide-react";
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
 import { cn } from "@/lib/utils";
 
-// --- Component-specific Data ---
+// --- Import the central test case store ---
+import useTestCaseStore from "@/store/test-case-store";
+
+// Component-specific Data
 const dataTypeOptions = ["string", "number", "boolean", "date"] as const;
 type DataType = (typeof dataTypeOptions)[number];
 
-const caseByDataType: Record<DataType, string[]> = {
-	string: [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"String Too Long",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	],
-	number: ["Zero", "Negative", "Non-numeric String", "Large Number"],
-	boolean: ["True", "False", "Not Boolean"],
-	date: ["Invalid Date", "Future Date", "Past Date", "ISO Format"],
-};
-
 export const TestCase = () => {
+	// --- State from the body store ---
 	const { apiBodyRows, updateRow } = useApiBodyStore();
 
-	// State for the confirmation dialog
+	// --- Get the master list of all test cases from the central store ---
+	const { predefinedTestCases, customTestCases } = useTestCaseStore();
+	const allTestCases = useMemo(
+		() => [...predefinedTestCases, ...customTestCases],
+		[predefinedTestCases, customTestCases]
+	);
+
+	// --- Local state for the confirmation dialog ---
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dataTypeChangeInfo, setDataTypeChangeInfo] = useState<{
 		rowId: string;
 		newType: DataType;
 	} | null>(null);
 
-	if (!apiBodyRows || apiBodyRows.length === 0) {
-		return (
-			<p className="min-h-[480px] p-4 text-center text-muted-foreground">
-				Parse a JSON body to see test cases.
-			</p>
-		);
-	}
-
-	// --- All handler functions remain the same ---
+	// --- Handler Functions ---
 	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
 		const newTestCases = row.testCases.includes(selectedCase)
 			? row.testCases.filter((c) => c !== selectedCase)
@@ -106,6 +95,7 @@ export const TestCase = () => {
 	const initiateDataTypeChange = (rowId: string, newType: DataType) => {
 		const currentRow = apiBodyRows.find((r) => r.id === rowId);
 		if (!currentRow || currentRow.dataType === newType) return;
+
 		if (currentRow.testCases && currentRow.testCases.length > 0) {
 			setDataTypeChangeInfo({ rowId, newType });
 			setIsConfirmDialogOpen(true);
@@ -130,23 +120,30 @@ export const TestCase = () => {
 		setDataTypeChangeInfo(null);
 	};
 
+	if (!apiBodyRows || apiBodyRows.length === 0) {
+		return (
+			<p className="min-h-[480px] p-4 text-center text-muted-foreground">
+				Parse a JSON body to see test cases.
+			</p>
+		);
+	}
+
 	return (
 		<div className="space-y-5 min-h-[480px]">
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
 				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							{/* FIX: Adjusted column widths for a more balanced layout */}
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[25%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
 								Field
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[25%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
 								Value
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[15%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
 								Data Type
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 w-[25%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 w-[40%]">
 								Test Case
 							</TableHead>
 						</TableRow>
@@ -154,17 +151,17 @@ export const TestCase = () => {
 					<TableBody>
 						{apiBodyRows.map((row) => (
 							<TableRow key={row.id} className="hover:bg-gray-50 border-b">
-								<TableCell className="py-2 border-r">
-									<span className="block px-2 py-1 text-sm font-medium">
+								<TableCell className="py-2 border-r align-top">
+									<span className="block px-2 py-2 text-sm font-medium">
 										{row.id}
 									</span>
 								</TableCell>
-								<TableCell className="px-4 py-2 border-r">
-									<span className="block px-2 py-1 text-sm text-muted-foreground">
+								<TableCell className="px-4 py-2 border-r align-top">
+									<span className="block px-2 py-2 text-sm break-all">
 										{String(row.value)}
 									</span>
 								</TableCell>
-								<TableCell className="px-4 py-2 border-r">
+								<TableCell className="px-4 py-2 border-r align-top">
 									<Select
 										value={row.dataType}
 										onValueChange={(value) =>
@@ -183,50 +180,8 @@ export const TestCase = () => {
 										</SelectContent>
 									</Select>
 								</TableCell>
-
-								{/* ▼▼▼ UI UPGRADE FOR TEST CASE SELECTION ▼▼▼ */}
-								<TableCell className="px-4 py-2">
-									<div className="flex items-center gap-2 flex-wrap">
-										{row.testCases.slice(0, 1).map((caseName) => (
-											<span
-												key={caseName}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
-											>
-												{caseName}
-												<X
-													className="w-3 h-3 cursor-pointer"
-													onClick={() => handleRemoveCase(row, caseName)}
-												/>
-											</span>
-										))}
-										{row.testCases.length > 1 && (
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														size="sm"
-														variant="ghost"
-														className="h-auto p-1 text-xs"
-													>
-														+ {row.testCases.length - 1} more
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent>
-													{row.testCases.slice(1).map((caseName) => (
-														<DropdownMenuItem
-															key={caseName}
-															className="flex justify-between"
-															onSelect={(e) => e.preventDefault()}
-														>
-															{caseName}
-															<X
-																className="w-3 h-3 cursor-pointer"
-																onClick={() => handleRemoveCase(row, caseName)}
-															/>
-														</DropdownMenuItem>
-													))}
-												</DropdownMenuContent>
-											</DropdownMenu>
-										)}
+								<TableCell className="px-4 py-2 align-top">
+									<div className="flex items-center gap-2 flex-wrap py-2">
 										<Popover>
 											<PopoverTrigger asChild>
 												<Button
@@ -241,39 +196,83 @@ export const TestCase = () => {
 												<Command>
 													<CommandInput placeholder="Search cases..." />
 													<CommandList>
-														<CommandEmpty>
-															No cases found for this type.
-														</CommandEmpty>
+														<CommandEmpty>No cases found.</CommandEmpty>
 														<CommandGroup>
-															{(
-																caseByDataType[row.dataType as DataType] || []
-															).map((caseName) => (
-																<CommandItem
-																	key={caseName}
-																	value={caseName}
-																	onSelect={() =>
-																		handleToggleCase(row, caseName)
-																	}
-																>
-																	<Check
-																		className={cn(
-																			"mr-2 h-4 w-4",
-																			row.testCases.includes(caseName)
-																				? "opacity-100"
-																				: "opacity-0"
-																		)}
-																	/>
-																	{caseName}
-																</CommandItem>
-															))}
+															{allTestCases
+																.filter(
+																	(testCase) =>
+																		testCase.type.toLowerCase() ===
+																		row.dataType.toLowerCase()
+																)
+																.map((testCase) => (
+																	<CommandItem
+																		key={testCase.name}
+																		value={testCase.name}
+																		onSelect={() =>
+																			handleToggleCase(row, testCase.name)
+																		}
+																	>
+																		<Check
+																			className={cn(
+																				"mr-2 h-4 w-4",
+																				row.testCases.includes(testCase.name)
+																					? "opacity-100"
+																					: "opacity-0"
+																			)}
+																		/>
+																		{testCase.name}
+																	</CommandItem>
+																))}
 														</CommandGroup>
 													</CommandList>
 												</Command>
 											</PopoverContent>
 										</Popover>
+
+										{row.testCases.slice(0, 2).map((caseName) => (
+											<span
+												key={caseName}
+												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+											>
+												{caseName}
+												<X
+													className="w-3 h-3 cursor-pointer"
+													onClick={() => handleRemoveCase(row, caseName)}
+												/>
+											</span>
+										))}
+										{row.testCases.length > 2 && (
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														size="sm"
+														variant="ghost"
+														className="h-auto p-1 text-xs rounded-full"
+													>
+														+ {row.testCases.length - 2}
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent>
+													{row.testCases.slice(2).map((caseName) => (
+														<DropdownMenuItem
+															key={caseName}
+															className="flex justify-between items-center"
+															onSelect={(e) => e.preventDefault()} // Prevent menu from closing on item click
+														>
+															{caseName}
+															<button
+																className="ml-2 p-0.5 rounded-full hover:bg-gray-200"
+																onClick={() => handleRemoveCase(row, caseName)}
+															>
+																<X className="w-3 h-3" />
+															</button>
+														</DropdownMenuItem>
+													))}
+												</DropdownMenuContent>
+											</DropdownMenu>
+										)}
 									</div>
 								</TableCell>
-								{/* ▲▲▲ END OF UI UPGRADE ▲▲▲ */}
 							</TableRow>
 						))}
 					</TableBody>

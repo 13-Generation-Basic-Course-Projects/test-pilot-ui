@@ -44,31 +44,19 @@ export function MonitoringData({
 	selectedTestId,
 }: MonitoringDataProps) {
 	const getStatusBadge = (test: TestResult) => {
-		const { status, httpStatus } = test;
+		const { status } = test;
 
 		switch (status) {
 			case "passed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
 						<span className="text-[#17C964] text-sm truncate">passed</span>
-						<Badge
-							variant="outline"
-							className="text-[#17C964] text-sm font-medium shrink-0"
-						>
-							{httpStatus}
-						</Badge>
 					</div>
 				);
 			case "failed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
 						<span className="text-[#F31260] text-sm truncate">failed</span>
-						<Badge
-							variant="outline"
-							className="text-[#F31260] text-sm font-medium shrink-0"
-						>
-							{httpStatus}
-						</Badge>
 					</div>
 				);
 			case "loading":
@@ -85,13 +73,48 @@ export function MonitoringData({
 		}
 	};
 
+	const getStatusCode = (test: TestResult) => {
+		const { status, httpStatus } = test;
+
+		switch (status) {
+			case "passed":
+				return (
+					<div className="flex items-center gap-1 min-w-0">
+						<Badge
+							variant="outline"
+							className="text-[#17C964] text-sm font-medium shrink-0"
+						>
+							{httpStatus}
+						</Badge>
+					</div>
+				);
+			case "failed":
+				return (
+					<div className="flex items-center gap-1 min-w-0">
+						<Badge
+							variant="outline"
+							className="text-[#F31260] text-sm font-medium shrink-0"
+						>
+							{httpStatus}
+						</Badge>
+					</div>
+				);
+			case "loading":
+				return <div className="flex items-center gap-1 min-w-0"></div>;
+			case "pending":
+				return <span className="text-sm truncate"></span>;
+			default:
+				return <span className="text-sm truncate"></span>;
+		}
+	};
+
 	const isClickable = (status: TestStatus) => {
 		return status === "passed" || status === "failed";
 	};
 
 	return (
-		<div className="h-full flex flex-col overflow-hidden w-full">
-			<div className="flex justify-between items-center mb-4 flex-shrink-0 min-w-0 gap-1">
+		<div className="h-full flex flex-col overflow-hidden ">
+			<div className="flex justify-between items-center mb-4 gap-1">
 				<h3 className="text-2xl font-semibold truncate">Test Results</h3>
 				<p className="text-sm text-[#94A3B8] hidden xl:block truncate">
 					Click completed tests
@@ -104,21 +127,24 @@ export function MonitoringData({
 						<Table>
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
-									<TableHead className="w-[70px] min-w-[70px] truncate text-sm">
+									<TableHead className="truncate text-sm w-[20%]">
 										Date
 									</TableHead>
-									<TableHead className="w-[60px] min-w-[60px] truncate text-sm">
+									<TableHead className="min-w-[60px] truncate text-sm w-[10%]">
 										Method
 									</TableHead>
-									<TableHead className="min-w-[120px] truncate text-sm">
+									<TableHead className="min-w-[120px] truncate text-sm w-[60%]">
 										Endpoint
 									</TableHead>
-									<TableHead className="w-[100px] min-w-[100px] truncate text-sm">
+									<TableHead className="truncate text-sm w-[10%]">
 										Status
+									</TableHead>
+									<TableHead className="min-w-[100px] truncate text-sm w-[20%]">
+										Code
 									</TableHead>
 								</TableRow>
 							</TableHeader>
-							<TableBody>
+							<TableBody className="w-full">
 								{testResults.map((test) => (
 									<TableRow
 										key={test.id}
@@ -171,6 +197,11 @@ export function MonitoringData({
 										<TableCell className="py-3 w-[100px] min-w-[100px]">
 											<div className="min-w-0 overflow-hidden">
 												{getStatusBadge(test)}
+											</div>
+										</TableCell>
+										<TableCell className="py-3 w-[100px] min-w-[100px]">
+											<div className="min-w-0 overflow-hidden">
+												{getStatusCode(test)}
 											</div>
 										</TableCell>
 									</TableRow>

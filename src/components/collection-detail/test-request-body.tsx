@@ -1,18 +1,24 @@
 "use client";
+
 import React, { useState } from "react";
 import { useApiBodyStore } from "@/store/body-api-slice";
-import { generateValueForTestCase } from "@/lib/constants";
+// Make sure to import the new functions from your utility file
+import { jsonStringifyWithTruncation } from "@/lib/utils";
 import { Play, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { jsonStringifyWithTruncation } from "@/lib/utils";
+import { generateValueForTestCase } from "@/lib/constants";
+import useTestCaseStore from "@/store/test-case-store";
 
 export const TestRequestBody = () => {
 	const { apiBodyRows } = useApiBodyStore();
 	const router = useRouter();
 	const pathname = usePathname();
+
+	// --- 2. Get the custom test cases from the store ---
+	const { customTestCases } = useTestCaseStore();
 
 	const [isRunAllLoading, setIsRunAllLoading] = useState(false);
 	const [individualRunLoading, setIndividualRunLoading] = useState<
@@ -32,23 +38,33 @@ export const TestRequestBody = () => {
 			basePayload[r.id] = r.value;
 		});
 
-		row.testCases.forEach((testCase, caseIndex) => {
+		row.testCases.forEach((testCaseName, caseIndex) => {
 			const modifiedPayload = { ...basePayload };
+			let generatedValue;
 
-			// Use a new constant for the generated value to avoid overwriting the name
-			const generatedValue = generateValueForTestCase(
-				row.value,
-				row.dataType,
-				testCase
-			);
+			// --- 3. NEW LOGIC: Prioritize custom cases ---
+			// First, check if the test case exists in our custom list
+			const customCase = customTestCases.find((c) => c.name === testCaseName);
+
+			if (customCase) {
+				// If it's a custom case, use its stored value
+				generatedValue = customCase.value;
+			} else {
+				// If not, fall back to the static generator for predefined cases
+				generatedValue = generateValueForTestCase(
+					row.value,
+					row.dataType,
+					testCaseName
+				);
+			}
 
 			modifiedPayload[row.id] = generatedValue;
 
-			const uniqueKey = `${row.id}-${testCase}-${rowIndex}-${caseIndex}`;
+			const uniqueKey = `${row.id}-${testCaseName}-${rowIndex}-${caseIndex}`;
 			testCasePayloads.push({
 				key: uniqueKey,
 				field: row.id,
-				testCase: testCase, // This now correctly passes the test case NAME
+				testCase: testCaseName,
 				payload: modifiedPayload,
 			});
 		});
@@ -73,7 +89,9 @@ export const TestRequestBody = () => {
 
 	if (testCasePayloads.length === 0) {
 		return (
-			<p className="min-h-[480px]">No test cases have been selected yet.</p>
+			<div className="flex items-center justify-center p-4 text-center text-muted-foreground min-h-[480px]">
+				No test cases have been selected yet.
+			</div>
 		);
 	}
 
@@ -95,31 +113,32 @@ export const TestRequestBody = () => {
 						</>
 					) : (
 						<>
-							Run All <Play className="ml-2 h-4 w-4" />
+							Run All ({testCasePayloads.length}){" "}
+							<Play className="ml-2 h-4 w-4" />
 						</>
 					)}
 				</Button>
 			</div>
 			<div className="flex flex-col items-center gap-6">
 				{testCasePayloads.map((testCaseItem) => (
-					<Card key={testCaseItem.key} className="break-all w-full">
-						<CardHeader className="flex flex-row justify-between items-start">
-							<div className="space-y-4 w-full">
-								<CardTitle className="text-md">
+					<Card key={testCaseItem.key} className="break-all w-full shadow-sm">
+						<CardHeader className="flex flex-row justify-between items-start pb-4">
+							<div className="space-y-3 w-full">
+								<CardTitle className="text-md font-medium">
 									Field :{" "}
-									<Badge variant="secondary">
-										<p className="text-[#006FEE] text-[14px]">
-											{testCaseItem.field}
-										</p>
+									<Badge variant="secondary" className="text-sm">
+										{testCaseItem.field}
 									</Badge>
 								</CardTitle>
-								<CardTitle className="text-md">
+								<CardTitle className="text-md font-medium">
 									Scenario :{" "}
-									<Badge variant="default">
-										<p className="text-xs">{testCaseItem.testCase}</p>
+									<Badge variant="default" className="text-sm">
+										{testCaseItem.testCase}
 									</Badge>
 								</CardTitle>
-								<CardTitle className="text-md">Request Body :</CardTitle>
+								<CardTitle className="text-md font-medium">
+									Request Body :
+								</CardTitle>
 							</div>
 							<Button
 								onClick={() => handleIndividualRunClick(testCaseItem.key)}
@@ -141,9 +160,9 @@ export const TestRequestBody = () => {
 							</Button>
 						</CardHeader>
 						<CardContent>
-							<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto whitespace-pre-wrap break-words">
+							<pre className="bg-slate-100 p-3 rounded-md text-sm overflow-auto whitespace-pre-wrap break-words">
 								<code>
-									{jsonStringifyWithTruncation(testCaseItem.payload, 1, 90)}
+									{jsonStringifyWithTruncation(testCaseItem.payload, 2, 250)}
 								</code>
 							</pre>
 						</CardContent>

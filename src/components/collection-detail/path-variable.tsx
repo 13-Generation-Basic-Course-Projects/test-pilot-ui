@@ -105,13 +105,13 @@ export default function PathVariable() {
 				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[27%]">
 								Key
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[27%]">
 								Value
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[30%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[36%]">
 								Case
 							</TableHead>
 							<TableHead className="px-4 py-3 font-semibold text-center text-sm text-gray-700 w-[10%]">
@@ -146,32 +146,21 @@ export default function PathVariable() {
 									/>
 								</TableCell>
 								<TableCell className="px-4 py-2 border-r border-gray-200">
-									<div className="flex items-center gap-2 flex-wrap">
-										{row.cases.slice(0, 1).map((caseName) => (
-											<span
-												key={caseName}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
-											>
-												{caseName}
-												<X
-													className="w-3 h-3 cursor-pointer"
-													onClick={() => handleRemoveCase(index, caseName)}
-												/>
-											</span>
-										))}
-										{row.cases.length > 1 && (
+									<div className="flex items-center gap-2 w-full flex-row-reverse justify-end">
+										{/* Dropdown for additional cases */}
+										{row.cases.length > 2 && (
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button
 														size="sm"
 														variant="ghost"
-														className="h-auto p-1 text-xs cursor-pointer"
+														className="h-auto p-1 text-xs cursor-pointer whitespace-nowrap"
 													>
-														+ {row.cases.length - 1}
+														+{row.cases.length - 2}
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent>
-													{row.cases.slice(1).map((caseName) => (
+													{row.cases.slice(2).map((caseName) => (
 														<DropdownMenuItem
 															key={caseName}
 															className="flex justify-between"
@@ -192,6 +181,18 @@ export default function PathVariable() {
 												</DropdownMenuContent>
 											</DropdownMenu>
 										)}
+										{row.cases.slice(0, 2).map((caseName) => (
+											<span
+												key={caseName}
+												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 whitespace-nowrap break-words line-clamp-1"
+											>
+												{caseName}
+												<X
+													className="w-3 h-3 cursor-pointer"
+													onClick={() => handleRemoveCase(index, caseName)}
+												/>
+											</span>
+										))}
 										<Popover>
 											<PopoverTrigger asChild>
 												<Button

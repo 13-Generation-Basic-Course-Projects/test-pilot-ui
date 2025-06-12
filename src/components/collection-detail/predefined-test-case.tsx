@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import {
 	Table,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
+import useTestCaseStore from "@/store/test-case-store";
 
 interface TestCase {
 	name: string;
@@ -19,7 +20,7 @@ interface TestCase {
 	type: string;
 }
 
-const predefinedValues: TestCase[] = [
+const initialPredefinedValues: TestCase[] = [
 	{ name: "Empty String", value: "", type: "String" },
 	{ name: "Null", value: "null", type: "String" },
 	{ name: "length", value: "define length for validation", type: "String" },
@@ -61,7 +62,11 @@ const predefinedValues: TestCase[] = [
 	{ name: "Boolean as String (true)", value: "true", type: "Boolean" },
 	{ name: "Boolean as String (false)", value: "false", type: "Boolean" },
 
-	{ name: "Valid UUID", value: "550e8400-e29b-41d4-a716-446655440000", type: "UUID" },
+	{
+		name: "Valid UUID",
+		value: "550e8400-e29b-41d4-a716-446655440000",
+		type: "UUID",
+	},
 	{ name: "Invalid UUID", value: "550e8400-e29b-41d4-a716", type: "UUID" },
 
 	{ name: "Valid Enum Value", value: "active", type: "ENUM" },
@@ -71,12 +76,28 @@ const predefinedValues: TestCase[] = [
 	{ name: "Non-Empty Integer Array", value: "[1]", type: "Array" },
 	{ name: "Non-Empty String Array", value: "['1']", type: "Array" },
 	{ name: "Non-Empty Boolean Array", value: "[true,false]", type: "Array" },
-	{ name: "Mixed Data Type Array", value: "[1, 'string', true]", type: "Array" },
+	{
+		name: "Mixed Data Type Array",
+		value: "[1, 'string', true]",
+		type: "Array",
+	},
 	{ name: "Nested Arrays", value: "[[1,2], [3,4]]", type: "Array" },
 	{ name: "Duplicate Elements", value: "[1, 2, 2]", type: "Array" },
-	{ name: "Array with Null Element (Number)", value: "[1, null]", type: "Array" },
-	{ name: "Array with Null Element (String)", value: "['1', null]", type: "Array" },
-	{ name: "Array with Null Element (Boolean)", value: "[true, null]", type: "Array" }
+	{
+		name: "Array with Null Element (Number)",
+		value: "[1, null]",
+		type: "Array",
+	},
+	{
+		name: "Array with Null Element (String)",
+		value: "['1', null]",
+		type: "Array",
+	},
+	{
+		name: "Array with Null Element (Boolean)",
+		value: "[true, null]",
+		type: "Array",
+	},
 ];
 
 const filterTypes: string[] = [
@@ -89,12 +110,26 @@ const filterTypes: string[] = [
 	"ENUM",
 ];
 export default function PredefinedTestCase() {
+	// 2. Get the test cases directly from the store
+	// 1. Get BOTH lists from the store
+	const { predefinedTestCases, customTestCases } = useTestCaseStore();
+
+	// 2. Combine them into one master list for display
+	// useMemo prevents re-creating the array on every render
+	const combinedTestCases = useMemo(
+		() => [...predefinedTestCases, ...customTestCases],
+		[predefinedTestCases, customTestCases]
+	);
+
 	const [selectedType, setSelectedType] = useState<string>("");
 	const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-	const filteredValues = selectedType
-		? predefinedValues.filter((item) => item.type === selectedType)
-		: predefinedValues;
 
+	// 3. Filter the combined list
+	const filteredValues = selectedType
+		? combinedTestCases.filter(
+				(item) => item.type.toLowerCase() === selectedType.toLowerCase()
+		  )
+		: combinedTestCases;
 	return (
 		<div className="p-6 mx-auto space-y-6">
 			<div className="flex justify-end">
@@ -105,8 +140,9 @@ export default function PredefinedTestCase() {
 					>
 						<span>{selectedType || "Select to filter"}</span>
 						<ChevronDown
-							className={`h-4 w-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
-								}`}
+							className={`h-4 w-4 transition-transform duration-200 ${
+								dropdownOpen ? "rotate-180" : ""
+							}`}
 						/>
 					</button>
 					{dropdownOpen && (

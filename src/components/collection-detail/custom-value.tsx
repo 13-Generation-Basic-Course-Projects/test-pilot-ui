@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // 1. Ensure useEffect is imported
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,63 +26,60 @@ import { z } from "zod";
 import { customValueSchema } from "@/lib/zodSchema";
 import { DeleteCustomValue } from "../history/delete/delete-custom-value";
 import { CustomValueForm } from "./custom-value-form";
-
-interface RequestParam {
-	name: string;
-	value: string;
-	type: string;
-}
+import useTestCaseStore from "@/store/test-case-store";
 
 export const CustomValue = (): React.JSX.Element => {
-	const [requestParams, setRequestParams] = useState<RequestParam[]>([
-		{
-			name: "My Phone Number",
-			value: "^(\\+0?1\\s)?\\(?\\d{3}\\)?[\\s.-]\\d{3}[\\s.-]\\d{4}$",
-			type: "string",
-		},
-	]);
+	// Get everything needed from the central store
+	const { customTestCases, addTestCase, editTestCase, deleteTestCase } =
+		useTestCaseStore();
 
+	// Local state for UI control
+	const [selectedType, setSelectedType] = useState<string>("");
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-
 	const [editingIndex, setEditingIndex] = useState<number | null>(null);
 	const [editingValue, setEditingValue] = useState<z.infer<
 		typeof customValueSchema
 	> | null>(null);
 
-	const handleAddCustomValue = (data: z.infer<typeof customValueSchema>) => {
-		setRequestParams((prev) => [
-			...prev,
-			{
-				name: data.nameCase,
-				value: data.value,
-				type: data.typeCase,
-			},
-		]);
-	};
+	// --- THIS IS THE FIX ---
+	// 2. Add this useEffect to synchronize editingValue with editingIndex.
+	useEffect(() => {
+		// When editingIndex is cleared (set to null), we must also clear editingValue.
+		if (editingIndex === null) {
+			setEditingValue(null);
+		}
+	}, [editingIndex]);
+
+	const filteredTestCases = selectedType
+		? customTestCases.filter(
+				(item) => item.type.toLowerCase() === selectedType.toLowerCase()
+		  )
+		: customTestCases;
 
 	const handleEdit = (index: number) => {
-		const param = requestParams[index];
+		const param = customTestCases[index];
 		setEditingIndex(index);
 		setEditingValue({
 			nameCase: param.name,
-			value: param.value,
+			value: String(param.value),
 			typeCase: param.type,
-			description: "",
+			description: (param as any).description || "",
 		});
 	};
 
 	const handleDeleteConfirm = () => {
 		if (deleteIndex !== null) {
-			setRequestParams((prev) => prev.filter((_, i) => i !== deleteIndex));
+			deleteTestCase(deleteIndex);
 			setDeleteIndex(null);
 		}
+		setIsDialogOpen(false);
 	};
 
 	return (
 		<div className="flex flex-col items-end gap-5 relative self-stretch w-full">
 			<div className="inline-flex items-start justify-end gap-5 relative">
-				<Select>
+				<Select onValueChange={setSelectedType} value={selectedType}>
 					<SelectTrigger className="w-[204px] px-3 py-2 bg-[#ffffff] rounded-md border border-solid border-[#cbd5e1]">
 						<SelectValue
 							placeholder="Select to filter"
@@ -100,20 +97,8 @@ export const CustomValue = (): React.JSX.Element => {
 					</SelectContent>
 				</Select>
 				<CustomValueForm
-					onAddCustomValue={handleAddCustomValue}
-					onEditCustomValue={(data, index) => {
-						setRequestParams((prev) =>
-							prev.map((item, i) =>
-								i === index
-									? {
-											name: data.nameCase,
-											value: data.value,
-											type: data.typeCase,
-									  }
-									: item
-							)
-						);
-					}}
+					onAddCustomValue={addTestCase}
+					onEditCustomValue={editTestCase}
 					editingIndex={editingIndex}
 					editingValue={editingValue}
 					setEditingIndex={setEditingIndex}
@@ -132,7 +117,7 @@ export const CustomValue = (): React.JSX.Element => {
 							</TableRowV2>
 						</TableHeader>
 						<TableBody>
-							{requestParams.map((param, index) => (
+							{customTestCases.map((param, index) => (
 								<TableRow
 									key={index}
 									className="border-b border-slate-200 h-12"

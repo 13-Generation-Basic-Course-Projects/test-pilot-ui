@@ -395,91 +395,131 @@ greet
 	},
 ];
 
+// This data now aligns with the 4 test cases for the /register endpoint.
 export const mockHistoryResponses = [
+	// [0] Corresponds to "Empty String in Email" -> Test Passed
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/login",
+		endpoint: "http://96.9.81.187:8787/api/v1/register",
 		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
-		responseBody: JSON.stringify(
-			{ response: 400, statusText: "Bad Request" },
+		requestBody: JSON.stringify(
+			{
+				username: "testuser_valid",
+				email: "",
+				password: "StrongPassword@123",
+				age: 25,
+			},
 			null,
 			2
 		),
-	},
-	{
-		method: "POST",
-		endpoint: "http://96.9.81.187:8787/login",
-		status: "401 UNAUTHORIZED",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: null,
 		responseBody: JSON.stringify(
 			{
-				message: "UNAUTHORIZED",
+				error: "Validation failed",
+				code: "VALIDATION_ERROR",
+				details: {
+					email: "Email cannot be an empty string",
+				},
 			},
 			null,
 			2
 		),
 	},
+	// [1] Corresponds to "Weak Password Validation" -> Test Passed
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/login",
+		endpoint: "http://96.9.81.187:8787/api/v1/register",
 		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
 		shouldShowPreview: true,
 		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				username: "testuser_weakpass",
+				email: "weakpass@example.com",
+				password: "password",
+				age: 30,
+			},
+			null,
+			2
+		),
 		responseBody: JSON.stringify(
-			{ response: 400, statusText: "Bad Request" },
+			{
+				error: "Validation failed",
+				code: "WEAK_PASSWORD",
+				details: {
+					password:
+						"Password does not meet complexity requirements. Must include uppercase, lowercase, numbers, and symbols.",
+				},
+			},
 			null,
 			2
 		),
 	},
-	// {
-	// 	method: "DELETE",
-	// 	endpoint: "http://localhost:8080/api/v1/habits/123",
-	// 	status: "404 Not Found",
-	// 	badgeStatus: "failed" as const,
-	// 	isSuccess: false,
-	// 	shouldShowPreview: true,
-	// 	failureReason: "Resource not found",
-	// 	requestBody: "",
-	// 	responseBody: JSON.stringify({ error: "Habit not found" }, null, 2),
-	// },
-	// {
-	// 	method: "POST",
-	// 	endpoint: "http://localhost:8080/api/v1/tasks",
-	// 	status: "200 OK",
-	// 	badgeStatus: "failed" as const,
-	// 	isSuccess: false,
-	// 	shouldShowPreview: true,
-	// 	failureReason: "Backend doesn't validate undefined taskId",
-	// 	requestBody: JSON.stringify({ taskId: undefined }, null, 2),
-	// 	responseBody: JSON.stringify(
-	// 		{
-	// 			message: "Task created with taskId: undefined", // 🚫 Invalid behavior
-	// 		},
-	// 		null,
-	// 		2
-	// 	),
-	// },
-	// {
-	// 	method: "GET",
-	// 	endpoint: "http://localhost:8080/api/v1/corrupted-data",
-	// 	status: "500 Internal Server Error",
-	// 	badgeStatus: "failed" as const,
-	// 	isSuccess: false,
-	// 	shouldShowPreview: false, // 🚫 No preview
-	// 	failureReason: "Internal server error — no data returned",
-	// 	requestBody: "",
-	// 	responseBody: "", // 👈 No valid JSON
-	// },
+	// [2] Corresponds to "Null Value for Username" -> Test Failed
+	{
+		method: "POST",
+		endpoint: "http://96.9.81.187:8787/api/v1/register",
+		status: "500 INTERNAL SERVER ERROR",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		// failureReason:
+		// 	"API crashed with a 500 Internal Server Error when processing a null username.",
+		requestBody: JSON.stringify(
+			{
+				username: null,
+				email: "nulluser@example.com",
+				password: "StrongPassword@123",
+				age: 28,
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{
+				error: "An unexpected error occurred on the server.",
+				code: "INTERNAL_SERVER_ERROR",
+				details: "Cannot read properties of null (reading 'trim')",
+			},
+			null,
+			2
+		),
+	},
+	// [3] Corresponds to "Negative Number for Age" -> Test Failed
+	{
+		method: "POST",
+		endpoint: "http://96.9.81.187:8787/api/v1/register",
+		status: "201 CREATED",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		// failureReason:
+		// 	"API failed to validate the negative age and incorrectly created a user resource.",
+		requestBody: JSON.stringify(
+			{
+				username: "age_tester",
+				email: "negativeage@example.com",
+				password: "StrongPassword@123",
+				age: -10,
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{
+				id: "user-123",
+				username: "age_tester",
+				message: "User created successfully.",
+			},
+			null,
+			2
+		),
+	},
 ];
 
 // utils/data-type-cases.ts

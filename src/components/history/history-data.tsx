@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MethodBadge } from "../method-badge";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 type RowData = {
 	date: string;
@@ -53,19 +54,25 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 
 	// Rename history
 	const [isRenaming, setIsRenaming] = React.useState(false);
-	const [historyTitle, setHistoryTitle] = React.useState("Request History");
+	const [historyTitle, setHistoryTitle] = React.useState(
+		"API Security Tests - June 2025"
+	);
 	const [renameInput, setRenameInput] = React.useState(historyTitle);
 	const [showRenameDialog, setShowRenameDialog] = React.useState(false);
 
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+	// --- UPDATED DATA ---
+	// Data now reflects the 4 test cases for the /register endpoint, consistent
+	// with the Monitoring component's data.
 	const [data, setData] = React.useState<RowData[]>([
 		{
-			date: "06 Jan 10:15 AM",
+			date: "13 Jun 10:30 AM",
 			method: <MethodBadge method="POST" />,
-			endPoint: "http://96.9.81.187:8787/login",
+			endPoint: "http://96.9.81.187:8787/api/v1/register",
 			status: (
-				<div className="flex justify-between max-w-[120px]">
+				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
 					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						400
@@ -73,29 +80,41 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 				</div>
 			),
 		},
-
 		{
-			date: "06 Jan 10:15 AM",
+			date: "13 Jun 10:31 AM",
 			method: <MethodBadge method="POST" />,
-			endPoint: "http://96.9.81.187:8787/login",
+			endPoint: "http://96.9.81.187:8787/api/v1/register",
 			status: (
-				<div className="flex justify-between max-w-[120px]">
-					<p className="text-[#EF4444]">failed</p>
+				<div className="flex justify-between items-center max-w-[120px]">
+					<p className="text-[#17C964]">Passed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: "13 Jun 10:32 AM",
+			method: <MethodBadge method="POST" />,
+			endPoint: "http://96.9.81.187:8787/api/v1/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<p className="text-[#EF4444]">Failed</p>
 					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
-						401
+						500
 					</div>
 				</div>
 			),
 		},
 		{
-			date: "06 Jan 10:15 AM",
+			date: "13 Jun 10:33 AM",
 			method: <MethodBadge method="POST" />,
-			endPoint: "http://96.9.81.187:8787/login",
+			endPoint: "http://96.9.81.187:8787/api/v1/register",
 			status: (
-				<div className="flex justify-between max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
-						400
+				<div className="flex justify-between items-center max-w-[120px]">
+					<p className="text-[#EF4444]">Failed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+						201
 					</div>
 				</div>
 			),
@@ -129,11 +148,21 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 		};
 	}, [renameInput]);
 
+	const router = useRouter();
+
+	const handlePlayClick = (e: React.MouseEvent) => {
+		// This is important to prevent the row's onClick from firing
+		e.stopPropagation();
+		router.push(
+			"/project/project-1/collection/collection-users/request/endpoint-users-1/monitoring"
+		);
+	};
+
 	return (
 		<Collapsible
 			open={isOpen}
 			onOpenChange={setIsOpen}
-			className="w-full space-y-2"
+			className="w-full space-y-2 overflow-hidden"
 		>
 			<CollapsibleTrigger asChild>
 				<div
@@ -287,7 +316,11 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 										<TableCell className="py-5">{item.status}</TableCell>
 										<TableCell className="py-5">
 											<div className="flex gap-3">
-												<Play className="text-[#3B82F6]" width={20} />
+												<Play
+													className="text-[#3B82F6] cursor-pointer"
+													width={20}
+													onClick={handlePlayClick}
+												/>
 												<AlertDialog>
 													<AlertDialogTrigger asChild>
 														<Trash2
