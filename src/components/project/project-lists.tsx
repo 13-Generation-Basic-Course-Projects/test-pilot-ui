@@ -32,6 +32,7 @@ import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { deleteProjectAction } from "@/action/project-action";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
@@ -94,6 +95,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			setProjects((prev) => prev.filter((project) => project.id !== projectId));
 			setIsDeleteDialogOpen(false);
 			setSelectProjectForDelete(null);
+			toast.success(`Project delete successfully!`)
 		} catch (error) {
 			console.error("Failed to delete project", error);
 		}
@@ -106,7 +108,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
 	const handleProjectCreated = (newProject: ProjectItem) => {
 		if (!newProject?.id || !newProject?.title) return;
-		setProjects((prev) => [...prev, newProject]);
+		setProjects((prev) => [newProject, ...prev]);
 		setIsCreateDialogOpen(false);
 	};
 
