@@ -49,6 +49,7 @@ import {
 	deleteCollectionAction,
 	duplicateCollectionAction,
 	fetchCollectionsForProject,
+	renameCollectionAction,
 } from "@/action/collection-action";
 
 interface Project {
@@ -555,12 +556,26 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 												autoFocus
 												defaultValue={collection.title}
 												onClick={(e) => e.stopPropagation()}
-												onBlur={(e) => {
-													handleRename(
-														project.id,
-														collection.id,
-														e.target.value
-													);
+												onBlur={async (e) => {
+													const newTitle = e.target.value.trim();
+													if (!newTitle || newTitle === collection.title) {
+														setRenamingCollectionId(null);
+														return;
+													}
+
+													// Update local state
+													handleRename(project.id, collection.id, newTitle);
+
+													try {
+														await renameCollectionAction(
+															project.id,
+															collection.id,
+															newTitle
+														);
+														// Optionally show success message
+													} catch (error) {
+														// Optionally revert local state or show error toast
+													}
 													setRenamingCollectionId(null);
 													e.stopPropagation();
 												}}
