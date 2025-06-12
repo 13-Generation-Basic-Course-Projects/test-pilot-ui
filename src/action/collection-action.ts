@@ -6,6 +6,7 @@ import {
 	deleteCollectionByIdService,
 	duplicateCollectionService,
 	getAllCollection,
+	renameCollectionService,
 } from "@/service/collection-service";
 import { CollectionItem } from "@/types";
 
@@ -45,5 +46,21 @@ export const duplicateCollectionAction = async (
 	} catch (error) {
 		console.error("Duplicate Collection Failed:", error);
 		return null;
+	}
+};
+
+export const renameCollectionAction = async (
+	projectId: string,
+	collectionId: string,
+	newTitle: string
+): Promise<void> => {
+	try {
+		await renameCollectionService(collectionId, {
+			name: newTitle,
+			projectId: projectId,
+		});
+	} catch (error) {
+		console.error("Failed to rename collection:", error);
+		throw error;
 	}
 };
