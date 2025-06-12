@@ -38,19 +38,19 @@ export default function ProfileSetting() {
 		try {
 			let profileImageUrl = profile.profileImage;
 
-			// STEP 1: Upload image (if selected)
+
 			if (updatedData.profileImage) {
 				const uploadedImageUrl = await handleUploadProfileImage(updatedData.profileImage);
 				if (uploadedImageUrl) {
-					profileImageUrl = uploadedImageUrl; // ✅ Get the image URL
+					profileImageUrl = uploadedImageUrl;
 				}
 			}
 
-			// STEP 2: Now update user profile (with or without updated image URL)
+
 			await handleUserUpdate({
 				name: updatedData.username,
 				email: updatedData.email,
-				profileImage: profileImageUrl, // ✅ Send as a string URL
+				profileImage: profileImageUrl,
 			});
 
 			// Update state locally

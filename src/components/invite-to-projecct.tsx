@@ -33,14 +33,15 @@ interface InviteToProjectProps {
 
 export function InviteToProject({ urlProject }: InviteToProjectProps) {
   const [members, setMembers] = useState<Member[]>([
-    { id: 1, name: "Teb Yuma (You)", role: "Owner", image: Profile },
-    { id: 2, name: "Sovanarith Chun", role: "Collaborator", image: Collaborate },
+    { id: 1, name: "tebyuma@gmail.com (You)", role: "Owner", image: Profile },
+    { id: 2, name: "sovanarithchun@gmail.com", role: "Collaborator", image: Collaborate },
   ]);
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const projectId = urlProject;
+  const projectId = urlProject.split("/")[2];
+
 
   const handleInvite = () => {
     if (!email || !projectId) return;

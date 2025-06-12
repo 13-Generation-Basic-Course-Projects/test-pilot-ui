@@ -6,6 +6,7 @@ import { NewProjectPayload, ProjectItem } from "@/types";
 export const getAllProjectService = async (): Promise<ProjectItem[]> => {
 	const response = await fetchAPI<ProjectResponseTypes>(`${PROJECT_ENDPOINT}`);
 
+    console.log(response.payload.payload);
 	if (!response?.payload.payload) return [];
   // console.log(response?.payload?.payload);
   

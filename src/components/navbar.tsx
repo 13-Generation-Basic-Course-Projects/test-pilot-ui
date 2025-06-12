@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { SubpathSegments } from "./subpath-segments";
 import { DropdownProfile } from "./drop-down-profile";
 import { auth } from "@/auth";
-import {InviteToProject} from "@/components/invite-to-projecct";
+
 
 export const NavbarComponent = async ({
 	className,
