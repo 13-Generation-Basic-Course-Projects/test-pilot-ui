@@ -52,7 +52,6 @@ export const updateProjectByIdService = async (
     projectName : title,
     projectDescription : description
   }
-  console.log("Calling update API with:", projectId, updateProject);
 
   const response = await fetchAPI<ProjectResponseType>(`${PROJECT_ENDPOINT}/${projectId}`, {
     method: "PUT",

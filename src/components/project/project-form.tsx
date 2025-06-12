@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { FolderPlusIcon } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { projectFormSchema } from "@/lib/zodSchema";
 import { ProjectFormProps, ProjectItem } from "@/types";
 import { createProjectAction, updateProjectByIdAction } from "@/actions/project-action";
-
 
 const ProjectForm = ({
   mode,
@@ -69,6 +69,7 @@ const ProjectForm = ({
 
         if (newProject && onProjectCreated) {
           onProjectCreated(newProject);
+          toast.success("Project created successfully!");
         }
         setDialogOpen(false);
       } else if (mode === "edit" && initialData) {
@@ -81,9 +82,9 @@ const ProjectForm = ({
         );
 
         if (updatedProject && onProjectUpdated) {
-          console.log("Update project", updatedProject);
-          
+          // console.log("Update project", updatedProject);
           onProjectUpdated(updatedProject);
+          toast.success("Project updated successfully!");
         }
 
         if (onOpenChange) {
@@ -91,7 +92,8 @@ const ProjectForm = ({
         }
       }
     } catch (error) {
-      console.error("Project action failed:", error);
+      // console.error("Project action failed:", error);
+      toast.error(`Failed to ${mode === "create" ? "create" : "update"} project. Please try again.`);
     }
   };
 
@@ -142,7 +144,6 @@ const ProjectForm = ({
     </Form>
   );
 
-  // Edit mode uses controlled dialog
   if (mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -158,7 +159,6 @@ const ProjectForm = ({
     );
   }
 
-  // Create mode uses internal dialog state
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
