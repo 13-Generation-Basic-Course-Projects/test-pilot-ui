@@ -38,12 +38,16 @@ import {
 	deleteRequestAction,
 	updateRequestByIdAction,
 	createRequestByCollectionIdAction,
+	duplicateRequestAction,
 } from "@/action/request-action";
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
 
-import { deleteCollectionByIdService } from "@/service/collection-service";
+import {
+	deleteCollectionByIdService,
+	getAllCollection,
+} from "@/service/collection-service";
 import {
 	createCollectionAction,
 	deleteCollectionAction,
@@ -51,6 +55,7 @@ import {
 	fetchCollectionsForProject,
 	renameCollectionAction,
 } from "@/action/collection-action";
+import { getRequestByCollectionId } from "@/service/request-service";
 
 interface Project {
 	id: string;
@@ -80,6 +85,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 	const [isImportCollectionOpen, setIsImportCollectionOpen] = useState(false);
 	const [isShareCollectionOpen, setIsShareCollectionOpen] = useState(false);
 	const [isShareEndpointOpen, setIsShareEndpointOpen] = useState(false);
+	const [openEndpoint, setOpenEndpoint] = useState<Record<string, boolean>>({});
 	const [endpointToDelete, setEndpointToDelete] = useState<{
 		projectId: string;
 		collectionId: string;
@@ -215,6 +221,17 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		}
 	}, [openCollections]);
 
+	// Load openEndpoint from localStorage
+	useEffect(() => {
+		const saved = localStorage.getItem("openEndpoint");
+		setOpenEndpoint(saved ? JSON.parse(saved) : {});
+	}, []);
+
+	// Save openEndpoint to localStorage
+	useEffect(() => {
+		localStorage.setItem("openEndpoint", JSON.stringify(openEndpoint));
+	}, [openEndpoint]);
+
 	const pathname = usePathname();
 
 	const toggleCollection = (collectionId: string) => {
@@ -230,8 +247,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			title,
 			endpoints: [],
 		};
-
-		const projectId = pathname.split("/")[2];
 
 		setCollectionsData((prev) => {
 			const lastProjectIndex = prev.length - 1;
@@ -325,6 +340,55 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			console.error("Failed to rename endpoint:", error);
 			toast.error(
 				`Failed to rename endpoint: ${error.message || "Unknown error"}`
+			);
+		}
+	};
+
+	const handleDuplicateEndpoint = async (
+		projectId: string,
+		collectionId: string,
+		endpointId: string
+	) => {
+		try {
+			const newEndpoint = await duplicateRequestAction(
+				collectionId,
+				endpointId
+			);
+
+			if (!newEndpoint) {
+				throw new Error("Failed to duplicate endpoint");
+			}
+
+			setCollectionsData((prev) =>
+				prev.map((project) => {
+					if (project.id !== projectId) return project;
+					return {
+						...project,
+						collections: project.collections.map((collection) => {
+							if (collection.id !== collectionId) return collection;
+
+							return {
+								...collection,
+								endpoints: [
+									...collection.endpoints,
+									{
+										id: newEndpoint.id,
+										method: newEndpoint.method || "GET",
+										path: newEndpoint.name || "New Request (Copy)",
+										name: newEndpoint.name || "New Request (Copy)",
+									},
+								],
+							};
+						}),
+					};
+				})
+			);
+
+			toast.success("Endpoint duplicated successfully");
+		} catch (error: any) {
+			console.error("Failed to duplicate endpoint:", error);
+			toast.error(
+				`Failed to duplicate endpoint: ${error.message || "Unknown error"}`
 			);
 		}
 	};
@@ -428,8 +492,8 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				e.preventDefault();
-				// handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+				setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
+				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
 			},
 			className: "cursor-pointer",
 		},
@@ -602,12 +666,16 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 								{/* Endpoints */}
 								{openCollections[collection.id] && (
 									<div className="pb-2">
-										{collection.endpoints.map((endpoint) => {
+										{collection.endpoints.map((endpoint, index) => {
 											const endpointPath = `/project/${projectId}/collection/${collection.id}/request/${endpoint.id}`;
 											const isActive = pathname === endpointPath;
+											const timestamp = Date.now();
+											const uniqueKey = endpoint.id
+												? `${collection.id}-${endpoint.id}`
+												: `${collection.id}-temp-${timestamp}-${index}`;
 											return (
 												<div
-													key={`${collection.id}-${endpoint.id}`}
+													key={uniqueKey}
 													className={`group mx-4 mb-1 rounded-md ${
 														isActive ? "bg-muted" : "hover:bg-muted/50"
 													}`}
@@ -677,6 +745,12 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 																collection.id,
 																project.id
 															)}
+															onOpenChange={(open) => {
+																setOpenEndpoint((prev) => ({
+																	...prev,
+																	[endpoint.id]: open,
+																}));
+															}}
 														/>
 													</Link>
 												</div>
@@ -694,6 +768,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			<ExportEndpoint
 				open={isExportRequestOpen}
 				onOpenChange={setIsExportRequestOpen}
+				endpoint={selectedEndpoint}
 			/>
 			<ExportCollection
 				open={isExportCollectionOpen}
@@ -739,7 +814,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 							delete updated[collectionId];
 							return updated;
 						});
-
 						setCollectionToDelete(null);
 						await deleteCollectionAction(collectionId);
 						toast.success("Collection deleted successfully");

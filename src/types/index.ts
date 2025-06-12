@@ -38,6 +38,7 @@ export interface TestProgress {
 }
 
 export interface Endpoint {
+    name: any;
 	id: string;
 	method: string;
 	path: string;
