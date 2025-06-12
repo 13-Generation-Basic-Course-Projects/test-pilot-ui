@@ -54,3 +54,19 @@ export const createCollectionService = async (
 		throw new Error("Failed to create collection");
 	}
 };
+
+// Duplicate collection
+export const duplicateCollectionService = async (data: {
+	name: string;
+	projectId: string;
+}): Promise<CollectionResponseType> => {
+	const response = await fetchAPI<CollectionResponseType>(COLLECTION_ENDPOINT, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	});
+
+	return response.payload;
+};

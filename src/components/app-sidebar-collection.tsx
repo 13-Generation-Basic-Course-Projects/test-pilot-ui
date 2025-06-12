@@ -33,7 +33,6 @@ import { ShareEndpoint } from "./share/share-endpoint";
 import { ImportCollection } from "./import/import-collection";
 import { DeleteCollection } from "./delete/delete-collection";
 import { DeleteEndpoint } from "./delete/delete-endpoint";
-import { fetchCollectionsForProject } from "@/action/collection-action";
 import {
 	fetchRequestForCollection,
 	deleteRequestAction,
@@ -43,9 +42,14 @@ import {
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
-import { createRequestByCollectionId } from "@/service/request-service";
-import { createCollectionAction } from "@/action/collection-action";
-import { deleteCollectionAction } from "@/action/collection-action";
+
+import { deleteCollectionByIdService } from "@/service/collection-service";
+import {
+	createCollectionAction,
+	deleteCollectionAction,
+	duplicateCollectionAction,
+	fetchCollectionsForProject,
+} from "@/action/collection-action";
 
 interface Project {
 	id: string;
@@ -263,28 +267,21 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		);
 	};
 
-	const handleDuplicateCollection = (
+	const handleDuplicateCollection = async (
 		projectId: string,
-		collectionId: string
+		collection: CollectionItem
 	) => {
+		const duplicated = await duplicateCollectionAction(collection, projectId);
+
+		if (!duplicated) return;
+
 		setCollectionsData((prev) =>
 			prev.map((project) => {
 				if (project.id !== projectId) return project;
 
-				const collectionToDuplicate = project.collections.find(
-					(collection) => collection.id === collectionId
-				);
-
-				if (!collectionToDuplicate) return project;
-
-				const duplicatedCollection = {
-					...collectionToDuplicate,
-					id: `${collectionId}-copy-${Date.now()}`,
-				};
-
 				return {
 					...project,
-					collections: [...project.collections, duplicatedCollection],
+					collections: [...project.collections, duplicated],
 				};
 			})
 		);
@@ -342,7 +339,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 				e.stopPropagation();
 				handleAddEndpoint(projectId, collection.id);
 			},
-			className: "cursor-pointer",
 		},
 		{ isSeparator: true as const },
 		{
@@ -370,7 +366,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			label: "Duplicate",
 			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
-				handleDuplicateCollection(projectId, collection.id);
+				handleDuplicateCollection(projectId, collection);
 			},
 		},
 		{
@@ -388,15 +384,13 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
 			),
 			label: "Delete",
-			onClick: async (e: React.MouseEvent) => {
+			onClick: (e: React.MouseEvent) => {
 				e.stopPropagation();
 				setTimeout(
 					() =>
 						setCollectionToDelete({ projectId, collectionId: collection.id }),
-
 					0
 				);
-				await deleteCollectionAction(collection.id);
 			},
 			className:
 				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
@@ -710,7 +704,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 					onOpenChange={(open) => {
 						if (!open) setCollectionToDelete(null);
 					}}
-					onConfirm={() => {
+					onConfirm={async () => {
 						const { projectId, collectionId } = collectionToDelete;
 						setCollectionsData((prev) =>
 							prev.map((project) =>
@@ -730,7 +724,9 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 							delete updated[collectionId];
 							return updated;
 						});
+
 						setCollectionToDelete(null);
+						await deleteCollectionAction(collectionId);
 						toast.success("Collection deleted successfully");
 					}}
 				/>
