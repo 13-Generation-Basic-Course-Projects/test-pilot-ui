@@ -39,19 +39,28 @@ export const createRequestByCollectionId = async ({
 		description: string;
 	};
 }) => {
-	const newRequest = {
-		name: name.trim(), // ✅ Changed from requestName to name
-		collectionId,
-		method,
-		details,
-	};
+	try {
+		const newRequest = {
+			name: name.trim(),
+			collectionId,
+			method,
+			details,
+		};
 
-	const response = await fetchAPI<RequestResponseTypes>(`${REQUEST_ENDPOINT}`, {
-		method: "POST",
-		body: JSON.stringify(newRequest),
-	});
+		const response = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}`,
+			{
+				method: "POST",
+				body: JSON.stringify(newRequest),
+			}
+		);
 
-	return response;
+		console.log("createRequestByCollectionId response:", response);
+		return response.payload;
+	} catch (error) {
+		console.error("createRequestByCollectionId error:", error);
+		throw error;
+	}
 };
 
 // Delete request by ID
@@ -165,3 +174,54 @@ export const updateRequestPathVariablesService = async (
 };
 
 export const createTestCaseService = async () => {};
+
+//Duplicate request
+export const duplicateRequest = async ({
+	requestId,
+	collectionId,
+}: {
+	requestId: string;
+	collectionId: string;
+}): Promise<RequestResponseTypes> => {
+	try {
+		if (!requestId) {
+			throw new Error("Invalid request ID provided");
+		}
+
+		const existingRequest = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/${requestId}`
+		);
+
+		if (!existingRequest.payload) {
+			throw new Error("Request not found");
+		}
+
+		const newRequest = {
+			name: `${existingRequest.payload.name} (Copy)`,
+			collectionId,
+			method: existingRequest.payload.method || "GET",
+			details: existingRequest.payload.details || {
+				url: "",
+				pathVariables: {},
+				queryParams: {},
+				headers: {},
+				body: null,
+				description: "",
+			},
+		};
+
+		const response = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}`,
+			{
+				method: "POST",
+				body: JSON.stringify(newRequest),
+			}
+		);
+
+		console.log("duplicateRequest response:", response);
+		return response.payload;
+	} catch (error) {
+		console.error("duplicateRequest error:", error);
+		throw error;
+	}
+};
