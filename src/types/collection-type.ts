@@ -37,3 +37,12 @@ export type CollectionItem = {
   title: string;
   endpoints: any[];
 };
+
+// Generic API response
+export type APIResponse<T> = {
+  message: string;
+  status: string;
+  success: boolean;
+  timestamps: string;
+  payload: T;
+};

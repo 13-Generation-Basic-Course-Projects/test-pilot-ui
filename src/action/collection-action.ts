@@ -4,6 +4,7 @@ import { COLLECTION_ENDPOINT } from "@/lib/static";
 import {
 	createCollectionService,
 	deleteCollectionByIdService,
+	duplicateCollectionService,
 	getAllCollection,
 } from "@/service/collection-service";
 import { CollectionItem } from "@/types";
@@ -24,4 +25,25 @@ export const createCollectionAction = async (
 	projectId: string
 ) => {
 	const newCollectionFromAPI = await createCollectionService(title, projectId);
+};
+
+export const duplicateCollectionAction = async (
+	collection: CollectionItem,
+	projectId: string
+): Promise<CollectionItem | null> => {
+	try {
+		const duplicatedName = `${collection.title} Copy`;
+		const newCollection = await duplicateCollectionService({
+			name: duplicatedName,
+			projectId,
+		});
+		return {
+			id: newCollection.id,
+			title: newCollection.name,
+			endpoints: [],
+		};
+	} catch (error) {
+		console.error("Duplicate Collection Failed:", error);
+		return null;
+	}
 };
