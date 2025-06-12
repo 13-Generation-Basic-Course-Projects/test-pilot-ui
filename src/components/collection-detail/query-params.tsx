@@ -48,6 +48,7 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
+import { EndpointItem } from "@/types";
 
 interface ParamRow {
 	key: string;
@@ -65,7 +66,13 @@ interface TestCase {
 // The hardcoded `testCases` array is no longer needed.
 // const testCases = [ ... ];
 
-export default function QueryParams() {
+export default function QueryParams({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) {
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [openPopoverIndex, setOpenPopoverIndex] = useState<number | null>(null);
 	const { queryParams, setQueryParams } = useParamsApiStore();

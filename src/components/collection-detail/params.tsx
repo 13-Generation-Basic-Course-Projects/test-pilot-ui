@@ -29,7 +29,7 @@ export const Params = ({
 					<PathVariable request={request} requestId={requestId} />
 				</TabsContent>
 				<TabsContent value="query-params">
-					<QueryParams />
+					<QueryParams request={request} requestId={requestId} />
 				</TabsContent>
 			</Tabs>
 		</div>

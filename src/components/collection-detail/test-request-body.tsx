@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
-import { Skeleton } from "@/components/ui/skeleton"; // 1. Import the Skeleton component
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TestCase {
 	type: string;

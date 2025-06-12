@@ -9,6 +9,7 @@ import {
 	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
+import { VariableTestCase } from "@/types/request-type";
 import { revalidatePath } from "next/cache";
 
 export const fetchRequestForCollection = async (
@@ -131,4 +132,38 @@ export const updateRequestPathVariablesAction = async (
 		console.error("Failed to update path variables:", error);
 		throw new Error("Could not save path variables.");
 	}
+};
+
+export const createVariableTestAction = async (payload: {
+	requestId: string;
+	predefinedTestCaseId: string;
+	applicationContext: "PATH_VARIABLE";
+	targetFieldPath: string;
+}): Promise<VariableTestCase> => {
+	console.log("Creating test case with payload:", payload);
+
+	// Your real backend logic to create the record...
+	// const newTest = await db.test.create({ data: payload });
+
+	// For this example, we return a mock object.
+	const mockNewTest = {
+		id: `test_${Date.now()}`, // This ID must come from your database
+		predefinedTestCaseId: payload.predefinedTestCaseId,
+		predefinedTestCaseName: "A Test Case Name", // In a real app, you'd look this up
+	};
+
+	revalidatePath(`/project/.*`, "layout"); // Revalidate to update UI elsewhere
+	return mockNewTest;
+};
+
+/**
+ * ✨ NEW ACTION: Deletes a single test case instance by its unique ID.
+ */
+export const deleteVariableTestAction = async (testInstanceId: string) => {
+	console.log(`Deleting test case with ID: ${testInstanceId}`);
+
+	// Your backend logic to delete the test...
+	// await db.test.delete({ where: { id: testInstanceId } });
+
+	revalidatePath(`/project/.*`, "layout");
 };

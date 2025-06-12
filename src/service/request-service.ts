@@ -1,6 +1,5 @@
 import { fetchAPI } from "@/lib/api";
 import { REQUEST_ENDPOINT } from "@/lib/static";
-import { NewRequestPayload } from "@/types";
 import { RequestResponseTypes } from "@/types/request-type";
 
 export const getRequestByCollectionId = async ({
@@ -164,3 +163,5 @@ export const updateRequestPathVariablesService = async (
 		throw error;
 	}
 };
+
+export const createTestCaseService = async () => {};
