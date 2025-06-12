@@ -30,8 +30,9 @@ import ProjectForm from "./project-form";
 import { DeleteProject } from "../delete/delete-project";
 import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
-import { deleteProjectAction } from "@/actions/project-action";
+import { deleteProjectAction } from "@/action/project-action";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
@@ -50,7 +51,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-	const [searchQuery, setSearchQuery] = useState("")
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const handleShare = (project: ProjectItem) => {
 		setSelectedProjectForShare(project);
@@ -94,6 +95,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			setProjects((prev) => prev.filter((project) => project.id !== projectId));
 			setIsDeleteDialogOpen(false);
 			setSelectProjectForDelete(null);
+			toast.success(`Project delete successfully!`)
 		} catch (error) {
 			console.error("Failed to delete project", error);
 		}
@@ -106,10 +108,9 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
 	const handleProjectCreated = (newProject: ProjectItem) => {
 		if (!newProject?.id || !newProject?.title) return;
-		setProjects((prev) => [...prev, newProject]);
+		setProjects((prev) => [newProject, ...prev]);
 		setIsCreateDialogOpen(false);
 	};
-
 
 	//Update project
 	const handleProjectUpdated = (updatedProject: ProjectItem) => {
@@ -130,8 +131,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 		project.title.toLowerCase().includes(searchQuery)
 	);
 
-
-
 	return (
 		<>
 			<div className="mb-6 flex flex-col justify-between items-center">
@@ -148,9 +147,8 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 						onOpenChange={handleDialogCloseCreate}
 						onProjectCreated={handleProjectCreated}
 					/>
-
 				</div>
-				<SearchForm className="mt-10" onSearch={handleSearchChange}/>
+				<SearchForm className="mt-10" onSearch={handleSearchChange} />
 			</div>
 
 			{filteredProjects.length === 0 ? (
@@ -250,7 +248,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 					onProjectUpdated={handleProjectUpdated}
 				/>
 			)}
-
 
 			<DeleteProject
 				open={isDeleteDialogOpen}

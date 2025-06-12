@@ -28,7 +28,6 @@ interface SeparatorItem {
 type MenuItem = ActionItem | SeparatorItem;
 
 interface ItemActionsDropdownProps {
-	open: boolean;
 	triggerIcon?: React.ReactNode;
 	menuLabel?: string;
 	items: MenuItem[];
