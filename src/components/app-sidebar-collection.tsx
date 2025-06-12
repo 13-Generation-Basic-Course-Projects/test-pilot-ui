@@ -43,7 +43,6 @@ import {
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
-import { createRequestByCollectionId } from "@/service/request-service";
 import { createCollectionAction } from "@/action/collection-action";
 import { deleteCollectionAction } from "@/action/collection-action";
 import { CollectionSidebarSkeleton } from "./collection-sidebar-skeleton";

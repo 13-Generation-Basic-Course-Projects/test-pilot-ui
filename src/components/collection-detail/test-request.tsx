@@ -9,10 +9,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
 
-// The static `testCases` array is no longer needed.
-// const testCases = [ ... ];
-
-// 3. Define interfaces for our data structures
 interface TestCase {
 	type: string;
 	case: string;

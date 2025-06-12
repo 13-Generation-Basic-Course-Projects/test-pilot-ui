@@ -132,3 +132,35 @@ export const updateRequestUrlAndMethodService = async (
 		throw error;
 	}
 };
+
+export const updateRequestPathVariablesService = async (
+	requestId: string,
+	pathVariablesPayload: Record<string, any> // Accepts the path variables object
+): Promise<void> => {
+	try {
+		// First, get the current state of the request to preserve other fields
+		const existingRequest = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/${requestId}`
+		);
+
+		// Prepare the updated payload by merging the new path variables
+		const updatedDetails = {
+			...existingRequest.payload.details, // Keep other existing details (like url, body, etc.)
+			pathVariables: pathVariablesPayload, // Set the new path variables
+		};
+
+		const updatedPayload = {
+			...existingRequest.payload, // Keep top-level fields like name, method, etc.
+			details: updatedDetails, // Add the merged details object
+		};
+
+		// Send the final, merged payload to your backend
+		await fetchAPI(`${REQUEST_ENDPOINT}/${requestId}`, {
+			method: "PUT",
+			body: JSON.stringify(updatedPayload),
+		});
+	} catch (error) {
+		console.error("updateRequestPathVariablesService error:", error);
+		throw error;
+	}
+};

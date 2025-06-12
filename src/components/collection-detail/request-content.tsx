@@ -23,7 +23,11 @@ const RequestContent = ({
 				collectionId={collectionId}
 			/>
 			<div className="mt-4">
-				<RequestContentDetail projectId={projectId} requestId={requestId} />
+				<RequestContentDetail
+					projectId={projectId}
+					requestId={requestId}
+					request={request}
+				/>
 			</div>
 		</div>
 	);

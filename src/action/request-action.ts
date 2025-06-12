@@ -5,6 +5,7 @@ import {
 	deleteRequestByIdService,
 	getRequestByCollectionId,
 	updateRequestByIdService,
+	updateRequestPathVariablesService,
 	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
@@ -110,5 +111,24 @@ export const updateRequestUrlAndMethodAction = async (params: {
 	} catch (error) {
 		console.error("Error in updateRequestUrlAndMethodAction:", error);
 		throw error;
+	}
+};
+
+export const updateRequestPathVariablesAction = async (
+	requestId: string,
+	// The payload is the final object, not the complex array from the UI state
+	pathVariablesPayload: Record<string, any>
+) => {
+	console.log(
+		`Saving path variables for request ${requestId}:`,
+		pathVariablesPayload
+	);
+
+	try {
+		await updateRequestPathVariablesService(requestId, pathVariablesPayload);
+		revalidatePath(`/project/.*`, "layout"); // Revalidate the whole project layout
+	} catch (error) {
+		console.error("Failed to update path variables:", error);
+		throw new Error("Could not save path variables.");
 	}
 };

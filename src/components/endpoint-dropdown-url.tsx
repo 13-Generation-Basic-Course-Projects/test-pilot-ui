@@ -27,6 +27,7 @@ import { EndpointItem } from "@/types";
 import { useEffect, useState, useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { updateRequestUrlAndMethodAction } from "@/action/request-action";
+import { useRequestStore } from "@/store/request-url-slice";
 
 const endpointMethods = [
 	{ value: "GET", label: "GET" },
@@ -51,6 +52,7 @@ export function EndpointDropdownUrl({
 	const [currentMethod, setCurrentMethod] = useState<string | undefined>("GET");
 	const [currentUrl, setCurrentUrl] = useState("");
 	const [isPending, startTransition] = useTransition();
+	const { setUrl } = useRequestStore();
 
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
@@ -61,6 +63,11 @@ export function EndpointDropdownUrl({
 			setCurrentUrl(endpoint.details?.url || "");
 		}
 	}, [endpoint]); // Runs whenever the endpoint prop changes
+
+	// Runs whenever the input changes
+	useEffect(() => {
+		setUrl(currentUrl);
+	}, [currentUrl]);
 
 	// ✨ NEW ARCHITECTURE: An explicit save handler.
 	// This function is called only when a user action occurs.
