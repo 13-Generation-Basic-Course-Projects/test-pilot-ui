@@ -113,7 +113,7 @@ export default function Monitoring() {
 		},
 		{
 			id: 3,
-			testName: "Password - Weak Policy",
+			testName: "Password - Weak Password",
 			status: "pending",
 			date: "2025-06-13",
 			method: "POST",

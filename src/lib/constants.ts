@@ -450,7 +450,7 @@ export const mockHistoryResponses = [
 			2
 		),
 	},
-	// [2] Corresponds to: Password - Weak Policy (Passed)
+	// [2] Corresponds to: Password - Weak (Passed)
 	{
 		method: "POST",
 		endpoint: "https://api.kshrd.app/api/v1/auth/register",

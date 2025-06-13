@@ -99,6 +99,22 @@ const initialPredefinedValues: TestCase[] = [
 		type: "Array",
 	},
 ];
+
+const defaultCustomCases: TestCase[] = [
+	{ name: "Email - Invalid Format", value: "user@invalid", type: "String" },
+	{ name: "Email - SQL Injection", value: "' OR 1=1; --", type: "String" },
+	{ name: "Password - Weak Password", value: "123456", type: "String" },
+	{ name: "Password - Empty", value: "", type: "String" },
+	{
+		name: "Username - Too Long",
+		value: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa....",
+		type: "String",
+	},
+	{ name: "Username - Only Space", value: " ", type: "String" },
+	// { name: "Age - Negative Value", value: -1, type: "Number" },
+	{ name: "Age - Type Mismatch (String)", value: "twenty", type: "Number" },
+];
+
 const useTestCaseStore = create<TestCaseState>()(
 	persist(
 		(set) => ({
@@ -106,9 +122,7 @@ const useTestCaseStore = create<TestCaseState>()(
 			predefinedTestCases: initialPredefinedValues,
 			// --- THIS IS THE FIX ---
 			// Explicitly cast the empty array to TestCase[] to resolve the type error.
-			customTestCases: [
-				{ name: "Weak Password", value: "123456", type: "String" },
-			],
+			customTestCases: defaultCustomCases,
 
 			// ACTIONS (These now ONLY modify the customTestCases array)
 			addTestCase: (data) =>

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 
+// --- Shadcn UI Imports ---
 import {
 	Select,
 	SelectContent,
@@ -49,14 +50,14 @@ import {
 import { Button } from "../ui/button";
 
 // --- Icons & Utils ---
-import { Plus, X, Check } from "lucide-react";
+import { Plus, X, Check, Loader2 } from "lucide-react"; // ✨ 1. Import the Loader2 icon
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
 import { cn } from "@/lib/utils";
 
 // --- Import the central test case store ---
 import useTestCaseStore from "@/store/test-case-store";
 
-// Component-specific Data
+// --- Component-specific Data ---
 const dataTypeOptions = [
 	"string",
 	"number",
@@ -68,12 +69,14 @@ const dataTypeOptions = [
 ] as const;
 type DataType = (typeof dataTypeOptions)[number];
 
+// --- Component Props Interface ---
 interface TestCaseProps {
 	onTestCasesAdded: () => void;
+	isGenerating: boolean;
 }
 
-export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
-	// --- All your existing state and handlers remain the same ---
+export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
+	// --- State & Store Hooks ---
 	const { apiBodyRows, updateRow } = useApiBodyStore();
 	const { predefinedTestCases, customTestCases } = useTestCaseStore();
 	const allTestCases = useMemo(
@@ -86,7 +89,7 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 		newType: DataType;
 	} | null>(null);
 
-	// --- All your handler functions (handleToggleCase, initiateDataTypeChange, etc.) remain here ---
+	// --- Handler Functions ---
 	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
 		const newTestCases = row.testCases.includes(selectedCase)
 			? row.testCases.filter((c) => c !== selectedCase)
@@ -126,12 +129,12 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 		setDataTypeChangeInfo(null);
 	};
 
-	// ✨ 2. Check if at least one test case has been selected across all rows
 	const hasSelectedCases = useMemo(
 		() => apiBodyRows.some((row) => row.testCases.length > 0),
 		[apiBodyRows]
 	);
 
+	// --- Render Logic ---
 	if (!apiBodyRows || apiBodyRows.length === 0) {
 		return (
 			<p className="min-h-[480px] p-4 text-center text-muted-foreground">
@@ -141,7 +144,8 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 	}
 
 	return (
-		<div className="space-y-5 min-h-[480px]">
+		// ✨ 2. Wrap the component in a fieldset to disable all child elements during generation
+		<fieldset disabled={isGenerating} className="space-y-5 min-h-[480px]">
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
 				<Table className="w-full table-fixed">
 					<TableHeader>
@@ -269,7 +273,7 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 														<DropdownMenuItem
 															key={caseName}
 															className="flex justify-between items-center"
-															onSelect={(e) => e.preventDefault()} // Prevent menu from closing on item click
+															onSelect={(e) => e.preventDefault()}
 														>
 															{caseName}
 															<button
@@ -291,11 +295,21 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 				</Table>
 			</div>
 			<div className="flex justify-end pt-4">
-				<Button onClick={onTestCasesAdded} disabled={!hasSelectedCases}>
-					Generate Test Requests
+				{/* ✨ 3. The button now shows a loading state */}
+				<Button
+					onClick={onTestCasesAdded}
+					disabled={!hasSelectedCases || isGenerating}
+				>
+					{isGenerating ? (
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Generating...
+						</>
+					) : (
+						"Generate Test Requests"
+					)}
 				</Button>
 			</div>
-
 			<AlertDialog
 				open={isConfirmDialogOpen}
 				onOpenChange={setIsConfirmDialogOpen}
@@ -318,6 +332,6 @@ export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</fieldset>
 	);
 };
