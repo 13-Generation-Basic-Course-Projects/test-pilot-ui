@@ -43,16 +43,16 @@ const initialPredefinedValues: TestCase[] = [
 	{ name: "MaxSize (single file)", value: "5Mb (limit 5Mb)", type: "File" },
 	{ name: "MaxSize (multiple file)", value: "25Mb (limit 5Mb)", type: "File" },
 
-	{ name: "Positive Number", value: 5, type: "Integer" },
-	{ name: "Large Positive Number", value: 1000, type: "Integer" },
-	{ name: "Null", value: "null", type: "Integer" },
-	{ name: "Float Number", value: 1.23, type: "Integer" },
-	{ name: "Negative Number", value: -1, type: "Integer" },
-	{ name: "Zero", value: 0, type: "Integer" },
-	{ name: "Max boundary", value: "max", type: "Integer" },
-	{ name: "Min boundary", value: "min", type: "Integer" },
-	{ name: "String number", value: "12", type: "Integer" },
-	{ name: "High Precision Float", value: 0.12345678912345, type: "Integer" },
+	{ name: "Positive Number", value: 5, type: "Number" },
+	{ name: "Large Positive Number", value: 1000, type: "Number" },
+	{ name: "Null", value: "null", type: "Number" },
+	{ name: "Float Number", value: 1.23, type: "Number" },
+	{ name: "Negative Number", value: -1, type: "Number" },
+	{ name: "Zero", value: 0, type: "Number" },
+	{ name: "Max boundary", value: "max", type: "Number" },
+	{ name: "Min boundary", value: "min", type: "Number" },
+	{ name: "String number", value: "12", type: "Number" },
+	{ name: "High Precision Float", value: 0.12345678912345, type: "Number" },
 
 	{ name: "Null", value: "null", type: "Boolean" },
 	{ name: "True", value: "true", type: "Boolean" },
@@ -106,7 +106,9 @@ const useTestCaseStore = create<TestCaseState>()(
 			predefinedTestCases: initialPredefinedValues,
 			// --- THIS IS THE FIX ---
 			// Explicitly cast the empty array to TestCase[] to resolve the type error.
-			customTestCases: [] as TestCase[],
+			customTestCases: [
+				{ name: "Weak Password", value: "123456", type: "String" },
+			],
 
 			// ACTIONS (These now ONLY modify the customTestCases array)
 			addTestCase: (data) =>

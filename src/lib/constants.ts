@@ -282,7 +282,7 @@ export const sidebarMenus = {
 export const DATA_TYPES = [
 	"String",
 	"Date",
-	"Integer",
+	"Number",
 	"Array",
 	"File",
 	"UUID",
@@ -395,12 +395,11 @@ greet
 	},
 ];
 
-// This data now aligns with the 4 test cases for the /register endpoint.
 export const mockHistoryResponses = [
-	// [0] Corresponds to "Empty String in Email" -> Test Passed
+	// [0] Corresponds to: Email - Invalid Format (Passed)
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/api/v1/register",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
 		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
@@ -408,30 +407,24 @@ export const mockHistoryResponses = [
 		failureReason: null,
 		requestBody: JSON.stringify(
 			{
-				username: "testuser_valid",
-				email: "",
-				password: "StrongPassword@123",
-				age: 25,
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{
-				error: "Validation failed",
-				code: "VALIDATION_ERROR",
-				details: {
-					email: "Email cannot be an empty string",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "invalid-email", password: "ValidPassword123" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-001" },
+					body: { error: "Invalid email format" },
 				},
 			},
 			null,
 			2
 		),
+		responseBody: JSON.stringify({ error: "Invalid email format" }, null, 2),
 	},
-	// [1] Corresponds to "Weak Password Validation" -> Test Passed
+	// [1] Corresponds to: Email - SQL Injection (Passed)
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/api/v1/register",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
 		status: "400 BAD REQUEST",
 		badgeStatus: "passed" as const,
 		isSuccess: true,
@@ -439,89 +432,195 @@ export const mockHistoryResponses = [
 		failureReason: null,
 		requestBody: JSON.stringify(
 			{
-				username: "testuser_weakpass",
-				email: "weakpass@example.com",
-				password: "password",
-				age: 30,
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{
-				error: "Validation failed",
-				code: "WEAK_PASSWORD",
-				details: {
-					password:
-						"Password does not meet complexity requirements. Must include uppercase, lowercase, numbers, and symbols.",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "' OR 1=1;--", password: "ValidPassword123" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-002" },
+					body: { error: "Malicious input detected" },
 				},
 			},
 			null,
 			2
 		),
+		responseBody: JSON.stringify(
+			{ error: "Malicious input detected" },
+			null,
+			2
+		),
 	},
-	// [2] Corresponds to "Null Value for Username" -> Test Failed
+	// [2] Corresponds to: Password - Weak Policy (Passed)
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/api/v1/register",
-		status: "500 INTERNAL SERVER ERROR",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
 		shouldShowPreview: true,
-		// failureReason:
-		// 	"API crashed with a 500 Internal Server Error when processing a null username.",
+		failureReason: null,
 		requestBody: JSON.stringify(
 			{
-				username: null,
-				email: "nulluser@example.com",
-				password: "StrongPassword@123",
-				age: 28,
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "password" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-003" },
+					body: { error: "Password does not meet complexity requirements" },
+				},
 			},
 			null,
 			2
 		),
 		responseBody: JSON.stringify(
-			{
-				error: "An unexpected error occurred on the server.",
-				code: "INTERNAL_SERVER_ERROR",
-				details: "Cannot read properties of null (reading 'trim')",
-			},
+			{ error: "Password does not meet complexity requirements" },
 			null,
 			2
 		),
 	},
-	// [3] Corresponds to "Negative Number for Age" -> Test Failed
+	// [3] Corresponds to: Password - Empty (Passed)
 	{
 		method: "POST",
-		endpoint: "http://96.9.81.187:8787/api/v1/register",
-		status: "201 CREATED",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
 		shouldShowPreview: true,
-		// failureReason:
-		// 	"API failed to validate the negative age and incorrectly created a user resource.",
+		failureReason: null,
 		requestBody: JSON.stringify(
 			{
-				username: "age_tester",
-				email: "negativeage@example.com",
-				password: "StrongPassword@123",
-				age: -10,
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-004" },
+					body: { error: "Password cannot be empty" },
+				},
 			},
 			null,
 			2
 		),
 		responseBody: JSON.stringify(
+			{ error: "Password cannot be empty" },
+			null,
+			2
+		),
+	},
+	// [4] Corresponds to: Username - Too Long (Passed)
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
 			{
-				id: "user-123",
-				username: "age_tester",
-				message: "User created successfully.",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "a".repeat(100) },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-005" },
+					body: { error: "Username exceeds maximum length" },
+				},
 			},
 			null,
 			2
 		),
+		responseBody: JSON.stringify(
+			{ error: "Username exceeds maximum length" },
+			null,
+			2
+		),
+	},
+	// [5] Corresponds to: Username - Only Space (Failed)
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "200 OK",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "   ", password: "ValidPassword123" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-006", "Set-Cookie": "..." },
+					body: { message: "User registered successfully!" },
+				},
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ message: "User registered successfully!" },
+			null,
+			2
+		),
+	},
+	// [6] Corresponds to: Age - Negative Value (Failed)
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "200 OK",
+		badgeStatus: "failed" as const,
+		isSuccess: false,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "testuser", age: -10 },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-007", "Set-Cookie": "..." },
+					body: { message: "User registered successfully!" },
+				},
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ status: "success", message: "User registered successfully!" },
+			null,
+			2
+		),
+	},
+	// [7] Corresponds to: Age - Type Mismatch (Passed)
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "testuser", age: "twenty" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-008" },
+					body: { error: "Age must be a number" },
+				},
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify({ error: "Age must be a number" }, null, 2),
 	},
 ];
-
 // utils/data-type-cases.ts
 export const dataTypeOptions = [
 	{ label: "String", value: "string" },

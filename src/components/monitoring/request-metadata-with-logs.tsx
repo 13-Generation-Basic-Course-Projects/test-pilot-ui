@@ -45,11 +45,11 @@ export function RequestMetadataWithLogs({
 			{/* Request Metadata Section */}
 			<div className="space-y-3">
 				<p className="text-lg font-semibold truncate">Request Metadata</p>
-				<div className="rounded-lg border border-[#E2E8F0] overflow-hidden">
+				<div className="overflow-hidden">
 					{/* FIX #1: Added a fixed height class `h-[400px]` here.
                       You can change this value to whatever height you need.
                     */}
-					<ScrollArea className="w-full h-[400px]">
+					<ScrollArea className="w-full h-[300px] rounded-xl">
 						{/* We pass the ref to the special Viewport component for auto-scrolling */}
 						<ScrollArea ref={scrollViewportRef} className="w-full h-full">
 							{selectedTest.metadata ? (
@@ -64,6 +64,7 @@ export function RequestMetadataWithLogs({
 										padding: "16px",
 										height: "100%",
 										fontSize: "12px",
+										borderRadius: "10px",
 										// --- ADD THESE TWO LINES ---
 										whiteSpace: "pre-wrap", // Allows text to wrap to the next line
 										wordBreak: "break-all", // Forces long words to break

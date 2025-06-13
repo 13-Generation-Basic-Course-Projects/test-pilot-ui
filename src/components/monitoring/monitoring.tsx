@@ -52,9 +52,9 @@ interface TestResult {
 }
 
 export default function Monitoring() {
-	const [testProgress, setTestProgress] = useState<TestProgress>({
+	const [testProgress, setTestProgress] = useState({
 		completed: 0,
-		total: 4,
+		total: 8,
 		currentTest: 0,
 	});
 
@@ -64,302 +64,215 @@ export default function Monitoring() {
 	const [testResults, setTestResults] = useState<TestResult[]>([
 		{
 			id: 1,
-			testName: "Empty String",
-			status: "pending", // This test will PASS because a 400 is the EXPECTED outcome.
+			testName: "Email - Invalid Format",
+			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
-			endpoint: "http://96.9.81.187:8787/api/v1/register",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
 			httpStatus: 400,
 			statusText: "Bad Request",
 			metadata: {
-				// request: {
-				//  headers: { "Content-Type": "application/json", "User-Agent": "TestPilot/1.0" },
-				//  body: {
-				//      username: "testuser_valid",
-				//      email: "",
-				//      password: "StrongPassword@123",
-				//      age: 25
-				//  },
-				//  timestamp: "2025-06-13T10:30:00Z",
-				//  duration: "142ms",
-				// },
-				response: {
-					status: 400,
-					statusText: "Bad Request",
-					headers: {
-						"Content-Type": "application/json",
-						"X-Request-ID": "req_reg_001",
-					},
-					body: {
-						error: "Validation failed",
-						code: "VALIDATION_ERROR",
-						details: {
-							email: "Email cannot be an empty string",
-						},
-					},
-					size: "188 bytes",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "invalid-email", password: "ValidPassword123" },
 				},
-				// security: {
-				//  testType: "Input Validation",
-				//  riskLevel: "Medium",
-				//  cweId: "CWE-20",
-				//  description: "Ensures the backend properly validates empty string inputs for required fields.",
-				// },
+				response: {
+					headers: { "X-Request-ID": "req-001" },
+					body: { error: "Invalid email format" },
+				},
 			},
 			logs: [
-				{
-					level: "INFO",
-					message: "Starting test: Empty String in Email",
-					source: "TestRunner",
-				},
-				{
-					level: "INFO",
-					message:
-						"Sending POST request to http://96.9.81.187:8787/api/v1/register",
-					source: "HttpClient",
-				},
-				{
-					level: "INFO",
-					message: "Response received: 400 Bad Request",
-					source: "HttpClient",
-				},
-				{
-					level: "INFO",
-					message: "SUCCESS: Backend correctly rejected the request.",
-					source: "ValidationEngine",
-				},
-				{
-					level: "INFO",
-					message:
-						"Test passed: Empty String in Email - Correct validation response.",
-					source: "TestRunner",
-				},
+				{ level: "INFO", message: "Test Passed: API correctly returned 400." },
 			],
 		},
 		{
 			id: 2,
-			testName: "Weak Password",
-			status: "pending", // This test will PASS because a 400 is the EXPECTED outcome.
+			testName: "Email - SQL Injection",
+			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
-			endpoint: "http://96.9.81.187:8787/api/v1/register",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
 			httpStatus: 400,
 			statusText: "Bad Request",
 			metadata: {
-				// request: {
-				//  headers: { "Content-Type": "application/json", "User-Agent": "TestPilot/1.0" },
-				//  body: {
-				//      username: "testuser_weakpass",
-				//      email: "weakpass@example.com",
-				//      password: "password",
-				//      age: 30
-				//  },
-				//  timestamp: "2025-06-13T10:30:05Z",
-				//  duration: "195ms",
-				// },
-				response: {
-					status: 400,
-					statusText: "Bad Request",
-					headers: {
-						"Content-Type": "application/json",
-						"X-Request-ID": "req_reg_002",
-					},
-					body: {
-						error: "Validation failed",
-						code: "WEAK_PASSWORD",
-						details: {
-							password:
-								"Password does not meet complexity requirements. Must include uppercase, lowercase, numbers, and symbols.",
-						},
-					},
-					size: "256 bytes",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "' OR 1=1;--", password: "ValidPassword123" },
 				},
-				// security: {
-				//  testType: "Security Policy Enforcement",
-				//  riskLevel: "High",
-				//  cweId: "CWE-521",
-				//  description: "Testing for enforcement of strong password policies.",
-				// },
+				response: {
+					headers: { "X-Request-ID": "req-002" },
+					body: { error: "Malicious input detected" },
+				},
 			},
 			logs: [
 				{
 					level: "INFO",
-					message: "Starting test: Weak Password Validation",
-					source: "TestRunner",
-				},
-				{
-					level: "INFO",
-					message:
-						"Sending POST request to http://96.9.81.187:8787/api/v1/register",
-					source: "HttpClient",
-				},
-				{
-					level: "INFO",
-					message: "Response received: 400 Bad Request",
-					source: "HttpClient",
-				},
-				{
-					level: "INFO",
-					message: "SUCCESS: Backend correctly enforced password policy.",
-					source: "SecurityEngine",
-				},
-				{
-					level: "INFO",
-					message:
-						"Test passed: Weak Password Validation - Correct security enforcement.",
-					source: "TestRunner",
+					message: "Test Passed: API correctly blocked the request.",
 				},
 			],
 		},
 		{
 			id: 3,
-			testName: "Null Value",
-			status: "pending", // This test will FAIL because a 500 error is a server crash, not a validation error.
+			testName: "Password - Weak Policy",
+			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
-			endpoint: "http://96.9.81.187:8787/api/v1/register",
-			httpStatus: 500,
-			statusText: "Internal Server Error",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
 			metadata: {
-				// request: {
-				//  headers: { "Content-Type": "application/json", "User-Agent": "TestPilot/1.0" },
-				//  body: {
-				//      username: null,
-				//      email: "nulluser@example.com",
-				//      password: "StrongPassword@123",
-				//      age: 28
-				//  },
-				//  timestamp: "2025-06-13T10:30:10Z",
-				//  duration: "250ms",
-				// },
-				response: {
-					status: 500,
-					statusText: "Internal Server Error",
-					headers: {
-						"Content-Type": "application/json",
-						"X-Request-ID": "req_reg_003",
-					},
-					body: {
-						error: "An unexpected error occurred on the server.",
-						code: "INTERNAL_SERVER_ERROR",
-						details: "Cannot read properties of null (reading 'trim')",
-					},
-					size: "190 bytes",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "password" },
 				},
-				// security: {
-				//  testType: "Exception Handling",
-				//  riskLevel: "Critical",
-				//  cweId: "CWE-476",
-				//  description: "Testing for unhandled null pointer exceptions in the backend.",
-				//  vulnerability: "Backend crashed due to a null value for username, revealing internal error details.",
-				// },
+				response: {
+					headers: { "X-Request-ID": "req-003" },
+					body: { error: "Password does not meet complexity requirements" },
+				},
 			},
 			logs: [
 				{
 					level: "INFO",
-					message: "Starting test: Null Value for Username",
-					source: "TestRunner",
-				},
-				{
-					level: "INFO",
-					message:
-						"Sending POST request to http://96.9.81.187:8787/api/v1/register",
-					source: "HttpClient",
-				},
-				{
-					level: "ERROR",
-					message: "Response received: 500 Internal Server Error",
-					source: "HttpClient",
-				},
-				{
-					level: "ERROR",
-					message:
-						"FAILURE: Potential null pointer exception. The server did not handle the input gracefully.",
-					source: "SecurityEngine",
-				},
-				{
-					level: "INFO",
-					message:
-						"Test failed: Null Value for Username - Server returned a critical 500 error.",
-					source: "TestRunner",
+					message: "Test Passed: API correctly enforced password policy.",
 				},
 			],
 		},
 		{
 			id: 4,
-			testName: "Negative Number",
-			status: "pending", // This test will FAIL because the API incorrectly accepts bad data (returns 201 Created).
+			testName: "Password - Empty",
+			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
-			endpoint: "http://96.9.81.187:8787/api/v1/register",
-			httpStatus: 201, // CHANGED: The API incorrectly says "Created".
-			statusText: "Created",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
 			metadata: {
-				// request: {
-				//  headers: { "Content-Type": "application/json", "User-Agent": "TestPilot/1.0" },
-				//  body: {
-				//      username: "age_tester",
-				//      email: "negativeage@example.com",
-				//      password: "StrongPassword@123",
-				//      age: -10
-				//  },
-				//  timestamp: "2025-06-13T10:30:15Z",
-				//  duration: "135ms",
-				// },
-				response: {
-					status: 201, // CHANGED
-					statusText: "Created", // CHANGED
-					headers: {
-						"Content-Type": "application/json",
-						"X-Request-ID": "req_reg_004",
-					},
-					body: {
-						id: "user-123",
-						username: "age_tester",
-						message: "User created successfully.", // This should not have happened.
-					},
-					size: "128 bytes",
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "" },
 				},
-				// security: {
-				//  testType: "Business Logic Bypass",
-				//  riskLevel: "High",
-				//  description: "API failed to validate that age must be a positive number, leading to data corruption.",
-				//  vulnerability: "Negative values are accepted for age.",
-				// },
+				response: {
+					headers: { "X-Request-ID": "req-004" },
+					body: { error: "Password cannot be empty" },
+				},
 			},
 			logs: [
 				{
 					level: "INFO",
-					message: "Starting test: Negative Number for Age",
-					source: "TestRunner",
+					message: "Test Passed: API correctly validated for empty password.",
 				},
+			],
+		},
+		{
+			id: 5,
+			testName: "Username - Too Long",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "a".repeat(100) },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-005" },
+					body: { error: "Username exceeds maximum length" },
+				},
+			},
+			logs: [
 				{
 					level: "INFO",
-					message:
-						"Sending POST request to http://96.9.81.187:8787/api/v1/register",
-					source: "HttpClient",
+					message: "Test Passed: API correctly validated username length.",
 				},
+			],
+		},
+		// --- THIS IS NOW A FAILED TEST ---
+		{
+			id: 6,
+			testName: "Username - Only Space",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 200,
+			statusText: "OK",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "   ", password: "ValidPassword123" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-006", "Set-Cookie": "..." },
+					body: { message: "User registered successfully!" },
+				},
+			},
+			logs: [
 				{
 					level: "ERROR",
-					message: "Response received: 201 Created",
-					source: "HttpClient",
-				}, // This is an error in the context of this test
+					message:
+						"Test Failed: API incorrectly allowed a username with only spaces.",
+				},
+			],
+		},
+		// --- THIS IS NOW A FAILED TEST ---
+		{
+			id: 7,
+			testName: "Age - Negative Value",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 200,
+			statusText: "OK",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "testuser", age: -10 },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-007", "Set-Cookie": "..." },
+					body: { message: "User registered successfully!" },
+				},
+			},
+			logs: [
 				{
 					level: "ERROR",
 					message:
-						"FAILURE: The backend accepted a negative age and created a user.",
-					source: "ValidationEngine",
+						"Test Failed: API incorrectly returned 200 OK for invalid data.",
 				},
+			],
+		},
+		// Age Test 2 (Passed)
+		{
+			id: 8,
+			testName: "Age - Type Mismatch (String)",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { username: "testuser", age: "twenty" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-008" },
+					body: { error: "Age must be a number" },
+				},
+			},
+			logs: [
 				{
 					level: "INFO",
-					message:
-						"Test failed: Negative Number for Age - Invalid data was accepted.",
-					source: "TestRunner",
+					message: "Test Passed: API correctly validated age data type.",
 				},
 			],
 		},
 	]);
-
 	const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
 
 	const generateTimestamp = () => {
@@ -388,10 +301,13 @@ export default function Monitoring() {
 		const testSequence = [
 			{ id: 1, status: "passed" as const },
 			{ id: 2, status: "passed" as const },
-			{ id: 3, status: "failed" as const },
-			{ id: 4, status: "failed" as const },
+			{ id: 3, status: "passed" as const },
+			{ id: 4, status: "passed" as const },
+			{ id: 5, status: "passed" as const },
+			{ id: 6, status: "failed" as const }, // Still fails
+			{ id: 7, status: "failed" as const }, // Now fails
+			{ id: 8, status: "passed" as const },
 		];
-
 		let currentIndex = 0;
 
 		// Add initial system log

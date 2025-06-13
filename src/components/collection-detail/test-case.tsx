@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 
-// --- Shadcn UI Imports ---
 import {
 	Select,
 	SelectContent,
@@ -58,28 +57,36 @@ import { cn } from "@/lib/utils";
 import useTestCaseStore from "@/store/test-case-store";
 
 // Component-specific Data
-const dataTypeOptions = ["string", "number", "boolean", "date"] as const;
+const dataTypeOptions = [
+	"string",
+	"number",
+	"boolean",
+	"date",
+	"file",
+	"uuid",
+	"array",
+] as const;
 type DataType = (typeof dataTypeOptions)[number];
 
-export const TestCase = () => {
-	// --- State from the body store ---
-	const { apiBodyRows, updateRow } = useApiBodyStore();
+interface TestCaseProps {
+	onTestCasesAdded: () => void;
+}
 
-	// --- Get the master list of all test cases from the central store ---
+export const TestCase = ({ onTestCasesAdded }: TestCaseProps) => {
+	// --- All your existing state and handlers remain the same ---
+	const { apiBodyRows, updateRow } = useApiBodyStore();
 	const { predefinedTestCases, customTestCases } = useTestCaseStore();
 	const allTestCases = useMemo(
 		() => [...predefinedTestCases, ...customTestCases],
 		[predefinedTestCases, customTestCases]
 	);
-
-	// --- Local state for the confirmation dialog ---
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dataTypeChangeInfo, setDataTypeChangeInfo] = useState<{
 		rowId: string;
 		newType: DataType;
 	} | null>(null);
 
-	// --- Handler Functions ---
+	// --- All your handler functions (handleToggleCase, initiateDataTypeChange, etc.) remain here ---
 	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
 		const newTestCases = row.testCases.includes(selectedCase)
 			? row.testCases.filter((c) => c !== selectedCase)
@@ -95,7 +102,6 @@ export const TestCase = () => {
 	const initiateDataTypeChange = (rowId: string, newType: DataType) => {
 		const currentRow = apiBodyRows.find((r) => r.id === rowId);
 		if (!currentRow || currentRow.dataType === newType) return;
-
 		if (currentRow.testCases && currentRow.testCases.length > 0) {
 			setDataTypeChangeInfo({ rowId, newType });
 			setIsConfirmDialogOpen(true);
@@ -119,6 +125,12 @@ export const TestCase = () => {
 		setIsConfirmDialogOpen(false);
 		setDataTypeChangeInfo(null);
 	};
+
+	// ✨ 2. Check if at least one test case has been selected across all rows
+	const hasSelectedCases = useMemo(
+		() => apiBodyRows.some((row) => row.testCases.length > 0),
+		[apiBodyRows]
+	);
 
 	if (!apiBodyRows || apiBodyRows.length === 0) {
 		return (
@@ -277,6 +289,11 @@ export const TestCase = () => {
 						))}
 					</TableBody>
 				</Table>
+			</div>
+			<div className="flex justify-end pt-4">
+				<Button onClick={onTestCasesAdded} disabled={!hasSelectedCases}>
+					Generate Test Requests
+				</Button>
 			</div>
 
 			<AlertDialog

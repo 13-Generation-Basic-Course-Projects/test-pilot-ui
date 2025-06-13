@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HistoryData } from "@/components/history/history-data";
 import { mockHistoryResponses } from "@/lib/constants";
@@ -14,6 +14,7 @@ import {
 	ResizableHandle,
 } from "@/components/ui/resizable";
 import { useRouter } from "next/navigation";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function History() {
 	const [previewData, setPreviewData] = useState<any>(null);
@@ -123,44 +124,51 @@ export default function History() {
 
 								{/* Response */}
 								<h3 className="text-xl">Response</h3>
-								<div className="rounded-lg border overflow-hidden max-h-80">
-									{previewData.responseBody ? (
-										isValidJSON(previewData.responseBody) ? (
-											<SyntaxHighlighter
-												language="json"
-												style={atomDark}
-												wrapLongLines={true}
-												customStyle={{
-													margin: 0,
-													padding: "16px",
-													height: "100%",
-													fontSize: "12px",
-													backgroundColor: "#1E293B",
-													whiteSpace: "pre-wrap",
-													wordBreak: "break-all",
-												}}
-												codeTagProps={{
-													style: {
-														fontFamily: '"JetBrains Mono", monospace',
-													},
-												}}
-											>
-												{previewData.responseBody}
-											</SyntaxHighlighter>
-										) : (
-											<div className="bg-[#1E293B] p-4">
-												<pre className="text-red-500 whitespace-pre-wrap">
-													Invalid or corrupted JSON response
-												</pre>
+								<div className="overflow-hidden">
+									<ScrollArea className="w-full h-[300px] rounded-xl">
+										{/* We pass the ref to the special Viewport component for auto-scrolling */}
+										<ScrollArea className="w-full h-full">
+											<div className="rounded-lg border overflow-hidden">
+												{previewData.requestBody ? (
+													isValidJSON(previewData.requestBody) ? (
+														<SyntaxHighlighter
+															language="json"
+															style={atomDark}
+															wrapLongLines={true}
+															customStyle={{
+																margin: 0,
+																padding: "16px",
+																height: "100%",
+																fontSize: "12px",
+																backgroundColor: "#1E293B",
+																whiteSpace: "pre-wrap",
+																wordBreak: "break-all",
+															}}
+															codeTagProps={{
+																style: {
+																	fontFamily: '"JetBrains Mono", monospace',
+																},
+															}}
+														>
+															{previewData.requestBody}
+														</SyntaxHighlighter>
+													) : (
+														<div className="bg-[#1E293B] p-4">
+															<pre className="text-red-500 whitespace-pre-wrap">
+																Invalid or corrupted JSON response
+															</pre>
+														</div>
+													)
+												) : (
+													<div className="bg-[#1E293B] p-4">
+														<pre className="text-gray-400 whitespace-pre-wrap">
+															No response
+														</pre>
+													</div>
+												)}
 											</div>
-										)
-									) : (
-										<div className="bg-[#1E293B] p-4">
-											<pre className="text-gray-400 whitespace-pre-wrap">
-												No response
-											</pre>
-										</div>
-									)}
+										</ScrollArea>
+									</ScrollArea>
 								</div>
 
 								{/* Failure Reason (if failed) */}
