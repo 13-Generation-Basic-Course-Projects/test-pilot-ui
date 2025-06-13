@@ -146,6 +146,22 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 	return (
 		// ✨ 2. Wrap the component in a fieldset to disable all child elements during generation
 		<fieldset disabled={isGenerating} className="space-y-5 min-h-[480px]">
+			<div className="flex justify-end pt-4">
+				{/* ✨ 3. The button now shows a loading state */}
+				<Button
+					onClick={onTestCasesAdded}
+					disabled={!hasSelectedCases || isGenerating}
+				>
+					{isGenerating ? (
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Generating...
+						</>
+					) : (
+						"Generate Test Requests"
+					)}
+				</Button>
+			</div>
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
 				<Table className="w-full table-fixed">
 					<TableHeader>
@@ -293,22 +309,6 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 						))}
 					</TableBody>
 				</Table>
-			</div>
-			<div className="flex justify-end pt-4">
-				{/* ✨ 3. The button now shows a loading state */}
-				<Button
-					onClick={onTestCasesAdded}
-					disabled={!hasSelectedCases || isGenerating}
-				>
-					{isGenerating ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							Generating...
-						</>
-					) : (
-						"Generate Test Requests"
-					)}
-				</Button>
 			</div>
 			<AlertDialog
 				open={isConfirmDialogOpen}

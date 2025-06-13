@@ -24,6 +24,7 @@ interface BodyProps {
 	onParse: () => void;
 	onTestCasesAdded: () => void;
 	onInnerTabChange: (value: string) => void;
+	isParsing: boolean;
 }
 
 export const Body = ({
@@ -35,7 +36,9 @@ export const Body = ({
 	onParse,
 	onTestCasesAdded,
 	onInnerTabChange,
+	isParsing,
 }: BodyProps) => {
+	const isLoading = isGenerating || isParsing;
 	return (
 		<div className="w-full mx-auto mt-10 bg-white space-y-5">
 			<p className="text-xl">Body</p>
@@ -44,7 +47,7 @@ export const Body = ({
 				value={selectedTab}
 				onValueChange={onTabSelect}
 				className="flex gap-2"
-				disabled={isGenerating} // Disable radio buttons while generating
+				disabled={isLoading} // Disable radio buttons while generating
 			>
 				{/* ... RadioGroup items ... */}
 				<div className={`flex items-center space-x-2 px-3 py-2 cursor-pointer`}>
@@ -73,18 +76,18 @@ export const Body = ({
 					>
 						{/* ✨ 2. DISABLE TABS: The tabs are now disabled during generation. */}
 						<TabsList className="w-full">
-							<TabsTrigger value="raw-body" disabled={isGenerating}>
+							<TabsTrigger value="raw-body" disabled={isLoading}>
 								Raw Body
 							</TabsTrigger>
 							<TabsTrigger
 								value="test-case"
-								disabled={workflowState === "initial" || isGenerating}
+								disabled={workflowState === "initial" || isLoading}
 							>
 								Test Case
 							</TabsTrigger>
 							<TabsTrigger
 								value="test-request"
-								disabled={workflowState !== "test_cases_added" || isGenerating}
+								disabled={workflowState !== "test_cases_added" || isLoading}
 							>
 								Test Request
 							</TabsTrigger>

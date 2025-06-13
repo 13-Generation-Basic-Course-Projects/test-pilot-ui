@@ -30,6 +30,7 @@ export function RequestContentDetail({
 	const [innerBodyTab, setInnerBodyTab] = useState("raw-body");
 	const [workflowState, setWorkflowState] = useState<WorkflowState>("initial");
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isParsing, setIsParsing] = useState(false);
 
 	// ✨ 5. All handler functions are also defined here in the parent.
 	const handleParse = () => {
@@ -74,6 +75,7 @@ export function RequestContentDetail({
 					onParse={handleParse}
 					onTestCasesAdded={handleTestCasesAdded}
 					onInnerTabChange={setInnerBodyTab}
+					isParsing={isParsing}
 				/>
 			</TabsContent>
 			<TabsContent value="predefined-value">
