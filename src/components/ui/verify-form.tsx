@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Mail } from "lucide-react";
-import { verifyCollaboratorToken } from "@/service/project-collaborator-Service";
+import { verifyCollaboratorToken } from "@/service/project-collaborator-service";
+import {router} from "next/client";
 
 export default function VerifyForm() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const token = searchParams.get("token") || "";
-    console.log("token:", token);
+
 
     const [isVerifying, setIsVerifying] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
@@ -31,6 +33,9 @@ export default function VerifyForm() {
             setIsVerifying(false);
         }
     };
+    const handleContinue = () => {
+        router.push("/");
+    };
 
     if (isVerified) {
         return (
@@ -46,7 +51,7 @@ export default function VerifyForm() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Button className="w-full">Continue</Button>
+                        <Button className="w-full" onClick={handleContinue}>Continue</Button>
                     </CardContent>
                 </Card>
             </div>

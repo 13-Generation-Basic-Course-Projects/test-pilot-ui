@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import {useEffect, useState, useTransition} from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,7 +17,11 @@ import Image from "next/image";
 import type { StaticImageData } from "next/image";
 import Profile from "../../public/profile.png";
 import Collaborate from "../../public/collborate-img.png";
-import {inviteCollaboratorAction} from "@/actions/ inviteCollaboratorAction";
+import {deleteInviteProjectAction, inviteCollaboratorAction} from "@/actions/ inviteCollaboratorAction";
+import {getInviteCollaboratorService} from "@/service/project-collaborator-service";
+import {toast} from "sonner";
+
+
 
 
 interface Member {
@@ -29,13 +33,11 @@ interface Member {
 
 interface InviteToProjectProps {
   urlProject: string;
+
 }
 
 export function InviteToProject({ urlProject }: InviteToProjectProps) {
-  const [members, setMembers] = useState<Member[]>([
-    { id: 1, name: "tebyuma@gmail.com (You)", role: "Owner", image: Profile },
-    { id: 2, name: "sovanarithchun@gmail.com", role: "Collaborator", image: Collaborate },
-  ]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,10 +51,28 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     setError(null);
     startTransition(async () => {
       try {
+        const collaborators = await getInviteCollaboratorService(projectId);
+
+
+
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          setError("Invalid email format.");
+          return;
+        }
+
+
         await inviteCollaboratorAction(projectId, email);
+
         setMembers((prev) => [
           ...prev,
-          { id: Date.now(), name: email, role: "Collaborator", image: Collaborate },
+          {
+            id: Date.now(),
+            name: email,
+            role: "Collaborator",
+            image: Collaborate,
+          },
         ]);
         setEmail("");
       } catch (err) {
@@ -62,9 +82,61 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     });
   };
 
-  const handleDelete = (id: number) => {
-    setMembers((prev) => prev.filter((member) => member.id !== id));
+
+
+  const handleDelete = async (id: number) => {
+    try {
+
+      setMembers((prev) => prev.filter((member) => member.id !== id));
+
+
+      const message = await deleteInviteProjectAction(id.toString());
+
+      toast.success(message);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete collaborator.");
+
+
+    }
   };
+  useEffect(() => {
+    const fetchCollaborators = async () => {
+      try {
+        const data = await getInviteCollaboratorService(projectId);
+
+
+        if (!data || !Array.isArray(data)) {
+          console.warn("No valid collaborators found or invalid response.");
+          return;
+        }
+
+        const fetchedMembers: Member[] = data.map((collab, index) => ({
+          id: Date.now() + index,
+          name: collab.email ?? "Unknown",
+          role: collab.role || "Collaborator",
+          image: Collaborate,
+        }));
+
+        setMembers([
+          {
+            id: 1,
+            name: "tebyuma@gmail.com (You)",
+            role: "Owner",
+            image: Profile,
+          },
+          ...fetchedMembers,
+        ]);
+      } catch (err) {
+        console.error("Error fetching collaborators:", err);
+      }
+    };
+
+    fetchCollaborators();
+  }, [projectId]);
+
+
+
+
 
   return (
       <AlertDialog>

@@ -1,7 +1,7 @@
 "use server";
 
-import { projectCollaboratorService } from "@/service/project-collaborator-Service";
-import { verifyCollaboratorToken } from "@/service/project-collaborator-Service";
+import {deleteInviteProjectService, projectCollaboratorService} from "@/service/project-collaborator-service";
+
 
 export async function inviteCollaboratorAction(projectId: string, email: string) {
     if (!projectId || !email) {
@@ -14,5 +14,7 @@ export async function inviteCollaboratorAction(projectId: string, email: string)
 
 
 
-
-
+export async function deleteInviteProjectAction(id: string): Promise<string> {
+    const res = await deleteInviteProjectService(id);
+    return res;
+}
