@@ -42,7 +42,11 @@ import { Input } from "../ui/input";
 import { EndpointItem } from "@/types";
 import { toast } from "sonner";
 // ✨ 1. Import the server action for saving
-import { updateRequestPathVariablesAction } from "@/action/request-action";
+import {
+	createRequestTestCaseAction,
+	getRequestTestCaseAction,
+	updateRequestPathVariablesAction,
+} from "@/action/request-action";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -50,6 +54,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Badge } from "../ui/badge";
+import { Application_Context } from "@/types/request-type";
 
 export interface ParamRow {
 	key: string;
@@ -58,6 +63,7 @@ export interface ParamRow {
 }
 
 interface TestCase {
+	id: string;
 	type: string;
 	case: string;
 	value: any;
@@ -79,21 +85,30 @@ export default function PathVariable({
 
 	// ✨ 3. This effect synchronizes the UI state with the selected request from props
 	useEffect(() => {
-		const currentEndpoint = request.find((r) => r.id === requestId);
-		// Safely access pathVariables from the endpoint, defaulting to an empty object
-		const pathVariablesObject = currentEndpoint?.details?.pathVariables ?? {};
+		const fetchData = async () => {
+			const testcases = (await getRequestTestCaseAction({ requestId })).map(
+				(tc) => tc.testCase
+			);
+			console.log(testcases);
+			const currentEndpoint = request.find((r) => r.id === requestId);
+			// Safely access pathVariables from the endpoint, defaulting to an empty object
+			const pathVariablesObject = currentEndpoint?.details?.pathVariables ?? {};
 
-		// Transform the object { key: value } from the backend into the array format [{ key, value, cases }] the UI needs
-		const formattedPathVariables: ParamRow[] = Object.entries(
-			pathVariablesObject
-		).map(([key, value]) => ({
-			key,
-			value: String(value),
-			cases: [], // You can enhance this later to also load cases from your details object if they are saved
-		}));
+			// Transform the object { key: value } from the backend into the array format [{ key, value, cases }] the UI needs
+			const formattedPathVariables: ParamRow[] = Object.entries(
+				pathVariablesObject
+			).map(([key, value]) => ({
+				key,
+				value: String(
+					testcases.find((tc) => tc.value === value)?.value || value
+				),
+				cases: testcases.map((tc) => tc.name) || [],
+			}));
 
-		// Update the global store, which in turn updates this component's display
-		setPathVariables(formattedPathVariables);
+			// Update the global store, which in turn updates this component's display
+			setPathVariables(formattedPathVariables);
+		};
+		fetchData();
 	}, [requestId, request, setPathVariables]);
 
 	const handleRemoveCase = (index: number, caseToRemove: string) => {
@@ -118,6 +133,7 @@ export default function PathVariable({
 			const backendData = await getAllPredefinedAction();
 			if (backendData && Array.isArray(backendData)) {
 				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
@@ -177,8 +193,24 @@ export default function PathVariable({
 			: [...currentCases, selectedCase];
 
 		setPathVariables(updatedRows);
+
+		console.log(testCases);
 		// Saving on case toggle is optional, but can be added here if needed:
 		// handleSave(updatedRows);
+		startTransition(async () => {
+			try {
+				await createRequestTestCaseAction({
+					requestId,
+					testCaseId: testCases.find((t) => t.case === selectedCase)?.id || "",
+					applicationContext: Application_Context.PATH_VARIABLE,
+					targetFieldPath: updatedRows[index].key,
+					isExpectedSuccess: false,
+				});
+				// Optionally toast here
+			} catch (err) {
+				toast.error("Failed to save test case.");
+			}
+		});
 	};
 
 	const handleDeleteRow = () => {

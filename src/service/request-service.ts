@@ -1,6 +1,11 @@
 import { fetchAPI } from "@/lib/api";
-import { REQUEST_ENDPOINT } from "@/lib/static";
-import { RequestResponseTypes } from "@/types/request-type";
+import { REQUEST_ENDPOINT, REQUEST_TEST_CASE_ENDPOINT } from "@/lib/static";
+import { PayloadTestCaseType } from "@/types/request-test-case";
+import {
+	RequestResponseTypes,
+	TestCaseRequestResponseType,
+	TestCaseRequestType,
+} from "@/types/request-type";
 
 export const getRequestByCollectionId = async ({
 	collectionId,
@@ -173,7 +178,46 @@ export const updateRequestPathVariablesService = async (
 	}
 };
 
-export const createTestCaseService = async () => {};
+export const createRequestTestCaseService = async ({
+	requestId,
+	testCaseId,
+	applicationContext,
+	targetFieldPath,
+	isExpectedSuccess = false,
+}: TestCaseRequestType) => {
+	// https://testpilot.yamu.me/api/v1/request-test-cases
+	const testCaseData = {
+		requestId,
+		testCaseId,
+		applicationContext,
+		targetFieldPath,
+		isExpectedSuccess,
+	};
+
+	console.log("TEST CASE DATA", testCaseData);
+	const data = await fetchAPI<TestCaseRequestResponseType>(
+		`${REQUEST_TEST_CASE_ENDPOINT}`,
+		{
+			method: "POST",
+			body: JSON.stringify(testCaseData),
+		}
+	);
+
+	return data;
+};
+
+export const getRequestTestCaseService = async ({
+	requestId,
+}: {
+	requestId: string;
+}) => {
+	// https://testpilot.yamu.me/api/v1/request-test-cases/by-request/938345ed-b738-4751-8f13-db67b8849513
+	const data = await fetchAPI<PayloadTestCaseType>(
+		`${REQUEST_TEST_CASE_ENDPOINT}/by-request/${requestId}`
+	);
+
+	return data.payload;
+};
 
 //Duplicate request
 export const duplicateRequest = async ({

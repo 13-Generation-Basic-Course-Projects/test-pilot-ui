@@ -2,17 +2,18 @@
 
 import {
 	createRequestByCollectionId,
+	createRequestTestCaseService,
 	deleteRequestByIdService,
 	duplicateRequest,
 	getRequestByCollectionId,
+	getRequestTestCaseService,
 	updateRequestByIdService,
 	updateRequestPathVariablesService,
 	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
-import { VariableTestCase } from "@/types/request-type";
+import { TestCaseRequestType, VariableTestCase } from "@/types/request-type";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export const fetchRequestForCollection = async (
 	collectionId: string
@@ -225,3 +226,49 @@ export const duplicateRequestAction = async (
 		throw error;
 	}
 };
+
+export const getRequestTestCaseAction = async ({
+	requestId,
+}: {
+	requestId: string;
+}) => {
+	const data = await getRequestTestCaseService({ requestId });
+
+	return data;
+};
+
+// ✨ ACTION 1: To CREATE a new request test case
+export const createRequestTestCaseAction = async (
+	args: TestCaseRequestType
+) => {
+	try {
+		const result = await createRequestTestCaseService({
+			...args,
+		});
+
+		// revalidatePath("/your-page-path"); // Revalidate if needed
+		return { success: true, data: result.payload };
+	} catch (error) {
+		console.error("Failed to create request test case:", error);
+		return { success: false, error: "Failed to create test case." };
+	}
+};
+
+// ✨ ACTION 2: To DELETE a request test case
+// NOTE: You will need to create the corresponding `deleteRequestTestCaseService`
+// It will likely take the ID of the `RequestTestCase` record itself.
+// export const deleteRequestTestCaseAction = async (
+// 	requestTestCaseId: string
+// ) => {
+// 	try {
+// 		// You need to implement this service on your backend
+// 		// e.g., DELETE /api/v1/request-test-cases/{requestTestCaseId}
+// 		await deleteRequestTestCaseService(requestTestCaseId);
+
+// 		// revalidatePath("/your-page-path");
+// 		return { success: true };
+// 	} catch (error) {
+// 		console.error("Failed to delete request test case:", error);
+// 		return { success: false, error: "Failed to delete test case." };
+// 	}
+// };

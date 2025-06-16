@@ -27,3 +27,59 @@ export interface ParamRow {
 	value: string;
 	cases: VariableTestCase[]; // Now an array of objects, not strings
 }
+
+export enum Application_Context {
+	PATH_VARIABLE = "PATH_VARIABLE",
+	BODY_FIELD = "BODY_FIELD",
+	QUERY_PARAM = "QUERY_PARAM",
+}
+
+export type TestCaseRequestType = {
+	requestId: string;
+	testCaseId: string;
+	applicationContext: Application_Context;
+	targetFieldPath: string;
+	isExpectedSuccess: boolean;
+};
+
+export type TestCaseRequestResponseType = {
+	id: string;
+	requestId: string;
+	testCaseId: string;
+	applicationContext: Application_Context;
+	createdAt: string;
+	updatedAt: string;
+	request: {
+		id: string;
+		name: string;
+		collectionId: string;
+		method: string;
+		details: {
+			url: string;
+			body: any;
+			headers: any;
+			description: any;
+			queryParams: any;
+			pathVariables: any;
+		};
+		createdAt: string;
+		updatedAt: string;
+	};
+	testCase: {
+		id: string;
+		projectId: string;
+		dataTypeId: string;
+		name: string;
+		value: any;
+		createdAt: string;
+		updatedAt: string;
+		dataType: {
+			id: string;
+			name: string;
+			createdAt: string;
+			updatedAt: string;
+		};
+		predefined: boolean;
+	};
+	expectedSuccess: boolean;
+};
