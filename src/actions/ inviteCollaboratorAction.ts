@@ -16,5 +16,6 @@ export async function inviteCollaboratorAction(projectId: string, email: string)
 
 export async function deleteInviteProjectAction(id: string): Promise<string> {
     const res = await deleteInviteProjectService(id);
+    console.log("Deleting project:", res);
     return res;
 }

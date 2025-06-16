@@ -53,7 +53,6 @@ export async function getInviteCollaboratorService(projectId: string) {
             },
         }
     );
-    console.log("InviteProject:", res);
     return res.payload;
 }
 
