@@ -99,13 +99,13 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<Button className="cursor-pointer" onClick={handleAddClick}>
+			<Button className="cursor-pointer text-[16px]" onClick={handleAddClick}>
 				Add Custom
 			</Button>
-			<DialogContent className="p-8 px-12">
+			<DialogContent className="p-8 px-12 font-sans">
 				<DialogHeader>
 					<DialogTitle>
-						<p className="text-2xl text-center mb-4">
+						<p className="text-3xl not-even:text-center mb-4">
 							{editingIndex !== null
 								? "Edit Custom Value"
 								: "Create Custom Value"}
@@ -119,9 +119,13 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 								name="nameCase"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Name Case</FormLabel>
+										<FormLabel className="text-xl">Name Case</FormLabel>
 										<FormControl>
-											<Input placeholder="My Phone" {...field} />
+											<Input
+												placeholder="My Phone"
+												{...field}
+												className="text-xl"
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -132,7 +136,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 								name="description"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Description</FormLabel>
+										<FormLabel className="text-xl">Description</FormLabel>
 										<FormControl>
 											<Textarea placeholder="description..." {...field} />
 										</FormControl>
@@ -145,7 +149,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 								name="typeCase"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Type Case</FormLabel>
+										<FormLabel className="text-xl">Type Case</FormLabel>
 										<Select
 											onValueChange={field.onChange}
 											defaultValue={field.value}
@@ -172,7 +176,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 								name="value"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Value</FormLabel>
+										<FormLabel className="text-xl">Value</FormLabel>
 										<FormControl>
 											<Input placeholder="Value or Regex" {...field} />
 										</FormControl>
@@ -182,7 +186,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 							/>
 							<div className="w-full flex items-center justify-end">
 								<Button type="submit" className="cursor-pointer">
-									Submit
+									Create
 								</Button>
 							</div>
 						</form>

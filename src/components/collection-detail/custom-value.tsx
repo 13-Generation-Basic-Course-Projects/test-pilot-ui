@@ -90,7 +90,11 @@ export const CustomValue = (): React.JSX.Element => {
 						<SelectItem value="all">All</SelectItem>
 						<Separator />
 						{DATA_TYPES.map((type) => (
-							<SelectItem key={type} value={type.toLowerCase()}>
+							<SelectItem
+								key={type}
+								value={type.toLowerCase()}
+								className="text-[16px]"
+							>
 								{type}
 							</SelectItem>
 						))}
@@ -109,27 +113,37 @@ export const CustomValue = (): React.JSX.Element => {
 				<CardContent className="p-0">
 					<Table>
 						<TableHeader className="text-center">
-							<TableRowV2 className="border-b border-slate-200 h-12">
-								<TableHead className="pl-6">Name</TableHead>
-								<TableHead className="pl-6">Value</TableHead>
-								<TableHead className="pl-6">Type</TableHead>
-								<TableHead className="pl-6">Action</TableHead>
+							<TableRowV2 className="border-b border-slate-200 h-12 text-[17px] ">
+								<TableHead className="pl-6 text-slate-500  border-r border-slate-200">
+									Name
+								</TableHead>
+								<TableHead className="pl-6 text-slate-500 border-r border-slate-200 ">
+									Value
+								</TableHead>
+								<TableHead className="pl-6 text-slate-500 border-r border-slate-200 ">
+									Type
+								</TableHead>
+								<TableHead className="pl-6 text-slate-500 border-r border-slate-200 ">
+									Action
+								</TableHead>
 							</TableRowV2>
 						</TableHeader>
 						<TableBody>
 							{customTestCases.map((param, index) => (
 								<TableRow
 									key={index}
-									className="border-b border-slate-200 h-12"
+									className="border-b border-slate-200 h-12 text-slate-500"
 								>
-									<TableCell className="pl-6">{param.name}</TableCell>
-									<TableCell className="pl-6 text-slate-500">
+									<TableCell className="pl-6 text-[16px] border-r border-slate-200 ">
+										{param.name}
+									</TableCell>
+									<TableCell className="pl-6 text-slate-500 text-[16px] border-r border-slate-200 ">
 										{param.value}
 									</TableCell>
-									<TableCell className="pl-6">
+									<TableCell className="pl-6 border-r border-slate-200 ">
 										<Badge
 											variant="outline"
-											className="bg-white text-[#006fee] font-medium text-xs"
+											className="bg-white text-[#006fee] font-medium text-[16px]"
 										>
 											{param.type}
 										</Badge>

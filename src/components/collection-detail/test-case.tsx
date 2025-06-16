@@ -146,11 +146,12 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 	return (
 		// ✨ 2. Wrap the component in a fieldset to disable all child elements during generation
 		<fieldset disabled={isGenerating} className="space-y-5 min-h-[480px]">
-			<div className="flex justify-end pt-4">
+			<div className="flex justify-end pt-4 cursor-pointer">
 				{/* ✨ 3. The button now shows a loading state */}
 				<Button
 					onClick={onTestCasesAdded}
 					disabled={!hasSelectedCases || isGenerating}
+					className="text-[15px] cursor-pointer"
 				>
 					{isGenerating ? (
 						<>
@@ -166,16 +167,16 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[17px] text-gray-700 border-r w-[20%]">
 								Field
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[17px] text-gray-700 border-r w-[20%]">
 								Value
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r w-[20%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[17px] text-gray-700 border-r w-[20%]">
 								Data Type
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 w-[40%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[17px] text-gray-700 w-[40%]">
 								Test Case
 							</TableHead>
 						</TableRow>
@@ -184,12 +185,12 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 						{apiBodyRows.map((row) => (
 							<TableRow key={row.id} className="hover:bg-gray-50 border-b">
 								<TableCell className="py-2 border-r align-top">
-									<span className="block px-2 py-2 text-sm font-medium">
+									<span className="block px-2 py-2 text-[16px] font-medium">
 										{row.id}
 									</span>
 								</TableCell>
 								<TableCell className="px-4 py-2 border-r align-top">
-									<span className="block px-2 py-2 text-sm break-all">
+									<span className="block px-2 py-2 text-[16px] break-all">
 										{String(row.value)}
 									</span>
 								</TableCell>
@@ -203,9 +204,13 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 										<SelectTrigger className="w-full cursor-pointer">
 											<SelectValue />
 										</SelectTrigger>
-										<SelectContent>
+										<SelectContent className="text-[16px]">
 											{dataTypeOptions.map((type) => (
-												<SelectItem key={type} value={type}>
+												<SelectItem
+													key={type}
+													value={type}
+													className="text-[16px]"
+												>
 													{type.charAt(0).toUpperCase() + type.slice(1)}
 												</SelectItem>
 											))}
@@ -227,7 +232,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 											<PopoverContent className="p-0 w-[250px]" align="start">
 												<Command>
 													<CommandInput placeholder="Search cases..." />
-													<CommandList>
+													<CommandList className="overflow-y-auto no-scrollbar">
 														<CommandEmpty>No cases found.</CommandEmpty>
 														<CommandGroup>
 															{allTestCases
@@ -264,7 +269,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 										{row.testCases.slice(0, 2).map((caseName) => (
 											<span
 												key={caseName}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+												className="bg-black text-white text-[14px] px-2 py-1 rounded-full flex items-center gap-1"
 											>
 												{caseName}
 												<X
@@ -279,7 +284,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 													<Button
 														size="sm"
 														variant="ghost"
-														className="h-auto p-1 text-xs rounded-full"
+														className="h-auto p-1 text-[14px] rounded-full cursor-pointer"
 													>
 														+ {row.testCases.length - 2}
 													</Button>
@@ -288,12 +293,12 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 													{row.testCases.slice(2).map((caseName) => (
 														<DropdownMenuItem
 															key={caseName}
-															className="flex justify-between items-center"
+															className="flex justify-between items-center cursor-pointer"
 															onSelect={(e) => e.preventDefault()}
 														>
 															{caseName}
 															<button
-																className="ml-2 p-0.5 rounded-full hover:bg-gray-200"
+																className="ml-2 p-0.5 rounded-full hover:bg-gray-200 cursor-pointer"
 																onClick={() => handleRemoveCase(row, caseName)}
 															>
 																<X className="w-3 h-3" />

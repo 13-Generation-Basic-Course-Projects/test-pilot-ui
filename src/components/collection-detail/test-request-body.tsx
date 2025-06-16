@@ -104,7 +104,7 @@ export const TestRequestBody = () => {
 						isRunAllLoading ||
 						Object.values(individualRunLoading).some((loading) => loading)
 					}
-					className="cursor-pointer"
+					className="cursor-pointer text-[15px]"
 				>
 					{isRunAllLoading ? (
 						<>
@@ -119,20 +119,20 @@ export const TestRequestBody = () => {
 					)}
 				</Button>
 			</div>
-			<div className="flex flex-col items-center gap-6">
+			<div className="flex flex-col items-center gap-6 text-[20px]">
 				{testCasePayloads.map((testCaseItem) => (
 					<Card key={testCaseItem.key} className="break-all w-full shadow-sm">
-						<CardHeader className="flex flex-row justify-between items-start pb-4">
-							<div className="space-y-3 w-full">
+						<CardHeader className="flex flex-row justify-between items-start">
+							<div className="space-y-4 w-full">
 								<CardTitle className="text-md font-medium">
 									Field :{" "}
-									<Badge variant="secondary" className="text-sm">
+									<Badge variant="secondary" className="text-lg">
 										{testCaseItem.field}
 									</Badge>
 								</CardTitle>
 								<CardTitle className="text-md font-medium">
 									Scenario :{" "}
-									<Badge variant="default" className="text-sm">
+									<Badge variant="default" className="text-lg">
 										{testCaseItem.testCase}
 									</Badge>
 								</CardTitle>
@@ -145,7 +145,7 @@ export const TestRequestBody = () => {
 								disabled={
 									isRunAllLoading || individualRunLoading[testCaseItem.key]
 								}
-								className="cursor-pointer ml-4 flex-shrink-0"
+								className="cursor-pointer ml-4 flex-shrink-0 text-[15px]"
 							>
 								{individualRunLoading[testCaseItem.key] ? (
 									<>
@@ -160,7 +160,7 @@ export const TestRequestBody = () => {
 							</Button>
 						</CardHeader>
 						<CardContent>
-							<pre className="bg-slate-100 p-3 rounded-md text-sm overflow-auto whitespace-pre-wrap break-words">
+							<pre className="bg-slate-100 p-3 rounded-md text-lg overflow-auto whitespace-pre-wrap break-words">
 								<code>
 									{jsonStringifyWithTruncation(testCaseItem.payload, 2, 250)}
 								</code>

@@ -330,14 +330,18 @@ export const CollectionSidebar = () => {
 
 	return (
 		<>
-			<div className="w-80 border-r bg-background duration-300 flex flex-col h-full">
+			<div className="w-80 border-r bg-background duration-300 flex flex-col h-full text-xl">
 				<div className="flex items-center justify-between p-4 border-b">
 					<CollectionForm onCollectionCreate={handleCreateCollection} />
 					<div className="flex items-center gap-1">
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon" className="h-8 w-8">
-									<FolderDownIcon className="w-4 h-4" />
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 cursor-pointer"
+								>
+									<FolderDownIcon className="w-6 h-6" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent>
@@ -366,7 +370,7 @@ export const CollectionSidebar = () => {
 					</div>
 				</div>
 
-				<div className="flex-1 custom-scrollbar overflow-y-auto">
+				<div className="flex-1 custom-scrollbar overflow-y-auto text-xl">
 					{(project.collections || []).map((collection) => (
 						<div key={collection.id}>
 							<div
@@ -380,9 +384,9 @@ export const CollectionSidebar = () => {
 							>
 								<div className="flex items-center gap-3">
 									{openCollections[collection.id] ? (
-										<FolderOpenIcon className="w-4 h-4 text-muted-foreground" />
+										<FolderOpenIcon className="w-5 h-5 text-muted-foreground" />
 									) : (
-										<Folder className="w-4 h-4 text-muted-foreground" />
+										<Folder className="w-5 h-5 text-muted-foreground" />
 									)}
 									{renamingCollectionId === collection.id ? (
 										<Input
@@ -410,14 +414,14 @@ export const CollectionSidebar = () => {
 							</div>
 
 							{openCollections[collection.id] && (
-								<div className="pb-2">
+								<div className="pb-2 text-lg">
 									{(collection.endpoints || []).map((endpoint) => {
 										const endpointPath = `/project/${project.id}/collection/${collection.id}/request/${endpoint.id}`;
 										const isActive = currentRequestId === endpoint.id;
 										return (
 											<div
 												key={endpoint.id}
-												className={`group mx-4 mb-1 rounded-md ${
+												className={`group mx-4 mb-1 rounded-md text-xl ${
 													isActive ? "bg-muted" : "hover:bg-muted/50"
 												}`}
 											>
@@ -428,7 +432,7 @@ export const CollectionSidebar = () => {
 													<div className="flex items-center gap-2 flex-grow min-w-0">
 														<Badge
 															variant="outline"
-															className="h-5 px-2 text-xs font-medium shrink-0"
+															className="px-2 text-lg font-medium shrink-0"
 														>
 															<span className={getMethodColor(endpoint.method)}>
 																{endpoint.method}
@@ -456,7 +460,7 @@ export const CollectionSidebar = () => {
 																className="h-6"
 															/>
 														) : (
-															<span className="text-sm text-muted-foreground truncate">
+															<span className="text-lg text-muted-foreground truncate">
 																{endpoint.name || endpoint.path}
 															</span>
 														)}

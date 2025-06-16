@@ -552,10 +552,10 @@ export default function Monitoring() {
 														<div
 															className={`border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 ${
 																selectedTest.httpStatus === 400
-																	? "text-[#17C964]"
+																	? "text-[#EF4444]"
 																	: selectedTest.httpStatus === 200
-																	? "text-[#F59E0B]"
-																	: "text-[#EF4444]"
+																	? "text-[#17C964]"
+																	: "text-[#17C964]"
 															}`}
 														>
 															{selectedTest.httpStatus}{" "}
@@ -566,7 +566,7 @@ export default function Monitoring() {
 														<p className="font-medium text-sm shrink-0">
 															Method:
 														</p>
-														<div className="border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 text-[#10B981]">
+														<div className="border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 text-[#F59E0B]">
 															{selectedTest.method}
 														</div>
 													</div>

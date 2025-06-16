@@ -11,10 +11,10 @@ export const Params = () => {
 			<Separator />
 			<Tabs defaultValue="path-variable" className="w-full">
 				<TabsListV2 className="my-2">
-					<TabsTriggerV2 value="path-variable" className="text-[15px]">
+					<TabsTriggerV2 value="path-variable" className="text-[17px]">
 						Path Variable
 					</TabsTriggerV2>
-					<TabsTriggerV2 value="query-params" className="text-[15px]">
+					<TabsTriggerV2 value="query-params" className="text-[17px]">
 						Query Params
 					</TabsTriggerV2>
 				</TabsListV2>

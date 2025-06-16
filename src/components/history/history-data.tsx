@@ -75,7 +75,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
@@ -89,7 +89,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
@@ -103,7 +103,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
@@ -117,7 +117,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
@@ -131,7 +131,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
@@ -145,7 +145,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#EF4444]">Failed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						200
 					</div>
 				</div>
@@ -159,7 +159,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#EF4444]">Failed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						200
 					</div>
 				</div>
@@ -173,7 +173,7 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
 						400
 					</div>
 				</div>

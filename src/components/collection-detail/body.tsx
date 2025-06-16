@@ -52,17 +52,23 @@ export const Body = ({
 				{/* ... RadioGroup items ... */}
 				<div className={`flex items-center space-x-2 px-3 py-2 cursor-pointer`}>
 					<RadioGroupItem value="none" id="r1" />
-					<Label htmlFor="r1">None</Label>
+					<Label htmlFor="r1" className="text-[15px]">
+						<span className="text-[15px]">None</span>
+					</Label>
 				</div>
-				<div className={`flex items-center space-x-2 px-3 py-2 cursor-pointer`}>
+				<div
+					className={`flex items-center space-x-2 px-3 py-2 cursor-pointer text-[15px]`}
+				>
 					<RadioGroupItem value="raw-body" id="r2" />
-					<Label htmlFor="r2">Raw Body</Label>
+					<Label htmlFor="r2" className="text-[15px]">
+						Raw Body
+					</Label>
 				</div>
 			</RadioGroup>
 
 			<div className="mt-4">
 				{selectedTab === "none" && (
-					<div className="p-4 border border-gray-200 rounded-md">
+					<div className="p-4 border border-gray-200 rounded-md text-[20px]">
 						<p>This request does not have a body.</p>
 					</div>
 				)}
@@ -76,18 +82,24 @@ export const Body = ({
 					>
 						{/* ✨ 2. DISABLE TABS: The tabs are now disabled during generation. */}
 						<TabsList className="w-full">
-							<TabsTrigger value="raw-body" disabled={isLoading}>
+							<TabsTrigger
+								value="raw-body"
+								disabled={isLoading}
+								className="text-[17px]"
+							>
 								Raw Body
 							</TabsTrigger>
 							<TabsTrigger
 								value="test-case"
 								disabled={workflowState === "initial" || isLoading}
+								className="text-[17px]"
 							>
 								Test Case
 							</TabsTrigger>
 							<TabsTrigger
 								value="test-request"
 								disabled={workflowState !== "test_cases_added" || isLoading}
+								className="text-[17px]"
 							>
 								Test Request
 							</TabsTrigger>

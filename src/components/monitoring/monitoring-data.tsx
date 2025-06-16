@@ -93,7 +93,7 @@ export function MonitoringData({
 					<div className="flex items-center gap-1 min-w-0">
 						<Badge
 							variant="outline"
-							className="text-[#F31260] text-sm font-medium shrink-0"
+							className="text-[#EF4444] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -127,19 +127,19 @@ export function MonitoringData({
 						<Table>
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
-									<TableHead className="truncate text-sm w-[20%]">
+									<TableHead className="truncate text-[16px] w-[20%]">
 										Date
 									</TableHead>
-									<TableHead className="min-w-[60px] truncate text-sm w-[10%]">
+									<TableHead className="min-w-[60px] truncate text-[16px] w-[10%]">
 										Method
 									</TableHead>
-									<TableHead className="min-w-[120px] truncate text-sm w-[60%]">
+									<TableHead className="min-w-[120px] truncate text-[16px] w-[60%]">
 										Endpoint
 									</TableHead>
-									<TableHead className="truncate text-sm w-[10%]">
+									<TableHead className="truncate text-[16px] w-[10%]">
 										Status
 									</TableHead>
-									<TableHead className="min-w-[100px] truncate text-sm w-[20%]">
+									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
 										Code
 									</TableHead>
 								</TableRow>
@@ -172,9 +172,9 @@ export function MonitoringData({
 											<div
 												className={`inline-block border border-[#E2E8F0] rounded-md px-2 py-1 text-sm truncate max-w-full ${
 													test.method === "GET"
-														? "text-[#3B82F6]"
+														? "text-[#17c964]"
 														: test.method === "POST"
-														? "text-[#10B981]"
+														? "text-[#f5a524]"
 														: test.method === "PUT"
 														? "text-[#006FEE]"
 														: test.method === "DELETE"

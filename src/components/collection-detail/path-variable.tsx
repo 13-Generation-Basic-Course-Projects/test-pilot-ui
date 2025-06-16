@@ -105,16 +105,16 @@ export default function PathVariable() {
 				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[27%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[16px] text-gray-700 border-r border-gray-300 w-[27%]">
 								Key
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[27%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[16px] text-gray-700 border-r border-gray-300 w-[27%]">
 								Value
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300 w-[36%]">
+							<TableHead className="px-4 py-3 font-semibold text-left text-[16px] text-gray-700 border-r border-gray-300 w-[36%]">
 								Case
 							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-center text-sm text-gray-700 w-[10%]">
+							<TableHead className="px-4 py-3 font-semibold text-center text-[16px] text-gray-700 w-[10%]">
 								Action
 							</TableHead>
 						</TableRow>
@@ -130,7 +130,7 @@ export default function PathVariable() {
 										type="text"
 										value={row.key}
 										onChange={(e) => handleChange(index, "key", e.target.value)}
-										className="w-full px-2 py-1 text-sm bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
+										className="w-full px-2 py-1 text-[15px] bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
 										placeholder="Enter key"
 									/>
 								</TableCell>
@@ -141,7 +141,7 @@ export default function PathVariable() {
 										onChange={(e) =>
 											handleChange(index, "value", e.target.value)
 										}
-										className="w-full px-2 py-1 text-sm bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
+										className="w-full px-2 py-1 text-[15px] bg-transparent border border-transparent focus:outline-none focus:border-gray-300"
 										placeholder="Enter value"
 									/>
 								</TableCell>
@@ -154,7 +154,7 @@ export default function PathVariable() {
 													<Button
 														size="sm"
 														variant="ghost"
-														className="h-auto p-1 text-xs cursor-pointer whitespace-nowrap"
+														className="h-auto p-1 text-[15px] cursor-pointer whitespace-nowrap"
 													>
 														+{row.cases.length - 2}
 													</Button>
@@ -166,7 +166,7 @@ export default function PathVariable() {
 															className="flex justify-between"
 															onSelect={(e) => e.preventDefault()}
 														>
-															{caseName}
+															<span className="text-lg">{caseName}</span>
 															<Button
 																onClick={() =>
 																	handleRemoveCase(index, caseName)

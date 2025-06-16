@@ -91,11 +91,11 @@ export function ApiRequestContentHeader() {
 				<TabsListV2 className="grid w-[400px] grid-cols-2">
 					<TabsTriggerV2
 						value="authorization-type"
-						className="text-[15px] w-fit"
+						className="text-[17px] w-fit"
 					>
 						Authorization Type
 					</TabsTriggerV2>
-					<TabsTriggerV2 value="manual" className="text-[15px] w-fit">
+					<TabsTriggerV2 value="manual" className="text-[17px] w-fit">
 						Manual
 					</TabsTriggerV2>
 				</TabsListV2>
@@ -107,7 +107,7 @@ export function ApiRequestContentHeader() {
 								variant="outline"
 								role="combobox"
 								aria-expanded={isOpen}
-								className="w-1/7 justify-between text-[#006FEE]"
+								className="w-1/7 justify-between text-[#006FEE] text-[16px]"
 							>
 								{value
 									? frameworks.find((f) => f.value === value)?.label

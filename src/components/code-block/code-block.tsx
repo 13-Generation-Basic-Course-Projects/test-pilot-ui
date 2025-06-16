@@ -85,23 +85,25 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 						<SelectValue placeholder="Select format" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="json">JSON</SelectItem>
+						<SelectItem value="json" className="text-[15px]">
+							JSON
+						</SelectItem>
 					</SelectContent>
 				</Select>
 
 				<Button
 					onClick={handleSubmit}
 					disabled={isParsing} // Disable button while parsing
-					className="cursor-pointer"
+					className="cursor-pointer text-[15px]"
 				>
 					{isParsing ? (
 						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							<Loader2 className="mr-2 h-4 w-4 animate-spin text-[15px]" />
 							Parsing...
 						</>
 					) : (
 						<>
-							<FileJson className="mr-2 h-4 w-4" />{" "}
+							<FileJson className="mr-2 h-4 w-4 text-[15px]" />{" "}
 							{/* Added margin for consistency */}
 							Parse Body
 						</>
@@ -120,7 +122,7 @@ export const CodeBlock = ({ onParse }: CodeBlockProps) => {
 							theme="vs-light"
 							options={{
 								minimap: { enabled: false },
-								fontSize: 14,
+								fontSize: 20,
 								lineNumbers: "on",
 								renderLineHighlight: "none",
 								scrollBeyondLastLine: false,

@@ -49,8 +49,8 @@ export const CollectionForm = ({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button className="bg-[#34302b] hover:bg-[#34302b]/90 cursor-pointer">
-					<PlusSquareIcon className="w-6 h-6 mr-2" />
+				<Button className="bg-[#34302b] hover:bg-[#34302b]/90 cursor-pointer text-[16px]">
+					<PlusSquareIcon className="w-10 h-10 mr-2" />
 					Add Collection
 				</Button>
 			</DialogTrigger>

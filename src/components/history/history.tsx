@@ -51,16 +51,13 @@ export default function History() {
 				</Button>
 			</div>
 
-			{/* --- (CHANGE 3) --- */}
-			{/* The ResizablePanelGroup will now grow to fill the remaining vertical space.
-                'min-h-0' is crucial to prevent it from overflowing its flex container. */}
 			<ResizablePanelGroup
 				direction="horizontal"
 				className="rounded-lg border flex-grow min-h-0"
 			>
 				<ResizablePanel defaultSize={65} minSize={30}>
 					{/* The h-full and overflow-y-auto on this inner div are now effective */}
-					<div className="p-6 h-full overflow-y-auto">
+					<div className="p-6 h-full overflow-y-auto no-scrollbar">
 						<HistoryData setActiveRequestIndex={handleRowClick} />
 					</div>
 				</ResizablePanel>
@@ -74,8 +71,6 @@ export default function History() {
 							<PreviewSkeleton />
 						) : previewData && previewData.shouldShowPreview ? (
 							<>
-								{/* ... all your preview content remains the same ... */}
-								{/* Status Badge */}
 								<div className="flex items-center gap-3">
 									<div
 										className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -96,11 +91,11 @@ export default function History() {
 										<div
 											className={`border border-[#E2E8F0] rounded-md px-4 py-1 text-sm ${
 												previewData.status.includes("400")
-													? "text-[#17C964]"
+													? "text-[#EF4444]"
 													: previewData.status.includes("201") ||
 													  previewData.status.includes("200")
-													? "text-[#006FEE]"
-													: "text-[#EF4444]"
+													? "text-[#17C964]"
+													: "text-[#17C964]"
 											}`}
 										>
 											{previewData.status}
@@ -108,7 +103,7 @@ export default function History() {
 									</div>
 									<div className="flex space-x-2 items-center">
 										<p className="w-20 shrink-0">Method:</p>
-										<div className="border border-[#E2E8F0] rounded-md px-4 py-1 text-sm text-[#006FEE]">
+										<div className="border border-[#E2E8F0] rounded-md px-4 py-1 text-sm text-[#f5a524]">
 											{previewData.method}
 										</div>
 									</div>

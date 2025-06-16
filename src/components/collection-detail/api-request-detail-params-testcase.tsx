@@ -8,8 +8,15 @@ export function ApiRequestDetailParam() {
 	return (
 		<Tabs defaultValue="params" className="w-full">
 			<TabsList>
-				<TabsTrigger value="params">Params</TabsTrigger>
-				<TabsTrigger value="test-request">Test Request</TabsTrigger>
+				<TabsTrigger value="params" className="text-[17px] cursor-pointer">
+					Params
+				</TabsTrigger>
+				<TabsTrigger
+					value="test-request"
+					className="text-[17px] cursor-pointer"
+				>
+					Test Request
+				</TabsTrigger>
 			</TabsList>
 			<TabsContent value="params">
 				<Params />

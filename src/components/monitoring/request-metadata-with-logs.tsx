@@ -49,9 +49,12 @@ export function RequestMetadataWithLogs({
 					{/* FIX #1: Added a fixed height class `h-[400px]` here.
                       You can change this value to whatever height you need.
                     */}
-					<ScrollArea className="w-full h-[300px] rounded-xl">
+					<ScrollArea className="w-full h-[300px] rounded-xl overflow-y-auto no-scrollbar">
 						{/* We pass the ref to the special Viewport component for auto-scrolling */}
-						<ScrollArea ref={scrollViewportRef} className="w-full h-full">
+						<ScrollArea
+							ref={scrollViewportRef}
+							className="w-full h-full overflow-y-auto no-scrollbar"
+						>
 							{selectedTest.metadata ? (
 								// FIX #2: Removed redundant nested divs for simplicity
 								<SyntaxHighlighter

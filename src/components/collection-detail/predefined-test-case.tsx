@@ -178,13 +178,13 @@ export default function PredefinedTestCase() {
 					<Table>
 						<TableHeader>
 							<TableRowV2 className="border-b border-slate-200">
-								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm border-r border-slate-200 truncate">
+								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-[17px] border-r border-slate-200 truncate">
 									Name
 								</TableHead>
-								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm border-r border-slate-200 truncate">
+								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-[17px] border-r border-slate-200 truncate">
 									Value
 								</TableHead>
-								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-sm truncate">
+								<TableHead className="h-12 text-left pl-6 font-medium text-slate-500 text-[17px] truncate">
 									Type
 								</TableHead>
 							</TableRowV2>
@@ -195,16 +195,16 @@ export default function PredefinedTestCase() {
 									key={`${item.name}-${item.type}`}
 									className="truncate"
 								>
-									<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200 truncate">
+									<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200 truncate text-[16px]">
 										{item.name}
 									</TableCell>
-									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200 truncate">
+									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200 truncate text-[16px]">
 										{item.value}
 									</TableCell>
 									<TableCell className="h-12 pl-6 truncate">
 										<Badge
 											variant="outline"
-											className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
+											className="bg-[#ffffff] text-[#006fee] font-medium text-[16px]"
 										>
 											{item.type}
 										</Badge>

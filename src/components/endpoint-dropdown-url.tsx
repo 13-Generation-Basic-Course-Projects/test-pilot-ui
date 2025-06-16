@@ -77,7 +77,9 @@ export function EndpointDropdownUrl({
 							aria-expanded={open}
 							className="w-[150px] h-[40px] justify-between rounded-r-none"
 						>
-							<span className={`${getMethodColor(method)}`}>{method}</span>
+							<span className={`${getMethodColor(method)} text-[16px]`}>
+								{method}
+							</span>
 							{open ? (
 								<ChevronUp className="opacity-50" />
 							) : (
@@ -99,7 +101,9 @@ export function EndpointDropdownUrl({
 												updateEndpoint(requestId, item.value);
 											}}
 										>
-											<span className={getMethodColor(item.label)}>
+											<span
+												className={`${getMethodColor(item.label)} text-[16px]`}
+											>
 												{item.label}
 											</span>
 											<Check
@@ -116,7 +120,7 @@ export function EndpointDropdownUrl({
 					</PopoverContent>
 				</Popover>
 				<Input
-					className="h-[40px] rounded-l-none md:text-sm"
+					className="h-[40px] rounded-l-none md:text-[16px]"
 					placeholder="Enter request URL"
 					value={url}
 					onChange={(e) => setUrl(e.target.value)}
