@@ -18,6 +18,7 @@ import { ProgressMonitoring } from "./progress";
 import { LiveLogConsole } from "./live-log-console";
 import { RequestMetadataWithLogs } from "./request-metadata-with-logs";
 import { MonitoringData } from "./monitoring-data";
+import { formattedDateNow } from "@/lib/utils";
 
 interface TestProgress {
 	completed: number;
@@ -54,7 +55,7 @@ interface TestResult {
 export default function Monitoring() {
 	const [testProgress, setTestProgress] = useState({
 		completed: 0,
-		total: 8,
+		total: 5,
 		currentTest: 0,
 	});
 
@@ -64,107 +65,6 @@ export default function Monitoring() {
 	const [testResults, setTestResults] = useState<TestResult[]>([
 		{
 			id: 1,
-			testName: "Email - Invalid Format",
-			status: "pending",
-			date: "2025-06-13",
-			method: "POST",
-			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 400,
-			statusText: "Bad Request",
-			metadata: {
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "invalid-email", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-001" },
-					body: { error: "Invalid email format" },
-				},
-			},
-			logs: [
-				{ level: "INFO", message: "Test Passed: API correctly returned 400." },
-			],
-		},
-		{
-			id: 2,
-			testName: "Email - SQL Injection",
-			status: "pending",
-			date: "2025-06-13",
-			method: "POST",
-			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 400,
-			statusText: "Bad Request",
-			metadata: {
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "' OR 1=1;--", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-002" },
-					body: { error: "Malicious input detected" },
-				},
-			},
-			logs: [
-				{
-					level: "INFO",
-					message: "Test Passed: API correctly blocked the request.",
-				},
-			],
-		},
-		{
-			id: 3,
-			testName: "Password - Weak Password",
-			status: "pending",
-			date: "2025-06-13",
-			method: "POST",
-			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 400,
-			statusText: "Bad Request",
-			metadata: {
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "test@example.com", password: "password" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-003" },
-					body: { error: "Password does not meet complexity requirements" },
-				},
-			},
-			logs: [
-				{
-					level: "INFO",
-					message: "Test Passed: API correctly enforced password policy.",
-				},
-			],
-		},
-		{
-			id: 4,
-			testName: "Password - Empty",
-			status: "pending",
-			date: "2025-06-13",
-			method: "POST",
-			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 400,
-			statusText: "Bad Request",
-			metadata: {
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "test@example.com", password: "" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-004" },
-					body: { error: "Password cannot be empty" },
-				},
-			},
-			logs: [
-				{
-					level: "INFO",
-					message: "Test Passed: API correctly validated for empty password.",
-				},
-			],
-		},
-		{
-			id: 5,
 			testName: "Username - Too Long",
 			status: "pending",
 			date: "2025-06-13",
@@ -178,7 +78,7 @@ export default function Monitoring() {
 					body: { username: "a".repeat(100) },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-005" },
+					headers: { "X-Request-ID": "req-001" },
 					body: { error: "Username exceeds maximum length" },
 				},
 			},
@@ -189,43 +89,14 @@ export default function Monitoring() {
 				},
 			],
 		},
-		// --- THIS IS NOW A FAILED TEST ---
 		{
-			id: 6,
-			testName: "Username - Only Space",
-			status: "pending",
-			date: "2025-06-13",
-			method: "POST",
-			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 200,
-			statusText: "OK",
-			metadata: {
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { username: "   ", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-006", "Set-Cookie": "..." },
-					body: { message: "User registered successfully!" },
-				},
-			},
-			logs: [
-				{
-					level: "ERROR",
-					message:
-						"Test Failed: API incorrectly allowed a username with only spaces.",
-				},
-			],
-		},
-		// --- THIS IS NOW A FAILED TEST ---
-		{
-			id: 7,
+			id: 2,
 			testName: "Age - Negative Value",
 			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
 			endpoint: "https://api.kshrd.app/api/v1/auth/register",
-			httpStatus: 200,
+			httpStatus: 200, // Incorrect, test failed due to this
 			statusText: "OK",
 			metadata: {
 				request: {
@@ -233,7 +104,7 @@ export default function Monitoring() {
 					body: { username: "testuser", age: -10 },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-007", "Set-Cookie": "..." },
+					headers: { "X-Request-ID": "req-002", "Set-Cookie": "..." },
 					body: { message: "User registered successfully!" },
 				},
 			},
@@ -245,10 +116,9 @@ export default function Monitoring() {
 				},
 			],
 		},
-		// Age Test 2 (Passed)
 		{
-			id: 8,
-			testName: "Age - Type Mismatch (String)",
+			id: 3,
+			testName: "Email - Invalid Format",
 			status: "pending",
 			date: "2025-06-13",
 			method: "POST",
@@ -258,21 +128,71 @@ export default function Monitoring() {
 			metadata: {
 				request: {
 					headers: { "Content-Type": "application/json" },
-					body: { username: "testuser", age: "twenty" },
+					body: { email: "invalid-email", password: "ValidPassword123" },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-008" },
-					body: { error: "Age must be a number" },
+					headers: { "X-Request-ID": "req-003" },
+					body: { error: "Invalid email format" },
+				},
+			},
+			logs: [
+				{ level: "INFO", message: "Test Passed: API correctly returned 400." },
+			],
+		},
+		{
+			id: 4,
+			testName: "Password - Weak Password",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "password" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-004" },
+					body: { error: "Password does not meet complexity requirements" },
 				},
 			},
 			logs: [
 				{
 					level: "INFO",
-					message: "Test Passed: API correctly validated age data type.",
+					message: "Test Passed: API correctly enforced password policy.",
+				},
+			],
+		},
+		{
+			id: 5,
+			testName: "Password - Empty",
+			status: "pending",
+			date: "2025-06-13",
+			method: "POST",
+			endpoint: "https://api.kshrd.app/api/v1/auth/register",
+			httpStatus: 400,
+			statusText: "Bad Request",
+			metadata: {
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-005" },
+					body: { error: "Password cannot be empty" },
+				},
+			},
+			logs: [
+				{
+					level: "INFO",
+					message: "Test Passed: API correctly validated for empty password.",
 				},
 			],
 		},
 	]);
+
 	const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
 
 	const generateTimestamp = () => {
@@ -300,13 +220,10 @@ export default function Monitoring() {
 	useEffect(() => {
 		const testSequence = [
 			{ id: 1, status: "passed" as const },
-			{ id: 2, status: "passed" as const },
+			{ id: 2, status: "failed" as const },
 			{ id: 3, status: "passed" as const },
 			{ id: 4, status: "passed" as const },
 			{ id: 5, status: "passed" as const },
-			{ id: 6, status: "failed" as const }, // Still fails
-			{ id: 7, status: "failed" as const }, // Now fails
-			{ id: 8, status: "passed" as const },
 		];
 		let currentIndex = 0;
 
@@ -452,7 +369,7 @@ export default function Monitoring() {
 						Test Pilot API
 					</p>
 					<p className="text-[#71717A] text-sm lg:text-base">
-						13 Jan 2025, 10:15AM
+						{formattedDateNow}
 					</p>
 				</div>
 				<div className="text-[#71717A] text-sm lg:text-base shrink-0">

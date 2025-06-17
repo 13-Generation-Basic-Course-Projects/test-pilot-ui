@@ -5,37 +5,12 @@ export const projectsData: Project[] = [
 	{
 		id: "project-1",
 		iconType: "folder",
-		title: "My Awesome Project",
-		description: "This is a description for My Awesome Project.",
+		title: "Test Pilot",
+		description: "A Platform that test api fast and safely",
 		creationDate: "June 3, 2025",
 		userAvatarUrl: "/profile-img.png",
-		name: "My Awesome Project",
+		name: "Test Pilot",
 		collections: [
-			// {
-			// 	id: "collection-auth",
-			// 	title: "Authentication",
-			// 	description: "Endpoints for user authentication",
-			// 	endpoints: [
-			// 		{
-			// 			id: "endpoint-auth-1",
-			// 			method: "POST",
-			// 			path: "/api/v1/auth/login",
-			// 			description: "Login user",
-			// 			url: "http://localhost:3000/api/v1/auth/login",
-			// 			status: 200,
-			// 			statusText: "OK",
-			// 		},
-			// 		{
-			// 			id: "endpoint-auth-2",
-			// 			method: "GET",
-			// 			path: "/api/v1/auth/me",
-			// 			description: "Get current user",
-			// 			url: "http://localhost:3000/api/v1/auth/me",
-			// 			status: 200,
-			// 			statusText: "OK",
-			// 		},
-			// 	],
-			// },
 			{
 				id: "collection-users",
 				title: "User Management",
@@ -122,137 +97,121 @@ export const projectsData: Project[] = [
 			},
 		],
 	},
-	// {
-	// 	id: "project-3",
-	// 	iconType: "folder",
-	// 	title: "E-commerce Backend",
-	// 	description: "APIs for managing products, orders, and payments.",
-	// 	creationDate: "2024-03-10",
-	// 	userAvatarUrl: "/profile-img.png",
-	// 	name: "E-commerce Backend",
-	// 	collections: [
-	// 		{
-	// 			id: "collection-3",
-	// 			title: "Product Catalog",
-	// 			description: "Endpoints for product information",
-	// 			endpoints: [
-	// 				{
-	// 					id: "endpoint-5",
-	// 					method: "GET",
-	// 					path: "/products",
-	// 					value: "http://localhost:3000/api/products",
-	// 					description: "Retrieve all products",
-	// 					url: "http://localhost:3000/api/products",
-	// 					status: 200,
-	// 					statusText: "OK",
-	// 					requestId: "prod-list-1",
-	// 				},
-	// 				{
-	// 					id: "endpoint-6",
-	// 					method: "POST",
-	// 					path: "/products",
-	// 					value: "http://localhost:3000/api/products",
-	// 					description: "Add a new product",
-	// 					url: "http://localhost:3000/api/products",
-	// 					status: 201,
-	// 					statusText: "CREATED",
-	// 					requestId: "prod-add-1",
-	// 				},
-	// 				{
-	// 					id: "endpoint-7",
-	// 					method: "GET",
-	// 					path: "/products/{id}",
-	// 					value: "http://localhost:3000/api/products/123",
-	// 					description: "Get product by ID",
-	// 					url: "http://localhost:3000/api/products/123",
-	// 					status: 200,
-	// 					statusText: "OK",
-	// 					requestId: "prod-get-1",
-	// 				},
-	// 			],
-	// 		},
-	// 	],
-	// },
-	// {
-	// 	id: "project-6",
-	// 	iconType: "folder",
-	// 	title: "Inventory Management",
-	// 	description: "System for tracking product inventory.",
-	// 	creationDate: "2024-02-28",
-	// 	userAvatarUrl: "/profile-img.png",
-	// 	name: "Inventory Management",
-	// 	collections: [
-	// 		{
-	// 			id: "collection-9",
-	// 			title: "Stock Levels",
-	// 			description: "Manage product stock.",
-	// 			endpoints: [
-	// 				{
-	// 					id: "endpoint-15",
-	// 					method: "GET",
-	// 					path: "/inventory/{productId}",
-	// 					value: "http://localhost:3000/api/inventory/P001",
-	// 					description: "Get stock level for a product",
-	// 					url: "http://localhost:3000/api/inventory/P001",
-	// 					status: 200,
-	// 					statusText: "OK",
-	// 					requestId: "inv-stock-1",
-	// 				},
-	// 				{
-	// 					id: "endpoint-16",
-	// 					method: "PUT",
-	// 					path: "/inventory/{productId}/add",
-	// 					value: "http://localhost:3000/api/inventory/P001/add",
-	// 					description: "Add stock to a product",
-	// 					url: "http://localhost:3000/api/inventory/P001/add",
-	// 					status: 200,
-	// 					statusText: "OK",
-	// 					requestId: "inv-add-1",
-	// 				},
-	// 			],
-	// 		},
-	// 	],
-	// },
-	// {
-	// 	id: "project-7",
-	// 	iconType: "folder",
-	// 	title: "Blog Platform",
-	// 	description: "API for a content management system for blogs.",
-	// 	creationDate: "2023-09-05",
-	// 	userAvatarUrl: "/profile-img.png",
-	// 	name: "Blog Platform",
-	// 	collections: [
-	// 		{
-	// 			id: "collection-10",
-	// 			title: "Articles",
-	// 			description: "Endpoints for blog articles.",
-	// 			endpoints: [
-	// 				{
-	// 					id: "endpoint-17",
-	// 					method: "GET",
-	// 					path: "/articles",
-	// 					value: "http://localhost:3000/api/articles",
-	// 					description: "Retrieve all articles",
-	// 					url: "http://localhost:3000/api/articles",
-	// 					status: 200,
-	// 					statusText: "OK",
-	// 					requestId: "article-get-all",
-	// 				},
-	// 				{
-	// 					id: "endpoint-18",
-	// 					method: "DELETE",
-	// 					path: "/articles/{id}",
-	// 					value: "http://localhost:3000/api/articles/art-456",
-	// 					description: "Delete an article",
-	// 					url: "http://localhost:3000/api/articles/art-456",
-	// 					status: 204,
-	// 					statusText: "NO CONTENT",
-	// 					requestId: "article-delete",
-	// 				},
-	// 			],
-	// 		},
-	// 	],
-	// },
+	{
+		id: "project-2",
+		iconType: "folder",
+		title: "E-Commerce Platform",
+		description: "An API backend for managing e-commerce operations.",
+		creationDate: "June 10, 2025",
+		userAvatarUrl: "/profile-img.png",
+		name: "E-Commerce Platform",
+		collections: [
+			{
+				id: "collection-orders",
+				title: "Orders",
+				description: "Manage customer orders",
+				endpoints: [
+					{
+						id: "endpoint-orders-1",
+						method: "GET",
+						path: "/api/v1/orders",
+						description: "List all orders",
+						url: "http://localhost:3000/api/v1/orders",
+						status: 200,
+						statusText: "OK",
+					},
+					{
+						id: "endpoint-orders-2",
+						method: "POST",
+						path: "/api/v1/orders",
+						description: "Create a new order",
+						url: "http://localhost:3000/api/v1/orders",
+						status: 201,
+						statusText: "Created",
+					},
+				],
+			},
+		],
+	},
+	{
+		id: "project-3",
+		iconType: "folder",
+		title: "Finance API",
+		description: "API project for tracking personal finance data.",
+		creationDate: "May 22, 2025",
+		userAvatarUrl: "/profile-img.png",
+		name: "Finance API",
+		collections: [
+			{
+				id: "collection-transactions",
+				title: "Transactions",
+				description: "Manage financial transactions",
+				endpoints: [
+					{
+						id: "endpoint-transactions-1",
+						method: "GET",
+						path: "/api/v1/transactions",
+						description: "Fetch all transactions",
+						url: "http://localhost:3000/api/v1/transactions",
+						status: 200,
+						statusText: "OK",
+					},
+				],
+			},
+			{
+				id: "collection-budgets",
+				title: "Budgets",
+				description: "User budget planning and tracking",
+				endpoints: [
+					{
+						id: "endpoint-budgets-1",
+						method: "GET",
+						path: "/api/v1/budgets",
+						description: "Get all budgets",
+						url: "http://localhost:3000/api/v1/budgets",
+						status: 200,
+						statusText: "OK",
+					},
+				],
+			},
+		],
+	},
+	{
+		id: "project-4",
+		iconType: "folder",
+		title: "IoT Device Manager",
+		description: "A project for managing smart home IoT devices.",
+		creationDate: "April 18, 2025",
+		userAvatarUrl: "/profile-img.png",
+		name: "IoT Device Manager",
+		collections: [
+			{
+				id: "collection-devices",
+				title: "Devices",
+				description: "Register and monitor smart devices",
+				endpoints: [
+					{
+						id: "endpoint-devices-1",
+						method: "GET",
+						path: "/api/v1/devices",
+						description: "Get all registered devices",
+						url: "http://localhost:3000/api/v1/devices",
+						status: 200,
+						statusText: "OK",
+					},
+					{
+						id: "endpoint-devices-2",
+						method: "DELETE",
+						path: "/api/v1/devices/{id}",
+						description: "Delete a device",
+						url: "http://localhost:3000/api/v1/devices/{id}",
+						status: 204,
+						statusText: "No Content",
+					},
+				],
+			},
+		],
+	},
 ];
 export const sidebarMenus = {
 	sideMenu: [
@@ -396,119 +355,7 @@ greet
 ];
 
 export const mockHistoryResponses = [
-	// [0] Corresponds to: Email - Invalid Format (Passed)
-	{
-		method: "POST",
-		endpoint: "https://api.kshrd.app/api/v1/auth/register",
-		status: "400 BAD REQUEST",
-		badgeStatus: "passed" as const,
-		isSuccess: true,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: JSON.stringify(
-			{
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "invalid-email", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-001" },
-					body: { error: "Invalid email format" },
-				},
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify({ error: "Invalid email format" }, null, 2),
-	},
-	// [1] Corresponds to: Email - SQL Injection (Passed)
-	{
-		method: "POST",
-		endpoint: "https://api.kshrd.app/api/v1/auth/register",
-		status: "400 BAD REQUEST",
-		badgeStatus: "passed" as const,
-		isSuccess: true,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: JSON.stringify(
-			{
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "' OR 1=1;--", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-002" },
-					body: { error: "Malicious input detected" },
-				},
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ error: "Malicious input detected" },
-			null,
-			2
-		),
-	},
-	// [2] Corresponds to: Password - Weak (Passed)
-	{
-		method: "POST",
-		endpoint: "https://api.kshrd.app/api/v1/auth/register",
-		status: "400 BAD REQUEST",
-		badgeStatus: "passed" as const,
-		isSuccess: true,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: JSON.stringify(
-			{
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "test@example.com", password: "password" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-003" },
-					body: { error: "Password does not meet complexity requirements" },
-				},
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ error: "Password does not meet complexity requirements" },
-			null,
-			2
-		),
-	},
-	// [3] Corresponds to: Password - Empty (Passed)
-	{
-		method: "POST",
-		endpoint: "https://api.kshrd.app/api/v1/auth/register",
-		status: "400 BAD REQUEST",
-		badgeStatus: "passed" as const,
-		isSuccess: true,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: JSON.stringify(
-			{
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { email: "test@example.com", password: "" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-004" },
-					body: { error: "Password cannot be empty" },
-				},
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ error: "Password cannot be empty" },
-			null,
-			2
-		),
-	},
-	// [4] Corresponds to: Username - Too Long (Passed)
+	// Corresponds to: id: 1, testName: "Username - Too Long"
 	{
 		method: "POST",
 		endpoint: "https://api.kshrd.app/api/v1/auth/register",
@@ -524,7 +371,7 @@ export const mockHistoryResponses = [
 					body: { username: "a".repeat(100) },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-005" },
+					headers: { "X-Request-ID": "req-001" },
 					body: { error: "Username exceeds maximum length" },
 				},
 			},
@@ -537,36 +384,7 @@ export const mockHistoryResponses = [
 			2
 		),
 	},
-	// [5] Corresponds to: Username - Only Space (Failed)
-	{
-		method: "POST",
-		endpoint: "https://api.kshrd.app/api/v1/auth/register",
-		status: "200 OK",
-		badgeStatus: "failed" as const,
-		isSuccess: false,
-		shouldShowPreview: true,
-		failureReason: null,
-		requestBody: JSON.stringify(
-			{
-				request: {
-					headers: { "Content-Type": "application/json" },
-					body: { username: "   ", password: "ValidPassword123" },
-				},
-				response: {
-					headers: { "X-Request-ID": "req-006", "Set-Cookie": "..." },
-					body: { message: "User registered successfully!" },
-				},
-			},
-			null,
-			2
-		),
-		responseBody: JSON.stringify(
-			{ message: "User registered successfully!" },
-			null,
-			2
-		),
-	},
-	// [6] Corresponds to: Age - Negative Value (Failed)
+	// Corresponds to: id: 2, testName: "Age - Negative Value"
 	{
 		method: "POST",
 		endpoint: "https://api.kshrd.app/api/v1/auth/register",
@@ -582,7 +400,7 @@ export const mockHistoryResponses = [
 					body: { username: "testuser", age: -10 },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-007", "Set-Cookie": "..." },
+					headers: { "X-Request-ID": "req-002", "Set-Cookie": "..." },
 					body: { message: "User registered successfully!" },
 				},
 			},
@@ -590,12 +408,12 @@ export const mockHistoryResponses = [
 			2
 		),
 		responseBody: JSON.stringify(
-			{ status: "success", message: "User registered successfully!" },
+			{ message: "User registered successfully!" },
 			null,
 			2
 		),
 	},
-	// [7] Corresponds to: Age - Type Mismatch (Passed)
+	// Corresponds to: id: 3, testName: "Email - Invalid Format"
 	{
 		method: "POST",
 		endpoint: "https://api.kshrd.app/api/v1/auth/register",
@@ -608,17 +426,75 @@ export const mockHistoryResponses = [
 			{
 				request: {
 					headers: { "Content-Type": "application/json" },
-					body: { username: "testuser", age: "twenty" },
+					body: { email: "invalid-email", password: "ValidPassword123" },
 				},
 				response: {
-					headers: { "X-Request-ID": "req-008" },
-					body: { error: "Age must be a number" },
+					headers: { "X-Request-ID": "req-003" },
+					body: { error: "Invalid email format" },
 				},
 			},
 			null,
 			2
 		),
-		responseBody: JSON.stringify({ error: "Age must be a number" }, null, 2),
+		responseBody: JSON.stringify({ error: "Invalid email format" }, null, 2),
+	},
+	// Corresponds to: id: 4, testName: "Password - Weak Password"
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "password" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-004" },
+					body: { error: "Password does not meet complexity requirements" },
+				},
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ error: "Password does not meet complexity requirements" },
+			null,
+			2
+		),
+	},
+	// Corresponds to: id: 5, testName: "Password - Empty"
+	{
+		method: "POST",
+		endpoint: "https://api.kshrd.app/api/v1/auth/register",
+		status: "400 BAD REQUEST",
+		badgeStatus: "passed" as const,
+		isSuccess: true,
+		shouldShowPreview: true,
+		failureReason: null,
+		requestBody: JSON.stringify(
+			{
+				request: {
+					headers: { "Content-Type": "application/json" },
+					body: { email: "test@example.com", password: "" },
+				},
+				response: {
+					headers: { "X-Request-ID": "req-005" },
+					body: { error: "Password cannot be empty" },
+				},
+			},
+			null,
+			2
+		),
+		responseBody: JSON.stringify(
+			{ error: "Password cannot be empty" },
+			null,
+			2
+		),
 	},
 ];
 // utils/data-type-cases.ts

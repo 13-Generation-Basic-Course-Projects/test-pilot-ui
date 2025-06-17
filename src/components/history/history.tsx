@@ -55,7 +55,7 @@ export default function History() {
 				direction="horizontal"
 				className="rounded-lg border flex-grow min-h-0"
 			>
-				<ResizablePanel defaultSize={65} minSize={30}>
+				<ResizablePanel defaultSize={70} minSize={30}>
 					{/* The h-full and overflow-y-auto on this inner div are now effective */}
 					<div className="p-6 h-full overflow-y-auto no-scrollbar">
 						<HistoryData setActiveRequestIndex={handleRowClick} />
@@ -64,7 +64,7 @@ export default function History() {
 
 				<ResizableHandle withHandle />
 
-				<ResizablePanel defaultSize={35} minSize={30}>
+				<ResizablePanel defaultSize={30} minSize={30}>
 					{/* The h-full and overflow-y-auto on this inner div are also now effective */}
 					<div className="p-6 space-y-6 h-full overflow-y-auto">
 						{loading ? (

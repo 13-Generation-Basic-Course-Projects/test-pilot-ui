@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useApiBodyStore } from "@/store/body-api-slice";
 // Make sure to import the new functions from your utility file
-import { jsonStringifyWithTruncation } from "@/lib/utils";
+import { convertCustomValue, jsonStringifyWithTruncation } from "@/lib/utils";
 import { Play, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
@@ -11,6 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { generateValueForTestCase } from "@/lib/constants";
 import useTestCaseStore from "@/store/test-case-store";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 export const TestRequestBody = () => {
 	const { apiBodyRows } = useApiBodyStore();
@@ -47,10 +50,8 @@ export const TestRequestBody = () => {
 			const customCase = customTestCases.find((c) => c.name === testCaseName);
 
 			if (customCase) {
-				// If it's a custom case, use its stored value
-				generatedValue = customCase.value;
+				generatedValue = convertCustomValue(customCase.value, customCase.type);
 			} else {
-				// If not, fall back to the static generator for predefined cases
 				generatedValue = generateValueForTestCase(
 					row.value,
 					row.dataType,
@@ -160,11 +161,28 @@ export const TestRequestBody = () => {
 							</Button>
 						</CardHeader>
 						<CardContent>
-							<pre className="bg-slate-100 p-3 rounded-md text-lg overflow-auto whitespace-pre-wrap break-words">
-								<code>
-									{jsonStringifyWithTruncation(testCaseItem.payload, 2, 250)}
-								</code>
-							</pre>
+							<SyntaxHighlighter
+								language="json"
+								style={atomOneLight}
+								wrapLongLines={true}
+								showLineNumbers
+								customStyle={{
+									margin: 0,
+									padding: "16px",
+									height: "100%",
+									fontSize: "18px",
+									borderRadius: "10px",
+									whiteSpace: "pre-wrap",
+									wordBreak: "break-all",
+								}}
+								codeTagProps={{
+									style: {
+										fontFamily: '"JetBrains Mono", monospace',
+									},
+								}}
+							>
+								{JSON.stringify(testCaseItem.payload, null, 2)}
+							</SyntaxHighlighter>
 						</CardContent>
 					</Card>
 				))}

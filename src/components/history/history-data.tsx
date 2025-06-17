@@ -35,6 +35,7 @@ import {
 import { MethodBadge } from "../method-badge";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { formattedDateNow } from "@/lib/utils";
 
 type RowData = {
 	date: string;
@@ -51,6 +52,18 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 	const [isOpen, setIsOpen] = React.useState(true);
 	const [activeRow, setActiveRow] = React.useState<number | null>(null);
 	const [deleteIndex, setDeleteIndex] = React.useState<number | null>(null);
+	const now = new Date();
+
+	const day = now.toLocaleString("en-GB", { day: "2-digit" });
+	const month = now.toLocaleString("en-GB", { month: "short" });
+	const year = now.getFullYear();
+	const time = now.toLocaleString("en-US", {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: true,
+	});
+
+	const formattedDate = `${day} ${month} ${year}, ${time}`;
 
 	// Rename history
 	const [isRenaming, setIsRenaming] = React.useState(false);
@@ -63,13 +76,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 
-	// --- UPDATED DATA ---
-	// Data now reflects the 4 test cases for the /register endpoint, consistent
-	// with the Monitoring component's data.
 	const [data, setData] = React.useState<RowData[]>([
-		// [0] Corresponds to: Email - Invalid Format (Passed)
 		{
-			date: "13 Jun 10:30 AM",
+			date: formattedDate,
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
@@ -81,105 +90,121 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 				</div>
 			),
 		},
-		// [1] Corresponds to: Email - SQL Injection (Passed)
 		{
-			date: "13 Jun 10:31 AM",
+			date: formattedDate,
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
-						400
-					</div>
-				</div>
-			),
-		},
-		// [2] Corresponds to: Password - Weak Policy (Passed)
-		{
-			date: "13 Jun 10:32 AM",
-			method: <MethodBadge method="POST" />,
-			endPoint: "https://api.kshrd.app/api/v1/auth/register",
-			status: (
-				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
-						400
-					</div>
-				</div>
-			),
-		},
-		// [3] Corresponds to: Password - Empty (Passed)
-		{
-			date: "13 Jun 10:33 AM",
-			method: <MethodBadge method="POST" />,
-			endPoint: "https://api.kshrd.app/api/v1/auth/register",
-			status: (
-				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
-						400
-					</div>
-				</div>
-			),
-		},
-		// [4] Corresponds to: Username - Too Long (Passed)
-		{
-			date: "13 Jun 10:34 AM",
-			method: <MethodBadge method="POST" />,
-			endPoint: "https://api.kshrd.app/api/v1/auth/register",
-			status: (
-				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
-						400
-					</div>
-				</div>
-			),
-		},
-		// [5] Corresponds to: Username - Only Space (Failed)
-		{
-			date: "13 Jun 10:35 AM",
-			method: <MethodBadge method="POST" />,
-			endPoint: "https://api.kshrd.app/api/v1/auth/register",
-			status: (
-				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#EF4444]">Failed</p>
+					<p className="text-[#f31260]">Failed</p>
 					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						200
 					</div>
 				</div>
 			),
 		},
-		// [6] Corresponds to: Age - Negative Value (Failed)
 		{
-			date: "13 Jun 10:36 AM",
-			method: <MethodBadge method="POST" />,
-			endPoint: "https://api.kshrd.app/api/v1/auth/register",
-			status: (
-				<div className="flex justify-between items-center max-w-[120px]">
-					<p className="text-[#EF4444]">Failed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
-						200
-					</div>
-				</div>
-			),
-		},
-		// [7] Corresponds to: Age - Type Mismatch (Passed)
-		{
-			date: "13 Jun 10:37 AM",
+			date: formattedDate,
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#EF4444]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<p className="text-[#17C964]">Passed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<p className="text-[#17C964]">Passed</p>
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
 					</div>
 				</div>
 			),
 		},
 	]);
+	const statusData = [
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+						200
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+		{
+			date: formattedDate,
+			method: <MethodBadge method="POST" />,
+			endPoint: "https://api.kshrd.app/api/v1/auth/register",
+			status: (
+				<div className="flex justify-between items-center max-w-[120px]">
+					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+						400
+					</div>
+				</div>
+			),
+		},
+	];
 
 	// Auto-save on outside click
 	const handleClickOutside = (event: MouseEvent) => {

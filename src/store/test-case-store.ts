@@ -47,7 +47,6 @@ const initialPredefinedValues: TestCase[] = [
 	{ name: "Large Positive Number", value: 1000, type: "Number" },
 	{ name: "Null", value: "null", type: "Number" },
 	{ name: "Float Number", value: 1.23, type: "Number" },
-	{ name: "Negative Number", value: -1, type: "Number" },
 	{ name: "Zero", value: 0, type: "Number" },
 	{ name: "Max boundary", value: "max", type: "Number" },
 	{ name: "Min boundary", value: "min", type: "Number" },
@@ -102,7 +101,7 @@ const initialPredefinedValues: TestCase[] = [
 
 const defaultCustomCases: TestCase[] = [
 	{ name: "Email - Invalid Format", value: "user@invalid", type: "String" },
-	{ name: "Email - SQL Injection", value: "' OR 1=1; --", type: "String" },
+	{ name: "SQL Injection", value: "' OR 1=1; --", type: "String" },
 	{ name: "Password - Weak Password", value: "123456", type: "String" },
 	{ name: "Password - Empty", value: "", type: "String" },
 	{

@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
 	Table,
 	TableBody,
@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formattedDateNoTime } from "@/lib/utils";
 
 type TestStatus = "pending" | "loading" | "passed" | "failed";
 
@@ -50,26 +51,26 @@ export function MonitoringData({
 			case "passed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
-						<span className="text-[#17C964] text-sm truncate">passed</span>
+						<span className="text-[#17C964] text-sm truncate">Passed</span>
 					</div>
 				);
 			case "failed":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
-						<span className="text-[#F31260] text-sm truncate">failed</span>
+						<span className="text-[#F31260] text-sm truncate">Failed</span>
 					</div>
 				);
 			case "loading":
 				return (
 					<div className="flex items-center gap-1 min-w-0">
 						<Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-						<span className="text-sm truncate">running</span>
+						<span className="text-sm truncate">Running</span>
 					</div>
 				);
 			case "pending":
-				return <span className="text-sm truncate">pending</span>;
+				return <span className="text-sm truncate">Pending</span>;
 			default:
-				return <span className="text-sm truncate">pending</span>;
+				return <span className="text-sm truncate">Pending</span>;
 		}
 	};
 
@@ -82,7 +83,7 @@ export function MonitoringData({
 					<div className="flex items-center gap-1 min-w-0">
 						<Badge
 							variant="outline"
-							className="text-[#17C964] text-sm font-medium shrink-0"
+							className="text-[#EF4444] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -93,7 +94,7 @@ export function MonitoringData({
 					<div className="flex items-center gap-1 min-w-0">
 						<Badge
 							variant="outline"
-							className="text-[#EF4444] text-sm font-medium shrink-0"
+							className="text-[#17C964] text-sm font-medium shrink-0"
 						>
 							{httpStatus}
 						</Badge>
@@ -140,7 +141,7 @@ export function MonitoringData({
 										Status
 									</TableHead>
 									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
-										Code
+										API Status Code
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -165,7 +166,7 @@ export function MonitoringData({
 												className="truncate font-medium text-sm"
 												title={test.date}
 											>
-												{format(new Date(test.date), "d MMM yyyy")}
+												{formattedDateNoTime}
 											</div>
 										</TableCell>
 										<TableCell className="py-3 w-[60px] min-w-[60px]">

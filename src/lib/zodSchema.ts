@@ -17,8 +17,5 @@ export const customValueSchema = z.object({
 	nameCase: z.string().min(1, { message: "Name case is required." }),
 	typeCase: z.string().min(1, { message: "Value is required." }),
 	value: z.string().min(1, { message: "Value is required." }),
-	description: z
-		.string()
-		.min(1, { message: "Description is required." })
-		.optional(),
+	description: z.string().optional(),
 });

@@ -71,3 +71,56 @@ export const jsonStringifyWithTruncation = (
 	};
 	return JSON.stringify(obj, replacer, space);
 };
+
+// You can add this helper function to @/lib/utils.ts or at the top of your component file.
+
+/**
+ * Converts a stored test case value to its correct JavaScript data type.
+ * @param value The value from the test case store (can be string or number).
+ * @param type The type string from the test case store (e.g., "Number", "Boolean", "String").
+ * @returns The value converted to the correct data type.
+ */
+export const convertCustomValue = (
+	value: string | number,
+	type: string
+): string | number | boolean => {
+	const lowerCaseType = type.toLowerCase();
+
+	if (lowerCaseType === "number") {
+		// If the type is 'number', attempt to parse it as a float.
+		// parseFloat can handle both numbers (e.g., -1) and strings (e.g., "-1").
+		// If parsing fails (e.g., for "abc"), it returns NaN. In that case, we fall back to the original value.
+		const num = parseFloat(String(value));
+		return isNaN(num) ? value : num;
+	}
+
+	if (lowerCaseType === "boolean") {
+		// If the type is 'boolean', check for the string "true".
+		// This handles the case where your form stores booleans as strings.
+		if (String(value).toLowerCase() === "true") {
+			return true;
+		}
+		if (String(value).toLowerCase() === "false") {
+			return false;
+		}
+		// If it's something else, return the original value.
+		return value;
+	}
+
+	// For any other type ('string', 'date', 'uuid', etc.), return the value as is.
+	return value;
+};
+
+const now = new Date();
+
+const day = now.toLocaleString("en-GB", { day: "2-digit" });
+const month = now.toLocaleString("en-GB", { month: "short" });
+const year = now.getFullYear();
+const time = now.toLocaleString("en-US", {
+	hour: "2-digit",
+	minute: "2-digit",
+	hour12: true,
+});
+
+export const formattedDateNow = `${day} ${month} ${year}, ${time}`;
+export const formattedDateNoTime = `${day} ${month} ${year}`;
