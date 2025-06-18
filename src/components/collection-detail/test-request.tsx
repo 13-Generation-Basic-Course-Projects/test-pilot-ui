@@ -68,8 +68,6 @@ export default function TestRequest() {
 	};
 
 	const handleRun = () => {
-		console.log(`Running test case with method: ${method}, URL: ${url}`);
-		console.log(`pathname : ${pathname}`);
 		router.push(`${pathname}/monitoring`);
 	};
 

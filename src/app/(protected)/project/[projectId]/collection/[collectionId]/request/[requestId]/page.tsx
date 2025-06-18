@@ -17,8 +17,6 @@ const RequestDetail = async ({
 
 	const request = await getRequestByCollectionId({ collectionId });
 
-	console.log(request);
-
 	return (
 		<div className="flex h-screen overflow-hidden">
 			<SidebarCollectionProvider>

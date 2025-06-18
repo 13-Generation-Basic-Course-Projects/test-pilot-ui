@@ -60,7 +60,6 @@ export const createRequestByCollectionId = async ({
 			}
 		);
 
-		console.log("createRequestByCollectionId response:", response);
 		return response.payload;
 	} catch (error) {
 		console.error("createRequestByCollectionId error:", error);
@@ -87,8 +86,6 @@ export const updateRequestByIdService = async (
 			`${REQUEST_ENDPOINT}/${requestId}`
 		);
 
-		console.log("existingRequest", existingRequest);
-
 		if (!existingRequest.payload.method || !existingRequest.payload.details) {
 			throw new Error(
 				"Existing request is missing required fields: method or details"
@@ -107,7 +104,6 @@ export const updateRequestByIdService = async (
 			method: "PUT",
 			body: JSON.stringify(updatedPayload),
 		});
-		console.log("Update response:", response);
 	} catch (error) {
 		console.error("updateRequestByIdService error:", error);
 		throw error;
@@ -178,7 +174,7 @@ export const updateRequestPathVariablesService = async (
 	}
 };
 
-export const createRequestTestCaseService = async ({
+export const createTestCaseService = async ({
 	requestId,
 	testCaseId,
 	applicationContext,
@@ -194,7 +190,6 @@ export const createRequestTestCaseService = async ({
 		isExpectedSuccess,
 	};
 
-	console.log("TEST CASE DATA", testCaseData);
 	const data = await fetchAPI<TestCaseRequestResponseType>(
 		`${REQUEST_TEST_CASE_ENDPOINT}`,
 		{
@@ -262,10 +257,41 @@ export const duplicateRequest = async ({
 			}
 		);
 
-		console.log("duplicateRequest response:", response);
 		return response.payload;
 	} catch (error) {
 		console.error("duplicateRequest error:", error);
+		throw error;
+	}
+};
+
+export const CreateRequestBodyService = async (
+	requestId: string,
+	bodyPayload: Record<string, any> // Accepts the path variables object
+): Promise<void> => {
+	try {
+		// First, get the current state of the request to preserve other fields
+		const existingRequest = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/${requestId}`
+		);
+
+		// Prepare the updated payload by merging the new path variables
+		const updatedDetails = {
+			...existingRequest.payload.details, // Keep other existing details (like url, body, etc.)
+			body: bodyPayload, // Set the new path variables
+		};
+
+		const updatedPayload = {
+			...existingRequest.payload, // Keep top-level fields like name, method, etc.
+			details: updatedDetails, // Add the merged details object
+		};
+
+		// Send the final, merged payload to your backend
+		await fetchAPI(`${REQUEST_ENDPOINT}/${requestId}`, {
+			method: "PUT",
+			body: JSON.stringify(updatedPayload),
+		});
+	} catch (error) {
+		console.error("updateRequestPathVariablesService error:", error);
 		throw error;
 	}
 };

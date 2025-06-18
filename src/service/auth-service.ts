@@ -24,7 +24,6 @@ export const signInService = async ({
 		});
 
 		const data: LoginResponseType = await res.json();
-		// console.log("Hello", data);
 		return data.payload;
 	} catch (error) {
 		throw new Error("can't fetch user");

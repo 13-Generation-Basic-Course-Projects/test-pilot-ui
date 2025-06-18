@@ -176,8 +176,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 				details,
 			});
 
-			console.log("ENDPOINT", newEndpoint);
-
 			if (!newEndpoint) {
 				throw new Error("Failed to create endpoint");
 			}
@@ -318,7 +316,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		newTitle: string
 	) => {
 		try {
-			console.log("Renaming endpoint:", { endpointId, newTitle });
 			await updateRequestByIdAction(collectionId, endpointId, {
 				name: newTitle,
 			});
@@ -846,7 +843,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 					onConfirm={async () => {
 						const { projectId, collectionId, endpointId } = endpointToDelete;
 						try {
-							console.log("Deleting endpoint:", endpointId);
 							await deleteRequestAction(collectionId, endpointId, projectId);
 							setCollectionsData((prev) =>
 								prev.map((project) =>

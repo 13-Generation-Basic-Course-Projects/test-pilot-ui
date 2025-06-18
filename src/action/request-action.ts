@@ -1,8 +1,9 @@
 "use server";
 
 import {
+	CreateRequestBodyService,
 	createRequestByCollectionId,
-	createRequestTestCaseService,
+	createTestCaseService,
 	deleteRequestByIdService,
 	duplicateRequest,
 	getRequestByCollectionId,
@@ -22,11 +23,9 @@ export const fetchRequestForCollection = async (
 		console.warn("No collectionId provided for fetchRequestForCollection");
 		return [];
 	}
-	console.log(collectionId);
 	// const endpoints = await getAllRequest(collectionId);
 	const endpoints = await getRequestByCollectionId({ collectionId });
 	// Log endpoints returned
-	console.log(`Endpoints fetched for collection ${collectionId}:`, endpoints);
 	return endpoints;
 };
 
@@ -52,8 +51,6 @@ export const createRequestByCollectionIdAction = async (payload: {
 			details: payload.details,
 		});
 
-		console.log("RESPONSE", response);
-
 		if (!response || !response.id) {
 			console.error(
 				"createRequestByCollectionIdAction: Invalid response",
@@ -62,13 +59,6 @@ export const createRequestByCollectionIdAction = async (payload: {
 			return null;
 		}
 
-		console.log("createRequestByCollectionIdAction response:", response);
-		console.log(
-			response.id,
-			response.name || payload.requestName,
-			response.method || payload.method,
-			response.name || payload.requestName
-		);
 		return {
 			id: response.id,
 			name: response.name || payload.requestName,
@@ -103,11 +93,6 @@ export const updateRequestByIdAction = async (
 	payload: { name: string }
 ): Promise<void> => {
 	try {
-		console.log("updateRequestByIdAction:", {
-			collectionId,
-			endpointId,
-			payload,
-		});
 		await updateRequestByIdService(endpointId, {
 			name: payload.name,
 			path: payload.name, // Use name as path
@@ -146,11 +131,6 @@ export const updateRequestPathVariablesAction = async (
 	// The payload is the final object, not the complex array from the UI state
 	pathVariablesPayload: Record<string, any>
 ) => {
-	console.log(
-		`Saving path variables for request ${requestId}:`,
-		pathVariablesPayload
-	);
-
 	try {
 		await updateRequestPathVariablesService(requestId, pathVariablesPayload);
 		revalidatePath(`/project/.*`, "layout"); // Revalidate the whole project layout
@@ -166,8 +146,6 @@ export const createVariableTestAction = async (payload: {
 	applicationContext: "PATH_VARIABLE";
 	targetFieldPath: string;
 }): Promise<VariableTestCase> => {
-	console.log("Creating test case with payload:", payload);
-
 	// Your real backend logic to create the record...
 	// const newTest = await db.test.create({ data: payload });
 
@@ -186,8 +164,6 @@ export const createVariableTestAction = async (payload: {
  * ✨ NEW ACTION: Deletes a single test case instance by its unique ID.
  */
 export const deleteVariableTestAction = async (testInstanceId: string) => {
-	console.log(`Deleting test case with ID: ${testInstanceId}`);
-
 	// Your backend logic to delete the test...
 	// await db.test.delete({ where: { id: testInstanceId } });
 
@@ -214,7 +190,6 @@ export const duplicateRequestAction = async (
 			return null;
 		}
 
-		console.log("duplicateRequestAction response:", response);
 		return {
 			id: response.id,
 			name: response.name || "New Request (Copy)",
@@ -242,7 +217,7 @@ export const createRequestTestCaseAction = async (
 	args: TestCaseRequestType
 ) => {
 	try {
-		const result = await createRequestTestCaseService({
+		const result = await createTestCaseService({
 			...args,
 		});
 
@@ -251,6 +226,33 @@ export const createRequestTestCaseAction = async (
 	} catch (error) {
 		console.error("Failed to create request test case:", error);
 		return { success: false, error: "Failed to create test case." };
+	}
+};
+
+export const createBodyTestCaseAction = async (args: TestCaseRequestType) => {
+	try {
+		const result = await createTestCaseService({
+			...args,
+		});
+
+		return { success: true, data: result.payload };
+	} catch (error) {
+		console.error("Failed to create request test case:", error);
+		return { success: false, error: "Failed to create test case." };
+	}
+};
+
+export const createRequestBodyAction = async (
+	requestId: string,
+	// The payload is the final object, not the complex array from the UI state
+	bodyPayload: Record<string, any>
+) => {
+	try {
+		await CreateRequestBodyService(requestId, bodyPayload);
+		revalidatePath(`/project/.*`, "layout"); // Revalidate the whole project layout
+	} catch (error) {
+		console.error("Failed to create or update body:", error);
+		throw new Error("Could not save body.");
 	}
 };
 

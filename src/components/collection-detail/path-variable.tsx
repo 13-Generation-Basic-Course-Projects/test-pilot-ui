@@ -89,7 +89,6 @@ export default function PathVariable({
 			const testcases = (await getRequestTestCaseAction({ requestId })).map(
 				(tc) => tc.testCase
 			);
-			console.log(testcases);
 			const currentEndpoint = request.find((r) => r.id === requestId);
 			// Safely access pathVariables from the endpoint, defaulting to an empty object
 			const pathVariablesObject = currentEndpoint?.details?.pathVariables ?? {};
@@ -194,7 +193,6 @@ export default function PathVariable({
 
 		setPathVariables(updatedRows);
 
-		console.log(testCases);
 		// Saving on case toggle is optional, but can be added here if needed:
 		// handleSave(updatedRows);
 		startTransition(async () => {

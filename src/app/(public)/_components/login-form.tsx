@@ -21,7 +21,6 @@ export function LoginForm({
 	useEffect(() => {
 		const error = searchParams.get("error");
 		if (error) {
-			console.log("Invalid credentials");
 			toast.error("Invalid credentials", {
 				id: "login-credentials-id",
 			});

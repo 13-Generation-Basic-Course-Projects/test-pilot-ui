@@ -54,15 +54,4 @@ type PayloadItem = {
 	updateAt: string;
 };
 
-export type PayloadTestCaseType = Array<
-	| PayloadItem
-	| {
-			id: string;
-			requestId: string;
-			testCaseId: string;
-			applicationContext: string;
-			request: RequestDetailType;
-			testCase: TestCaseType;
-			createdAt: string;
-	  }
->;
+export type PayloadTestCaseType = Array<PayloadItem>;

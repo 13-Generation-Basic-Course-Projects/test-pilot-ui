@@ -21,7 +21,6 @@ export function RequestContentDetail({
 	requestId: string;
 	request: EndpointItem[];
 }) {
-	console.log(projectId, requestId);
 	return (
 		<Tabs defaultValue="request-content" className="w-full">
 			<TabsListV2 className="mb-10">
@@ -32,7 +31,7 @@ export function RequestContentDetail({
 			<TabsContent value="request-content">
 				<ApiRequestDetailParam request={request} requestId={requestId} />
 				<ApiRequestContentHeader />
-				<Body />
+				<Body request={request} requestId={requestId} />
 			</TabsContent>
 			<TabsContent value="predefined-value">
 				<PredefinedTestCase />
