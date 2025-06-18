@@ -62,7 +62,6 @@ export const verifyOTPAction = async ({
 	try {
 		const credentialData = { otp, email };
 		const data = await verifyOTPService({ credentials: credentialData });
-		console.log("otp", data);
 		return data;
 	} catch (error) {}
 };
@@ -70,7 +69,6 @@ export const verifyOTPAction = async ({
 export const resendOTPAction = async ({ email }: { email: string }) => {
 	try {
 		const data = await resendOTPService({ email });
-		console.log("email", data);
 		return data;
 	} catch (error) {}
 };

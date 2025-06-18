@@ -29,6 +29,34 @@ export function SideMain({
 	const projectId =
 		subpathSegments && subpathSegments.length > 0 ? subpathSegments[0] : null;
 
+	// --- Start of new logic ---
+
+	// 1. Pre-calculate all possible Hrefs from the items array.
+	const validHrefs = items
+		.map((item) => {
+			if (item.path === "/") {
+				return "/project";
+			}
+			if (!projectId) {
+				return "#"; // Mark as invalid if no project ID
+			}
+			return item.path === "collection"
+				? `/project/${projectId}`
+				: `/project/${projectId}/${item.path}`;
+		})
+		.filter((href) => href !== "#");
+
+	// 2. Find all Hrefs that are a prefix of the current pathname.
+	const matchingHrefs = validHrefs.filter((href) => pathname.startsWith(href));
+
+	// 3. From the matches, find the one with the longest length. This is our active link.
+	const activeHref = matchingHrefs.reduce(
+		(longest, current) => (current.length > longest.length ? current : longest),
+		""
+	);
+
+	// --- End of new logic ---
+
 	return (
 		<SidebarGroup>
 			<SidebarMenu>
@@ -42,10 +70,7 @@ export function SideMain({
 								: `/project/${projectId}/${item.path}`
 							: "#";
 
-					const isActive =
-						(Href !== "#" && pathname === Href) ||
-						(item.path === "collection" &&
-							pathname.startsWith(`/project/${projectId}/request`));
+					const isActive = Href === activeHref;
 
 					return (
 						<Collapsible

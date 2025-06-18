@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react"; // 1. Import useEffect and useState
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
@@ -7,6 +7,13 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
+
+interface TestCase {
+	type: string;
+	case: string;
+	value: any;
+}
 
 interface ValidTestCase {
 	key: string;
@@ -21,6 +28,25 @@ export default function TestRequest() {
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
+
+	// 4. Add state to hold the test cases from the backend
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+
+	// 5. Fetch and set the test cases when the component mounts
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			const backendData = await getAllPredefinedAction();
+			if (backendData && Array.isArray(backendData)) {
+				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				}));
+				setTestCases(transformedData);
+			}
+		};
+		fetchTestCases();
+	}, []);
 
 	const getValidTestCases = (variables: any[], type: "path" | "query") => {
 		return (
@@ -41,12 +67,7 @@ export default function TestRequest() {
 		);
 	};
 
-	// State per test case
-
 	const handleRun = () => {
-		console.log(`Running test case with method: ${method}, URL: ${url}`);
-		console.log(`pathname : ${pathname}`);
-		// Here you would typically construct and send your API request
 		router.push(`${pathname}/monitoring`);
 	};
 
@@ -67,8 +88,10 @@ export default function TestRequest() {
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
+			// This logic now uses the `testCases` state variable automatically
 			const valueToUse = isCurrentVariable
-				? currentTestCase.testCase
+				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value ??
+				  ""
 				: variable.value || `{${variable.key}}`;
 
 			constructedUrl = constructedUrl.replace(
@@ -87,11 +110,16 @@ export default function TestRequest() {
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
+			// This logic also uses the `testCases` state variable
 			const valueToUse = isCurrentVariable
-				? currentTestCase.testCase // Use test case value
+				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value
 				: variable.value;
 
-			if (valueToUse !== undefined && valueToUse !== "") {
+			if (
+				valueToUse !== undefined &&
+				valueToUse !== null &&
+				valueToUse !== ""
+			) {
 				queryParts.push(
 					`${encodeURIComponent(variable.key)}=${encodeURIComponent(
 						valueToUse
@@ -108,7 +136,6 @@ export default function TestRequest() {
 		return constructedUrl;
 	};
 
-	// Only generate and display test cases if a URL is provided
 	const hasUrl = url && url.trim() !== "";
 	const validTestCases: ValidTestCase[] = hasUrl
 		? [
@@ -144,7 +171,7 @@ export default function TestRequest() {
 			<div className=" min-h-[480px] flex flex-col space-y-4">
 				<div className="flex h-full justify-end items-center mt-1">
 					<Button onClick={() => handleRun()}>
-						Run All <Play />
+						Run All <Play className="ml-2 h-4 w-4" />
 					</Button>
 				</div>
 				<div className="flex flex-col items-center gap-6">
@@ -160,7 +187,7 @@ export default function TestRequest() {
 								key={`${testcase.key}-${testcase.testCase}-${idx}`}
 								className="break-all w-full"
 							>
-								<CardHeader className="flex justify-between items-start">
+								<CardHeader className="flex flex-row justify-between items-start">
 									<div className="space-y-4 w-full">
 										<CardTitle className="text-md">
 											Fields :{" "}
@@ -183,7 +210,7 @@ export default function TestRequest() {
 										</CardTitle>
 									</div>
 									<Button onClick={() => handleRun()}>
-										Run <Play />
+										Run <Play className="ml-2 h-4 w-4" />
 									</Button>
 								</CardHeader>
 								<CardContent>

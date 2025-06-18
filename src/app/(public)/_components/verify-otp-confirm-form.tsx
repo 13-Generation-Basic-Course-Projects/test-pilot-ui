@@ -62,9 +62,6 @@ export function VerifyOtpConfirmForm({
 			return;
 		}
 
-		console.log("OTP Verify Data:", data);
-		console.log("OTP:", data.pin, "Email:", registeredEmail);
-
 		const verifyData = await verifyOTPAction({
 			otp: data.pin,
 			email: registeredEmail as string,

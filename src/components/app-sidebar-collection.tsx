@@ -43,19 +43,15 @@ import {
 import { CollectionItem, Endpoint } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
-
-import {
-	deleteCollectionByIdService,
-	getAllCollection,
-} from "@/service/collection-service";
 import {
 	createCollectionAction,
-	deleteCollectionAction,
 	duplicateCollectionAction,
 	fetchCollectionsForProject,
 	renameCollectionAction,
 } from "@/action/collection-action";
-import { getRequestByCollectionId } from "@/service/request-service";
+import { deleteCollectionAction } from "@/action/collection-action";
+import { CollectionSidebarSkeleton } from "./collection-sidebar-skeleton";
+import { useRouter } from "next/navigation";
 
 interface Project {
 	id: string;
@@ -63,6 +59,7 @@ interface Project {
 }
 
 export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
+	const [isLoading, setIsLoading] = useState(true);
 	const [isCollectionSidebarOpen, setIsCollectionSidebarOpen] = useState(true);
 	const [openCollections, setOpenCollections] = useState<Record<
 		string,
@@ -95,19 +92,28 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		projectId: string;
 		collectionId: string;
 	} | null>(null);
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchCollections = async () => {
-			const collections = await fetchCollectionsForProject(projectId);
-			setCollectionsData([
-				{
-					id: projectId,
-					collections: collections.map((col) => ({
-						...col,
-						endpoints: [], // Initialize with empty endpoints
-					})),
-				},
-			]);
+			setIsLoading(true); // Set loading to true when starting
+			try {
+				const collections = await fetchCollectionsForProject(projectId);
+				setCollectionsData([
+					{
+						id: projectId,
+						collections: collections.map((col) => ({
+							...col,
+							endpoints: [], // Initialize with empty endpoints
+						})),
+					},
+				]);
+			} catch (error) {
+				console.error("Failed to fetch collections:", error);
+				toast.error("Could not load collections.");
+			} finally {
+				setIsLoading(false); // Set loading to false when finished
+			}
 		};
 		fetchCollections();
 	}, [projectId]);
@@ -310,7 +316,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		newTitle: string
 	) => {
 		try {
-			console.log("Renaming endpoint:", { endpointId, newTitle });
 			await updateRequestByIdAction(collectionId, endpointId, {
 				name: newTitle,
 			});
@@ -529,7 +534,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		},
 	];
 
-	if (openCollections === null) return null;
+	if (openCollections === null) return <CollectionSidebarSkeleton />;
+
+	if (isLoading) {
+		return <CollectionSidebarSkeleton />;
+	}
 
 	if (!isCollectionSidebarOpen) {
 		return (
@@ -550,6 +559,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		<>
 			<div className="w-80 border-r bg-background duration-75">
 				{/* Header */}
+				{!isLoading && collectionsData[0]?.collections.length === 0 && (
+					<div className="p-4 text-center text-sm text-muted-foreground">
+						No collections yet. <br /> Create one to get started!
+					</div>
+				)}
 				<div className="flex items-center justify-between p-4 border-b">
 					<CollectionForm onCollectionCreate={handleCreateCollection} />
 					<div className="flex items-center gap-1">
@@ -829,8 +843,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 					onConfirm={async () => {
 						const { projectId, collectionId, endpointId } = endpointToDelete;
 						try {
-							console.log("Deleting endpoint:", endpointId); // Debug log
-							await deleteRequestAction(collectionId, endpointId);
+							await deleteRequestAction(collectionId, endpointId, projectId);
 							setCollectionsData((prev) =>
 								prev.map((project) =>
 									project.id === projectId
@@ -850,6 +863,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 										: project
 								)
 							);
+							router.push(`/project/${projectId}`);
 							toast.success("Endpoint deleted successfully");
 						} catch (error: any) {
 							console.error("Failed to delete endpoint:", error);

@@ -1,16 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "../code-block/code-block";
 import { TestCase } from "./test-case";
 import { TestRequestBody } from "./test-request-body";
+import { EndpointItem } from "@/types";
+import { useApiBodyStore } from "@/store/body-api-slice";
 
-export const Body = () => {
+export const Body = ({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) => {
 	const [selectedTab, setSelectedTab] = useState("none");
 	const [innerTab, setInnerTab] = useState("raw-body");
+	const { rawBody, setRawBody, apiBodyRows } = useApiBodyStore(); // Include apiBodyRows if needed for status checks
 
 	const handleParse = () => {
 		setInnerTab("test-case"); // Switch to Test Case tab
@@ -56,11 +65,15 @@ export const Body = () => {
 						</TabsList>
 
 						<TabsContent value="raw-body">
-							<CodeBlock onParse={handleParse} />
+							<CodeBlock
+								onParse={handleParse}
+								request={request}
+								requestId={requestId}
+							/>
 						</TabsContent>
 
 						<TabsContent value="test-case">
-							<TestCase />
+							<TestCase request={request} requestId={requestId} />
 						</TabsContent>
 
 						<TabsContent value="test-request">
