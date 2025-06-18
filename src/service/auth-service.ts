@@ -95,3 +95,39 @@ export const resendOTPService = async ({ email }: { email: string }) => {
 	const data = await res.json();
 	return data;
 };
+
+export const requestOTPPasswordService = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	const res = await fetch(`${AUTH_ENDPOINT}/password/request-reset-otp`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email }),
+	});
+
+	const data = await res.json();
+	return data;
+};
+
+export const googleLoinService = async ({
+	accessToken,
+}: {
+	accessToken: string;
+}) => {
+	console.log(accessToken);
+	const res = await fetch(`${AUTH_ENDPOINT}/google-login`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ accessToken }),
+	});
+
+	const data = await res.json();
+	console.log(data);
+	return data;
+};

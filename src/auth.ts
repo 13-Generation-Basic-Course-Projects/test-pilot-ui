@@ -1,6 +1,8 @@
 import NextAuth, { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { signInService } from "./service/auth-service";
+import { googleLoinService, signInService } from "./service/auth-service";
+import Google from "@auth/core/providers/google";
+import GitHub from "@auth/core/providers/github";
 
 class CustomError extends CredentialsSignin {
 	constructor(code: string) {
@@ -43,6 +45,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 				}
 			},
 		}),
+		Google({
+			clientId: process.env.GOOGLE_ID,
+			clientSecret: process.env.GOOGLE_SECRET,
+		}),
+		GitHub({
+			clientId: process.env.GITHUB_ID,
+			clientSecret: process.env.GITHUB_SECRET,
+		}),
 	],
 	secret: process.env.AUTH_SECRET,
 	session: {
@@ -53,6 +63,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	},
 	debug: process.env.NODE_ENV === "development",
 	callbacks: {
+		async signIn({ account }) {
+			if (account?.provider === "google") {
+				const accessToken = account.id_token as string;
+				await googleLoinService({ accessToken });
+			}
+			if (account?.provider === "github") {
+				const accessToken = account.access_token;
+				// Handle GitHub accessToken (send to backend, etc.)
+			}
+			return true;
+		},
 		async jwt({ token, user }) {
 			if (user) {
 				token.accessToken = (user as { id: string; token: string }).token;

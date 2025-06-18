@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { signInAction } from "@/action/auth-action";
+import { signIn } from "next-auth/react";
 
 export function LoginForm({
 	className,
@@ -53,6 +54,7 @@ export function LoginForm({
 				<Button
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
+					onClick={() => signIn("google")}
 				>
 					<GoogleIcon />
 					Google
