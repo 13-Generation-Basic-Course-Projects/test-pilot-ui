@@ -42,6 +42,7 @@ type CustomValueFormProps = {
 	// The type of editingValue now correctly reflects the union type from the schema
 	editingValue: z.infer<typeof customValueSchema> | null;
 	setEditingIndex: React.Dispatch<React.SetStateAction<number | null>>;
+	className?: string;
 };
 
 // --- MODIFIED: Default form values must match one of the schema shapes ---
@@ -59,6 +60,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 	editingIndex,
 	editingValue,
 	setEditingIndex,
+	className,
 }) => {
 	const [open, setOpen] = useState(false);
 
@@ -110,7 +112,10 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<Button className="cursor-pointer text-[16px]" onClick={handleAddClick}>
+			<Button
+				className={`cursor-pointer text-[16px] ${className}`}
+				onClick={handleAddClick}
+			>
 				Add Custom
 			</Button>
 			<DialogContent className="p-8 px-12 font-sans">

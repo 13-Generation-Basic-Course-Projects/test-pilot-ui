@@ -56,6 +56,9 @@ import { cn } from "@/lib/utils";
 
 // --- Import the central test case store ---
 import useTestCaseStore from "@/store/test-case-store";
+import { CustomValueForm } from "./custom-value-form";
+import { customValueSchema } from "@/lib/zodSchema";
+import z from "zod";
 
 // --- Component-specific Data ---
 const dataTypeOptions = [
@@ -76,18 +79,28 @@ interface TestCaseProps {
 }
 
 export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
-	// --- State & Store Hooks ---
 	const { apiBodyRows, updateRow } = useApiBodyStore();
-	const { predefinedTestCases, customTestCases } = useTestCaseStore();
+	const {
+		predefinedTestCases,
+		customTestCases,
+		addTestCase,
+		editTestCase,
+		deleteTestCase,
+	} = useTestCaseStore();
 	const allTestCases = useMemo(
 		() => [...predefinedTestCases, ...customTestCases],
 		[predefinedTestCases, customTestCases]
 	);
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dataTypeChangeInfo, setDataTypeChangeInfo] = useState<{
 		rowId: string;
 		newType: DataType;
 	} | null>(null);
+	const [editingIndex, setEditingIndex] = useState<number | null>(null);
+	const [editingValue, setEditingValue] = useState<z.infer<
+		typeof customValueSchema
+	> | null>(null);
 
 	// --- Handler Functions ---
 	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
@@ -144,7 +157,10 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 	}
 
 	return (
-		<fieldset disabled={isGenerating} className="space-y-5 min-h-[480px]">
+		<fieldset
+			disabled={isGenerating}
+			className="space-y-5 min-h-[480px] font-sans"
+		>
 			<div className="flex justify-end pt-4 cursor-pointer">
 				<Button
 					onClick={onTestCasesAdded}
@@ -181,7 +197,10 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 					</TableHeader>
 					<TableBody>
 						{apiBodyRows.map((row) => (
-							<TableRow key={row.id} className="hover:bg-gray-50 border-b">
+							<TableRow
+								key={row.id}
+								className="hover:bg-gray-50 border-b font-sans"
+							>
 								<TableCell className="py-2 border-r align-top">
 									<span className="block px-2 py-2 text-[16px] font-medium">
 										{row.id}
@@ -217,24 +236,51 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 								</TableCell>
 								<TableCell className="px-4 py-2 align-top">
 									<div className="flex items-center gap-2 flex-wrap py-[3px]">
-										<Popover>
-											<PopoverTrigger asChild>
+										<Popover
+											open={isPopoverOpen}
+											onOpenChange={setIsPopoverOpen}
+											modal={true}
+										>
+											<PopoverTrigger
+												asChild
+												onMouseDown={(e) => e.preventDefault()}
+												onClick={(e) => {
+													e.preventDefault();
+													setIsPopoverOpen(true);
+													e.stopPropagation();
+												}}
+												type="button"
+											>
 												<Button
 													variant="outline"
 													size="icon"
+													type="button"
 													className="h-8 w-8 shrink-0 cursor-pointer"
+													onClick={(e) => {
+														e.preventDefault();
+														setIsPopoverOpen(true);
+														e.stopPropagation();
+													}}
 													onMouseDown={(e) => e.preventDefault()}
 												>
 													<Plus className="h-6 w-6 size-5" />
 												</Button>
 											</PopoverTrigger>
 											<PopoverContent
-												className="p-0 w-[250px]"
+												className="p-0 w-[250px] font-sans"
 												align="start"
 												onOpenAutoFocus={(e) => e.preventDefault()}
 											>
 												<Command>
 													<CommandInput placeholder="Search cases..." />
+													<CustomValueForm
+														onAddCustomValue={addTestCase}
+														onEditCustomValue={editTestCase}
+														editingIndex={editingIndex}
+														editingValue={editingValue}
+														setEditingIndex={setEditingIndex}
+														className="rounded-none"
+													/>
 													<CommandList className="overflow-y-auto no-scrollbar">
 														<CommandEmpty>No cases found.</CommandEmpty>
 														<CommandGroup>
