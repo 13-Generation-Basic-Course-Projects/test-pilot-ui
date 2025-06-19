@@ -50,7 +50,7 @@ import {
 import { Button } from "../ui/button";
 
 // --- Icons & Utils ---
-import { Plus, X, Check, Loader2 } from "lucide-react"; // ✨ 1. Import the Loader2 icon
+import { Plus, X, Check, Loader2 } from "lucide-react";
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
 import { cn } from "@/lib/utils";
 
@@ -144,10 +144,8 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 	}
 
 	return (
-		// ✨ 2. Wrap the component in a fieldset to disable all child elements during generation
 		<fieldset disabled={isGenerating} className="space-y-5 min-h-[480px]">
 			<div className="flex justify-end pt-4 cursor-pointer">
-				{/* ✨ 3. The button now shows a loading state */}
 				<Button
 					onClick={onTestCasesAdded}
 					disabled={!hasSelectedCases || isGenerating}
@@ -218,18 +216,23 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 									</Select>
 								</TableCell>
 								<TableCell className="px-4 py-2 align-top">
-									<div className="flex items-center gap-2 flex-wrap py-2">
+									<div className="flex items-center gap-2 flex-wrap py-[3px]">
 										<Popover>
 											<PopoverTrigger asChild>
 												<Button
 													variant="outline"
 													size="icon"
-													className="h-6 w-6 shrink-0"
+													className="h-8 w-8 shrink-0 cursor-pointer"
+													onMouseDown={(e) => e.preventDefault()}
 												>
-													<Plus className="h-4 w-4" />
+													<Plus className="h-6 w-6 size-5" />
 												</Button>
 											</PopoverTrigger>
-											<PopoverContent className="p-0 w-[250px]" align="start">
+											<PopoverContent
+												className="p-0 w-[250px]"
+												align="start"
+												onOpenAutoFocus={(e) => e.preventDefault()}
+											>
 												<Command>
 													<CommandInput placeholder="Search cases..." />
 													<CommandList className="overflow-y-auto no-scrollbar">
@@ -245,9 +248,10 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 																	<CommandItem
 																		key={testCase.name}
 																		value={testCase.name}
-																		onSelect={() =>
-																			handleToggleCase(row, testCase.name)
-																		}
+																		onSelect={(currentValue) => {
+																			// ✨ The fix is here! Prevent the default behavior.
+																			handleToggleCase(row, testCase.name);
+																		}}
 																	>
 																		<Check
 																			className={cn(
@@ -294,7 +298,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 														<DropdownMenuItem
 															key={caseName}
 															className="flex justify-between items-center cursor-pointer"
-															onSelect={(e) => e.preventDefault()}
+															onSelect={(e) => e.preventDefault()} // This is also good practice
 														>
 															{caseName}
 															<button

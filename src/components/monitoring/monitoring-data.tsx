@@ -128,20 +128,23 @@ export function MonitoringData({
 						<Table>
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
-									<TableHead className="truncate text-[16px] w-[20%]">
+									{/* <TableHead className="truncate text-[16px] w-[20%]">
 										Date
-									</TableHead>
+									</TableHead> */}
 									<TableHead className="min-w-[60px] truncate text-[16px] w-[10%]">
 										Method
 									</TableHead>
-									<TableHead className="min-w-[120px] truncate text-[16px] w-[60%]">
+									<TableHead className="min-w-[120px] truncate text-[16px] w-[30%]">
 										Endpoint
+									</TableHead>
+									<TableHead className="min-w-[120px] truncate text-[16px] w-[30%]">
+										Test Case
 									</TableHead>
 									<TableHead className="truncate text-[16px] w-[10%]">
 										Status
 									</TableHead>
 									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
-										API Status Code
+										API Code
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -161,14 +164,14 @@ export function MonitoringData({
 											isClickable(test.status) && onSelectTest(test.id)
 										}
 									>
-										<TableCell className="py-3 w-[70px] min-w-[70px]">
+										{/* <TableCell className="py-3 w-[70px] min-w-[70px]">
 											<div
 												className="truncate font-medium text-sm"
 												title={test.date}
 											>
 												{formattedDateNoTime}
 											</div>
-										</TableCell>
+										</TableCell> */}
 										<TableCell className="py-3 w-[60px] min-w-[60px]">
 											<div
 												className={`inline-block border border-[#E2E8F0] rounded-md px-2 py-1 text-sm truncate max-w-full ${
@@ -189,11 +192,14 @@ export function MonitoringData({
 										</TableCell>
 										<TableCell className="py-3 min-w-[120px]">
 											<div
-												className="font-mono text-sm text-[#475569] truncate"
+												className="font-mono text-sm text-[#475569] truncate w-[10rem]"
 												title={test.endpoint}
 											>
 												{test.endpoint}
 											</div>
+										</TableCell>
+										<TableCell className="py-3 min-w-[120px]">
+											<Badge title={test.testName}>{test.testName}</Badge>
 										</TableCell>
 										<TableCell className="py-3 w-[100px] min-w-[100px]">
 											<div className="min-w-0 overflow-hidden">

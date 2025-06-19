@@ -36,12 +36,14 @@ import { MethodBadge } from "../method-badge";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { formattedDateNow } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 type RowData = {
 	date: string;
 	method: React.ReactNode;
 	endPoint: string;
 	status: React.ReactNode;
+	testCase: string;
 };
 
 type HistoryDataType = {
@@ -79,66 +81,74 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 	const [data, setData] = React.useState<RowData[]>([
 		{
 			date: formattedDate,
+			testCase: "Username - Too Long",
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
 		{
 			date: formattedDate,
+			testCase: "Age - Negative Value",
+
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#f31260]">Failed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						200
-					</div>
+					</div> */}
 				</div>
 			),
 		},
 		{
 			date: formattedDate,
+			testCase: "Email - Invalid Format",
+
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
 		{
 			date: formattedDate,
+			testCase: "Password - Weak Password",
+
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
 		{
 			date: formattedDate,
+			testCase: "Password - Empty",
 			method: <MethodBadge method="POST" />,
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
 					<p className="text-[#17C964]">Passed</p>
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -150,9 +160,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -162,9 +172,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#17C964]">
 						200
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -174,9 +184,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -186,9 +196,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -198,9 +208,9 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 			endPoint: "https://api.kshrd.app/api/v1/auth/register",
 			status: (
 				<div className="flex justify-between items-center max-w-[120px]">
-					<div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
+					{/* <div className="w-fit border border-[#E2E8F0] rounded-sm px-[15px] text-[#f31260]">
 						400
-					</div>
+					</div> */}
 				</div>
 			),
 		},
@@ -365,8 +375,11 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 									<TableHead className="text-base py-4 min-w-[80px]">
 										Method
 									</TableHead>
-									<TableHead className="text-base py-4 min-w-[200px]">
+									<TableHead className="text-base py-4 min-w-[100px]">
 										Endpoint
+									</TableHead>
+									<TableHead className="text-base py-4 min-w-[100px]">
+										Test Case
 									</TableHead>
 									<TableHead className="text-base py-4 min-w-[100px]">
 										Status
@@ -397,7 +410,12 @@ export function HistoryData({ setActiveRequestIndex }: HistoryDataType) {
 									>
 										<TableCell className="py-5 pl-6">{item.date}</TableCell>
 										<TableCell className="py-5">{item.method}</TableCell>
-										<TableCell className="py-5">{item.endPoint}</TableCell>
+										<TableCell className="py-5 w-[10rem] truncate">
+											{item.endPoint}
+										</TableCell>
+										<TableCell className="py-5">
+											<Badge>{item.testCase}</Badge>
+										</TableCell>
 										<TableCell className="py-5">{item.status}</TableCell>
 										<TableCell className="py-5">
 											<div className="flex gap-3">
