@@ -224,7 +224,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 												</Select>
 											) : (
 												<Input
-													placeholder="Value or Regex"
+													placeholder="Value"
 													{...field}
 													// The value from the form state needs to be a string for the input
 													value={String(field.value ?? "")}
