@@ -11,7 +11,7 @@ export default function ProfileSetting() {
 		username: "",
 		email: "",
 		password: "********",
-		profileImage: "/default-image.png",
+		profileImage: "/profile.png",
 	});
 
 	useEffect(() => {
@@ -22,7 +22,7 @@ export default function ProfileSetting() {
 					username: userData.username,
 					email: userData.email,
 					password: "********",
-					profileImage: userData.profileImage || "/default-image.png",
+					profileImage: userData.profileImage || "/profile.png",
 				});
 			}
 		}
@@ -50,10 +50,9 @@ export default function ProfileSetting() {
 			await handleUserUpdate({
 				name: updatedData.username,
 				email: updatedData.email,
-				profileImage: profileImageUrl,
 			});
 
-			// Update state locally
+
 			setProfile((prev) => ({
 				...prev,
 				username: updatedData.username,
@@ -80,8 +79,8 @@ export default function ProfileSetting() {
 					<div className="flex items-center gap-5">
 						<Image
 							src={
-								profile.profileImage.startsWith("http://")
-									? profile.profileImage.replace("http://", "https://")
+								profile.profileImage.startsWith("https://")
+									? profile.profileImage.replace("https://", "https://")
 									: profile.profileImage
 							}
 							alt="Profile"

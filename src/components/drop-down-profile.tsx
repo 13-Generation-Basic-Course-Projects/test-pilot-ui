@@ -53,7 +53,7 @@ export const DropdownProfile = () => {
 				<DropdownMenuTrigger asChild>
 					{profile.profileImage && (
 						<Image
-							src={profile.profileImage.replace("http://", "https://")}
+							src={profile.profileImage.replace("https://", "https://")}
 							alt="profile"
 							width={40}
 							height={40}

@@ -238,7 +238,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 									</div>
 									{profile.profileImage && (
 										<Image
-											src={profile.profileImage.replace('http://', 'https://')}
+											src={profile.profileImage.replace('https://', 'https://')}
 
 											alt="user profile"
 											width={35}

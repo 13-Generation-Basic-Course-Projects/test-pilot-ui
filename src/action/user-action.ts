@@ -4,7 +4,7 @@ import { uploadProfileImageService, userUpdateService} from "@/service/user-serv
 
 
 export const handleUserUpdate = async (
-    data: { name: string; email: string; profileImage: string },
+    data: { name: string; email: string },
 ) => {
     try {
         const updated = await userUpdateService(data);

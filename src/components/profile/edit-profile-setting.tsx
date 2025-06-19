@@ -24,7 +24,7 @@ interface EditProfileProps {
 		username: string;
 		email: string;
 		password: string;
-		image?: File | null;
+		profileImage?: File | null;
 	}) => void;
 }
 
@@ -68,7 +68,7 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 			username,
 			email,
 			password,
-			image: imageFile,
+			profileImage: imageFile,
 		});
 		setOpen(false);
 	};

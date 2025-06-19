@@ -11,7 +11,13 @@ const nextConfig = {
 				protocol: "http",
 				hostname: "localhost",
 				port: "8080",
-				pathname: "/api/v1/files/preview-file/**",
+				pathname: "/api/v1/users/preview-file/**",
+			},
+			{
+				protocol: "https",
+				hostname: "localhost",
+				port: "8080",
+				pathname: "/api/v1/users/preview-file/**",
 			},
 			{
 				protocol: "https",

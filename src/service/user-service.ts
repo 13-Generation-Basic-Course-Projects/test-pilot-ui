@@ -7,6 +7,7 @@ export async function userUpdateService(data: { name: string; email: string }) {
         method: "PUT",
         body: JSON.stringify(data),
     });
+    console.log("getProfile",res)
 
     return res.payload;
 }
@@ -19,6 +20,7 @@ export async function uploadProfileImageService(file: File) {
         method: "PUT",
         body: formData,
     });
+
 
     return res.payload.profileImage;
 }
