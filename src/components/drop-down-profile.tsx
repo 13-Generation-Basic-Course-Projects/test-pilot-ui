@@ -51,16 +51,19 @@ export const DropdownProfile = () => {
 
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					{profile.profileImage && (
-						<Image
-							src={profile.profileImage.replace("https://", "https://")}
-							alt="profile"
-							width={40}
-							height={40}
-							className="rounded-full"
-						/>
-					)}
+					<Image
+						src={
+							profile.profileImage && profile.profileImage.trim() !== ""
+								? profile.profileImage.replace("https://", "https://")
+								: "/profile.png"
+						}
+						alt="profile"
+						width={40}
+						height={40}
+						className="rounded-full"
+					/>
 				</DropdownMenuTrigger>
+
 
 				<DropdownMenuContent className="w-48" align="end">
 					<DropdownMenuGroup>
