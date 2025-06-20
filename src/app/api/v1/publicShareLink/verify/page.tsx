@@ -1,6 +1,8 @@
-import VerifyForm from '@/components/verify-share-project'
+import VerifyCollectionForm from '@/components/verify-share-collection'
 import { Suspense } from 'react'
 
 export default function pages() {
-  return <Suspense><VerifyForm /></Suspense>
+  return <Suspense>
+    <VerifyCollectionForm/>
+  </Suspense>
 }
