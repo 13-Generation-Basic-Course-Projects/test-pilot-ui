@@ -1,24 +1,38 @@
 import { fetchAPI } from "@/lib/api";
 import { REQUEST_ENDPOINT } from "@/lib/static";
-import { NewRequestPayload } from "@/types";
+import { EndpointItem } from "@/types";
 import { RequestResponseTypes } from "@/types/request-type";
 
 export const getRequestByCollectionId = async ({
-	collectionId,
+  collectionId,
 }: {
-	collectionId: string;
-}) => {
-	const response = await fetchAPI<RequestResponseTypes>(
-		`${REQUEST_ENDPOINT}/by-collection/${collectionId}`
-	);
+  collectionId: string;
+}): Promise<EndpointItem[]> => {
+  try {
+    const response = await fetchAPI<RequestResponseTypes>(
+      `${REQUEST_ENDPOINT}/by-collection/${collectionId}`
+    );
 
-	console.log(response);
-	return response.payload.map((request) => ({
-		id: request.id,
-		name: request.name,
-		method: request.method || "GET",
-		path: request.path || "/new-request",
-	}));
+    console.log("getRequestByCollectionId response:", response);
+
+    if (!response.success || !response.payload) {
+      console.warn(
+        `getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
+        response
+      );
+      return [];
+    }
+
+    return response.payload.map((request) => ({
+      id: request.id,
+      name: request.name,
+      method: request.method || "GET",
+      path: request.path || "/new-request",
+    }));
+  } catch (error) {
+    console.error(`getRequestByCollectionId Error for collectionId ${collectionId}:`, error);
+    return [];
+  }
 };
 
 //Add request
