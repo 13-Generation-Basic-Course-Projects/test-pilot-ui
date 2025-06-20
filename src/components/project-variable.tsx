@@ -45,7 +45,6 @@ export default function ProjectVariable() {
 		const updatedRows = [...rows];
 		updatedRows[index][field] = newValue;
 		setRows(updatedRows);
-		console.log(updatedRows);
 	};
 
 	const handleDeleteRow = () => {
@@ -197,18 +196,6 @@ export default function ProjectVariable() {
 										editField === "variable"
 											? rows[editIndex].variable
 											: rows[editIndex].value;
-
-									console.log(
-										JSON.stringify(
-											{
-												field: editField,
-												old: oldVal,
-												new: newVal,
-											},
-											null,
-											2
-										)
-									);
 								}
 								setShowConfirmDialog(false);
 							}}

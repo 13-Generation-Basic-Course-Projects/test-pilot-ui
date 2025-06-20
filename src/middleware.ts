@@ -53,18 +53,12 @@ export default auth((req) => {
 		const loginUrl = new URL("/login", req.nextUrl.origin);
 		loginUrl.searchParams.set("callbackUrl", encodedCallbackUrl);
 
-		console.log(
-			`Redirecting unauthenticated user from "${pathname}" to login.`
-		);
 		return NextResponse.redirect(loginUrl.toString());
 	}
 
 	// --- Redirect logged-in users from auth routes ---
 	// If the user IS logged in and trying to access an auth page (login/signup)
 	if (isLoggedIn && isAuthPath) {
-		console.log(
-			`Redirecting authenticated user from "${pathname}" to ${defaultLoginRedirect}.`
-		);
 		// Redirect them to the default logged-in page
 		return NextResponse.redirect(
 			new URL(defaultLoginRedirect, req.nextUrl.origin)

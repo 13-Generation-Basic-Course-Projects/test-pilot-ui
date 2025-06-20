@@ -10,15 +10,17 @@ import { ApiRequestContentHeader } from "./api-request-content-header";
 import { ApiRequestDetailParam } from "./api-request-detail-params-testcase";
 import { Body } from "./body";
 import { CustomValue } from "./custom-value";
+import { EndpointItem } from "@/types";
 
 export function RequestContentDetail({
 	projectId,
 	requestId,
+	request,
 }: {
 	projectId: string;
 	requestId: string;
+	request: EndpointItem[];
 }) {
-	console.log(projectId, requestId);
 	return (
 		<Tabs defaultValue="request-content" className="w-full">
 			<TabsListV2 className="mb-10">
@@ -27,9 +29,9 @@ export function RequestContentDetail({
 				<TabsTriggerV2 value="custom-value">Custom Value</TabsTriggerV2>
 			</TabsListV2>
 			<TabsContent value="request-content">
-				<ApiRequestDetailParam />
-				<ApiRequestContentHeader />
-				<Body />
+				<ApiRequestDetailParam request={request} requestId={requestId} />
+				<ApiRequestContentHeader requests={request} requestId={requestId} />
+				<Body request={request} requestId={requestId} projectId={projectId} />
 			</TabsContent>
 			<TabsContent value="predefined-value">
 				<PredefinedTestCase />

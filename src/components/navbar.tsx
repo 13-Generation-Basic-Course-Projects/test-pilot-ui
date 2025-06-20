@@ -5,13 +5,12 @@ import { SubpathSegments } from "./subpath-segments";
 import { DropdownProfile } from "./drop-down-profile";
 import { auth } from "@/auth";
 
+
 export const NavbarComponent = async ({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"nav">) => {
 	const session = await auth();
-
-	console.log(session?.accessToken);
 
 	return (
 		<nav className={cn("border-b-1 py-2 px-6", className)} {...props}>

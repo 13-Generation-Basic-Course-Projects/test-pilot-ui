@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -20,26 +21,50 @@ import {
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { signOut } from "@/auth";
+import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/action/auth-action";
+import { InviteToProject } from "@/components/invite-to-projecct";
+import { getUserProfileService } from "@/service/user-service";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+	const [profile, setProfile] = useState({ username: "", email: "", profileImage: "" });
+
 	const router = useRouter();
+	const pathname = usePathname();
+
+
+	const isProjectDetailPage = pathname.startsWith("/project/") && pathname.split("/").length === 3;
+
+	useEffect(() => {
+		const fetchProfile = async () => {
+			const data = await getUserProfileService();
+			setProfile(data);
+		};
+
+		fetchProfile();
+	}, []);
 
 	return (
-		<>
+		<div className="flex items-center gap-4">
+			{isProjectDetailPage && <InviteToProject urlProject={pathname} />}
+
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Image
-						src="/profile.png"
+						src={
+							profile.profileImage && profile.profileImage.trim() !== ""
+								? profile.profileImage.replace("https://", "https://")
+								: "/profile.png"
+						}
 						alt="profile"
 						width={40}
 						height={40}
-						className="rounded-full cursor-pointer"
+						className="rounded-full"
 					/>
 				</DropdownMenuTrigger>
+
+
 				<DropdownMenuContent className="w-48" align="end">
 					<DropdownMenuGroup>
 						<DropdownMenuItem onClick={() => router.push("/profile")}>
@@ -58,7 +83,7 @@ export const DropdownProfile = () => {
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			{/* Alert Dialog */}
+			{/* Logout Dialog */}
 			<AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
 				<AlertDialogContent className="w-[350px] p-8">
 					<AlertDialogHeader>
@@ -81,11 +106,11 @@ export const DropdownProfile = () => {
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<form action={logout}>
-							<AlertDialogAction type="submit">logout</AlertDialogAction>
+							<AlertDialogAction type="submit">Logout</AlertDialogAction>
 						</form>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</>
+		</div>
 	);
 };

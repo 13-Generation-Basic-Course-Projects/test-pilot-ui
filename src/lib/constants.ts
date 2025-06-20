@@ -19,6 +19,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-1",
 						method: "GET",
+						name: "",
 						path: "/users",
 						value: "http://localhost:3000/api/users",
 						description: "Get all users",
@@ -30,6 +31,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-2",
 						method: "POST",
+						name: "",
 						path: "/users",
 						value: "http://localhost:3000/api/users",
 						description: "create user",
@@ -59,6 +61,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-5",
 						method: "GET",
+						name: "",
 						path: "/products",
 						value: "http://localhost:3000/api/products",
 						description: "Retrieve all products",
@@ -70,6 +73,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-6",
 						method: "POST",
+						name: "",
 						path: "/products",
 						value: "http://localhost:3000/api/products",
 						description: "Add a new product",
@@ -81,6 +85,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-7",
 						method: "GET",
+						name: "",
 						path: "/products/{id}",
 						value: "http://localhost:3000/api/products/123",
 						description: "Get product by ID",
@@ -110,6 +115,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-15",
 						method: "GET",
+						name: "",
 						path: "/inventory/{productId}",
 						value: "http://localhost:3000/api/inventory/P001",
 						description: "Get stock level for a product",
@@ -121,6 +127,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-16",
 						method: "PUT",
+						name: "",
 						path: "/inventory/{productId}/add",
 						value: "http://localhost:3000/api/inventory/P001/add",
 						description: "Add stock to a product",
@@ -150,6 +157,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-17",
 						method: "GET",
+						name: "",
 						path: "/articles",
 						value: "http://localhost:3000/api/articles",
 						description: "Retrieve all articles",
@@ -161,6 +169,7 @@ export const projectsData: Project[] = [
 					{
 						id: "endpoint-18",
 						method: "DELETE",
+						name: "",
 						path: "/articles/{id}",
 						value: "http://localhost:3000/api/articles/art-456",
 						description: "Delete an article",
