@@ -188,17 +188,19 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 						collections: project.collections.map((collection) =>
 							collection.id === collectionId
 								? {
-										...collection,
-										endpoints: [
-											...collection.endpoints,
-											{
-												id: newEndpoint.id,
-												method: "GET",
-												path: newEndpoint.name || requestName,
-												name: newEndpoint.name || requestName,
-											},
-										],
-								  }
+									...collection,
+									endpoints: [
+										...collection.endpoints,
+										{
+											id: newEndpoint.id,
+											method: "GET",
+											path: newEndpoint.name || requestName,
+											name: newEndpoint.name || requestName,
+											collectionId, 
+											projectId,    
+										},
+									],
+								}
 								: collection
 						),
 					};
@@ -208,9 +210,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			toast.success("Endpoint created successfully");
 		} catch (error: any) {
 			console.error("Failed to add endpoint:", error);
-			toast.error(
-				`Failed to add endpoint: ${error.message || "Unknown error"}`
-			);
+			toast.error(`Failed to add endpoint: ${error.message || "Unknown error"}`);
 		}
 	};
 
@@ -323,20 +323,20 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 				prev.map((project) =>
 					project.id === projectId
 						? {
-								...project,
-								collections: project.collections.map((collection) =>
-									collection.id === collectionId
-										? {
-												...collection,
-												endpoints: collection.endpoints.map((endpoint) =>
-													endpoint.id === endpointId
-														? { ...endpoint, path: newTitle, name: newTitle }
-														: endpoint
-												),
-										  }
-										: collection
-								),
-						  }
+							...project,
+							collections: project.collections.map((collection) =>
+								collection.id === collectionId
+									? {
+										...collection,
+										endpoints: collection.endpoints.map((endpoint) =>
+											endpoint.id === endpointId
+												? { ...endpoint, path: newTitle, name: newTitle }
+												: endpoint
+										),
+									}
+									: collection
+							),
+						}
 						: project
 				)
 			);
@@ -355,10 +355,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		endpointId: string
 	) => {
 		try {
-			const newEndpoint = await duplicateRequestAction(
-				collectionId,
-				endpointId
-			);
+			const newEndpoint = await duplicateRequestAction(collectionId, endpointId);
 
 			if (!newEndpoint) {
 				throw new Error("Failed to duplicate endpoint");
@@ -381,6 +378,8 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 										method: newEndpoint.method || "GET",
 										path: newEndpoint.name || "New Request (Copy)",
 										name: newEndpoint.name || "New Request (Copy)",
+										collectionId, 
+										projectId,    
 									},
 								],
 							};
@@ -392,9 +391,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 			toast.success("Endpoint duplicated successfully");
 		} catch (error: any) {
 			console.error("Failed to duplicate endpoint:", error);
-			toast.error(
-				`Failed to duplicate endpoint: ${error.message || "Unknown error"}`
-			);
+			toast.error(`Failed to duplicate endpoint: ${error.message || "Unknown error"}`);
 		}
 	};
 
@@ -402,137 +399,138 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 		collection: CollectionItem,
 		projectId: string
 	) => [
-		{
-			icon: <FilePlusIcon className="w-4 h-4" />,
-			label: "Add Request",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				handleAddEndpoint(projectId, collection.id);
+			{
+				icon: <FilePlusIcon className="w-4 h-4" />,
+				label: "Add Request",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					handleAddEndpoint(projectId, collection.id);
+				},
+				className: "cursor-pointer"
 			},
-		},
-		{ isSeparator: true as const },
-		{
-			icon: <Share2Icon className="w-4 h-4" />,
-			label: "Share",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setSelectedCollection(collection);
-				setIsShareCollectionOpen(true);
+			{ isSeparator: true as const },
+			{
+				icon: <Share2Icon className="w-4 h-4" />,
+				label: "Share",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setSelectedCollection(collection);
+					setIsShareCollectionOpen(true);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{ isSeparator: true as const },
-		{
-			icon: <EditIcon className="w-4 h-4" />,
-			label: "Rename",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setRenamingCollectionId(collection.id);
+			{ isSeparator: true as const },
+			{
+				icon: <EditIcon className="w-4 h-4" />,
+				label: "Rename",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setRenamingCollectionId(collection.id);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{
-			icon: <FilePlus2Icon className="w-4 h-4" />,
-			label: "Duplicate",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				handleDuplicateCollection(projectId, collection);
+			{
+				icon: <FilePlus2Icon className="w-4 h-4" />,
+				label: "Duplicate",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					handleDuplicateCollection(projectId, collection);
+				},
 			},
-		},
-		{
-			icon: <FileOutput className="w-4 h-4" />,
-			label: "Export",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setSelectedCollection(collection);
-				setIsExportCollectionOpen(true);
+			{
+				icon: <FileOutput className="w-4 h-4" />,
+				label: "Export",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setSelectedCollection(collection);
+					setIsExportCollectionOpen(true);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
-			label: "Delete",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setTimeout(
-					() =>
-						setCollectionToDelete({ projectId, collectionId: collection.id }),
-					0
-				);
+			{
+				icon: (
+					<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+				),
+				label: "Delete",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setTimeout(
+						() =>
+							setCollectionToDelete({ projectId, collectionId: collection.id }),
+						0
+					);
+				},
+				className:
+					"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 			},
-			className:
-				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
-		},
-	];
+		];
 
 	const getEndpointMenuItems = (
 		endpoint: Endpoint,
 		collectionId: string,
 		projectId: string
 	) => [
-		{
-			icon: <Share2Icon className="w-4 h-4" />,
-			label: "Share",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setSelectedEndpoint(endpoint);
-				setIsShareEndpointOpen(true);
+			{
+				icon: <Share2Icon className="w-4 h-4" />,
+				label: "Share",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setSelectedEndpoint(endpoint);
+					setIsShareEndpointOpen(true);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{ isSeparator: true as const },
-		{
-			icon: <EditIcon className="w-4 h-4" />,
-			label: "Rename",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setRenamingEndpointId(endpoint.id);
+			{ isSeparator: true as const },
+			{
+				icon: <EditIcon className="w-4 h-4" />,
+				label: "Rename",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setRenamingEndpointId(endpoint.id);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{
-			icon: <FilePlus2Icon className="w-4 h-4" />,
-			label: "Duplicate",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
-				handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+			{
+				icon: <FilePlus2Icon className="w-4 h-4" />,
+				label: "Duplicate",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
+					handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{
-			icon: <FileOutput className="w-4 h-4" />,
-			label: "Export",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setSelectedEndpoint(endpoint);
-				setIsExportRequestOpen(true);
+			{
+				icon: <FileOutput className="w-4 h-4" />,
+				label: "Export",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setSelectedEndpoint(endpoint);
+					setIsExportRequestOpen(true);
+				},
+				className: "cursor-pointer",
 			},
-			className: "cursor-pointer",
-		},
-		{
-			icon: (
-				<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-			),
-			label: "Delete",
-			onClick: (e: React.MouseEvent) => {
-				e.stopPropagation();
-				setTimeout(
-					() =>
-						setEndpointToDelete({
-							projectId,
-							collectionId,
-							endpointId: endpoint.id,
-						}),
-					0
-				);
+			{
+				icon: (
+					<TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+				),
+				label: "Delete",
+				onClick: (e: React.MouseEvent) => {
+					e.stopPropagation();
+					setTimeout(
+						() =>
+							setEndpointToDelete({
+								projectId,
+								collectionId,
+								endpointId: endpoint.id,
+							}),
+						0
+					);
+				},
+				className:
+					"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
 			},
-			className:
-				"text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
-		},
-	];
+		];
 
 	if (openCollections === null) return <CollectionSidebarSkeleton />;
 
@@ -690,9 +688,8 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 											return (
 												<div
 													key={uniqueKey}
-													className={`group mx-4 mb-1 rounded-md ${
-														isActive ? "bg-muted" : "hover:bg-muted/50"
-													}`}
+													className={`group mx-4 mb-1 rounded-md ${isActive ? "bg-muted" : "hover:bg-muted/50"
+														}`}
 												>
 													<Link
 														href={endpointPath}
@@ -814,11 +811,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 							prev.map((project) =>
 								project.id === projectId
 									? {
-											...project,
-											collections: project.collections.filter(
-												(collection) => collection.id !== collectionId
-											),
-									  }
+										...project,
+										collections: project.collections.filter(
+											(collection) => collection.id !== collectionId
+										),
+									}
 									: project
 							)
 						);
@@ -848,18 +845,18 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 								prev.map((project) =>
 									project.id === projectId
 										? {
-												...project,
-												collections: project.collections.map((collection) =>
-													collection.id === collectionId
-														? {
-																...collection,
-																endpoints: collection.endpoints.filter(
-																	(endpoint) => endpoint.id !== endpointId
-																),
-														  }
-														: collection
-												),
-										  }
+											...project,
+											collections: project.collections.map((collection) =>
+												collection.id === collectionId
+													? {
+														...collection,
+														endpoints: collection.endpoints.filter(
+															(endpoint) => endpoint.id !== endpointId
+														),
+													}
+													: collection
+											),
+										}
 										: project
 								)
 							);

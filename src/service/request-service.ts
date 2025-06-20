@@ -1,5 +1,6 @@
 import { fetchAPI } from "@/lib/api";
 import { REQUEST_ENDPOINT, REQUEST_TEST_CASE_ENDPOINT } from "@/lib/static";
+import { EndpointItem } from "@/types";
 import { PayloadTestCaseType } from "@/types/request-test-case";
 import {
 	RequestResponseTypes,
@@ -8,21 +9,36 @@ import {
 } from "@/types/request-type";
 
 export const getRequestByCollectionId = async ({
-	collectionId,
+  collectionId,
 }: {
-	collectionId: string;
-}) => {
-	const response = await fetchAPI<RequestResponseTypes>(
-		`${REQUEST_ENDPOINT}/by-collection/${collectionId}`
-	);
+  collectionId: string;
+}): Promise<EndpointItem[]> => {
+  try {
+    const response = await fetchAPI<RequestResponseTypes>(
+      `${REQUEST_ENDPOINT}/by-collection/${collectionId}`
+    );
 
-	return response.payload.map((request) => ({
-		id: request.id,
-		name: request.name,
-		method: request.method || "GET",
-		path: request.path || "/new-request",
-		details: request.details,
-	}));
+    console.log("getRequestByCollectionId response:", response);
+
+    if (!response.success || !response.payload) {
+      console.warn(
+        `getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
+        response
+      );
+      return [];
+    }
+
+    return response.payload.map((request) => ({
+      id: request.id,
+      name: request.name,
+      method: request.method || "GET",
+      path: request.path || "/new-request",
+	  details: request.details,
+    }));
+  } catch (error) {
+    console.error(`getRequestByCollectionId Error for collectionId ${collectionId}:`, error);
+    return [];
+  }
 };
 
 //Add request

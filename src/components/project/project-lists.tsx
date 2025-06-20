@@ -177,6 +177,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 														e.preventDefault();
 														handleShare(project);
 													}}
+													className="cursor-pointer"
 												>
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
