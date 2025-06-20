@@ -27,12 +27,13 @@ export function DeleteEndpoint({ open, onOpenChange, onConfirm }: DeleteRequestP
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
               onConfirm();
               onOpenChange(false); 
             }}
+            className="cursor-pointer"
           >
             Delete
           </AlertDialogAction>

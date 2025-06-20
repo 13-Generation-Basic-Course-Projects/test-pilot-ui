@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
 
+import { useEffect, useState, useTransition } from "react";
 import {
 	Table,
 	TableBody,
@@ -9,14 +9,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,10 +33,28 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-import { Trash2, Plus, X } from "lucide-react";
+import { Trash2, Plus, X, Check } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { Input } from "../ui/input";
+import { EndpointItem } from "@/types";
+import { toast } from "sonner";
+// ✨ 1. Import the server action for saving
+import {
+	createRequestTestCaseAction,
+	getRequestTestCaseAction,
+	updateRequestPathVariablesAction,
+} from "@/action/request-action";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
+import { Application_Context } from "@/types/request-type";
 
 export interface ParamRow {
 	key: string;
@@ -39,191 +62,310 @@ export interface ParamRow {
 	cases: string[];
 }
 
-export default function PathVariable() {
+interface TestCase {
+	id: string;
+	type: string;
+	case: string;
+	value: any;
+}
+
+// ✨ 2. The component accepts `requestId` to know which request it's editing
+export default function PathVariable({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) {
 	const { pathVariables, setPathVariables } = useParamsApiStore();
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+	const [openPopoverIndex, setOpenPopoverIndex] = useState<number | null>(null);
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+	const [isSaving, startTransition] = useTransition();
+
+	// ✨ 3. This effect synchronizes the UI state with the selected request from props
+	useEffect(() => {
+		const fetchData = async () => {
+			const testcases = (await getRequestTestCaseAction({ requestId })).map(
+				(tc) => tc.testCase
+			);
+			const currentEndpoint = request.find((r) => r.id === requestId);
+			// Safely access pathVariables from the endpoint, defaulting to an empty object
+			const pathVariablesObject = currentEndpoint?.details?.pathVariables ?? {};
+
+			// Transform the object { key: value } from the backend into the array format [{ key, value, cases }] the UI needs
+			const formattedPathVariables: ParamRow[] = Object.entries(
+				pathVariablesObject
+			).map(([key, value]) => ({
+				key,
+				value: String(
+					testcases.find((tc) => tc.value === value)?.value || value
+				),
+				cases: testcases.map((tc) => tc.name) || [],
+			}));
+
+			// Update the global store, which in turn updates this component's display
+			setPathVariables(formattedPathVariables);
+		};
+		fetchData();
+	}, [requestId, request, setPathVariables]);
+
+	const handleRemoveCase = (index: number, caseToRemove: string) => {
+		// 1. Create a shallow copy of your variables array to avoid mutating state directly.
+		const updatedRows = [...pathVariables];
+
+		// 2. Use .filter() to create a NEW array of cases, excluding the one to be removed.
+		updatedRows[index].cases = updatedRows[index].cases.filter(
+			(c) => c !== caseToRemove
+		);
+
+		// 3. Update the component's state to reflect the change on the screen.
+		setPathVariables(updatedRows);
+
+		// 4. Call handleSave to persist this new state to your backend.
+		// handleSave(updatedRows);
+	};
+
+	// This effect fetches predefined test cases and is unchanged
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			const backendData = await getAllPredefinedAction();
+			if (backendData && Array.isArray(backendData)) {
+				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					id: item.id,
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				}));
+				setTestCases(transformedData);
+			}
+		};
+		fetchTestCases();
+	}, []);
+
+	// ✨ 4. A single, explicit save handler function
+	const handleSave = (variablesToSave: ParamRow[]) => {
+		// Transform the UI's array state back into the simple { key: value } object the backend expects
+		const payload = variablesToSave.reduce((acc, row) => {
+			if (row.key.trim()) {
+				// Only include rows that have a key
+				acc[row.key.trim()] = row.value;
+			}
+			return acc;
+		}, {} as Record<string, string>);
+
+		startTransition(async () => {
+			try {
+				await updateRequestPathVariablesAction(requestId, payload);
+				// toast.success("Path variables saved.");
+			} catch (error) {
+				toast.error("Path variables could not be saved.");
+			}
+		});
+	};
 
 	const handleAddRow = () => {
-		setPathVariables([...pathVariables, { key: "", value: "", cases: [] }]);
+		const updatedRows = [...pathVariables, { key: "", value: "", cases: [] }];
+		setPathVariables(updatedRows);
+		// handleSave(updatedRows); // Save immediately
 	};
 
 	const handleChange = (
 		index: number,
 		field: keyof ParamRow,
-		newValue: string | string[]
+		newValue: string
 	) => {
-		const updatedRows = [...pathVariables];
-		updatedRows[index][field] = newValue as never;
+		const updatedRows = pathVariables.map((row, i) =>
+			i === index ? { ...row, [field]: newValue } : row
+		);
 		setPathVariables(updatedRows);
+		// We save on blur, not on every keystroke, for a better experience
 	};
 
 	const handleToggleCase = (index: number, selectedCase: string) => {
 		const updatedRows = [...pathVariables];
-		const currentCases = updatedRows[index].cases;
+		const currentCases = updatedRows[index].cases || [];
+		const isSelected = currentCases.includes(selectedCase);
 
-		const exists = currentCases.includes(selectedCase);
-		updatedRows[index].cases = exists
+		updatedRows[index].cases = isSelected
 			? currentCases.filter((c) => c !== selectedCase)
 			: [...currentCases, selectedCase];
-		setPathVariables(updatedRows);
-	};
-	const handleRemoveCase = (index: number, caseToRemove: string) => {
-		const updatedRows = [...pathVariables];
-		updatedRows[index].cases = updatedRows[index].cases.filter(
-			(c) => c !== caseToRemove
-		);
-		setPathVariables(updatedRows);
-	};
 
-	const caseOptions = [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"Number String",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	];
+		setPathVariables(updatedRows);
+
+		// Saving on case toggle is optional, but can be added here if needed:
+		// handleSave(updatedRows);
+		startTransition(async () => {
+			try {
+				await createRequestTestCaseAction({
+					requestId,
+					testCaseId: testCases.find((t) => t.case === selectedCase)?.id || "",
+					applicationContext: Application_Context.PATH_VARIABLE,
+					targetFieldPath: updatedRows[index].key,
+					isExpectedSuccess: false,
+				});
+				// Optionally toast here
+			} catch (err) {
+				toast.error("Failed to save test case.");
+			}
+		});
+	};
 
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
-			setPathVariables(pathVariables.filter((_, i) => i !== deleteIndex));
+			const updatedRows = pathVariables.filter((_, i) => i !== deleteIndex);
+			setPathVariables(updatedRows);
+			handleSave(updatedRows); // Save immediately
 			setDeleteIndex(null);
 		}
 	};
 
 	return (
 		<div className="space-y-5">
-			{/* Bordered & Rounded Table Container */}
-			<div className="border border-gray-300 rounded-md overflow-hidden w-full m mx-auto">
-				<Table className="w-full">
+			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
+				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
-								Key
-							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
-								Value
-							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700 border-r border-gray-300">
-								Case
-							</TableHead>
-							<TableHead className="px-4 py-3 font-semibold text-left text-sm text-gray-700">
-								Action
-							</TableHead>
+							<TableHead className="w-1/3 px-4">Key</TableHead>
+							<TableHead className="w-1/3 px-4">Value</TableHead>
+							<TableHead className="px-4">Case</TableHead>
+							<TableHead className="w-[50px] px-4">Action</TableHead>
 						</TableRow>
 					</TableHeader>
-
 					<TableBody>
 						{pathVariables.map((row, index) => (
-							<TableRow
-								key={index}
-								className="hover:bg-gray-50 border-b border-gray-200"
-							>
-								{/* Key Input */}
-								<TableCell className="py-2 border-r border-gray-200">
-									<input
-										type="text"
+							<TableRow key={index} className="hover:bg-gray-50">
+								<TableCell className="py-0 px-2 border-r">
+									<Input
 										value={row.key}
 										onChange={(e) => handleChange(index, "key", e.target.value)}
-										className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
+										onBlur={() => handleSave(pathVariables)}
+										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter key"
+										// disabled={isSaving}
 									/>
 								</TableCell>
-
-								{/* Value Input */}
-								<TableCell className="px-4 py-2 border-r border-gray-200">
-									<input
-										type="text"
+								<TableCell className="py-0 px-2 border-r">
+									<Input
 										value={row.value}
 										onChange={(e) =>
 											handleChange(index, "value", e.target.value)
 										}
-										className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
+										onBlur={() => handleSave(pathVariables)}
+										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter value"
+										// disabled={isSaving}
 									/>
 								</TableCell>
-
-								{/* Case Selection */}
-								<TableCell className="px-4 py-2 border-r border-gray-200 flex items-center justify-end gap-6 flex-row-reverse">
-									<div className="flex flex-wrap items-center">
-										{row.cases.slice(0, 1).map((c, i) => (
-											<span
-												key={i}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
-											>
-												{c}
-												<X
-													className="w-3 h-3 cursor-pointer"
-													onClick={() => handleRemoveCase(index, c)}
-												/>
-											</span>
-										))}
-										{row.cases.length > 1 && (
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														className="cursor-pointer size-3"
-														variant="link"
+								{/* ✨ FULL CASE SELECTION UI */}
+								<TableCell className="py-2 px-4">
+									<div className="flex items-center gap-2 flex-row-reverse justify-end">
+										{/* Display selected cases as pills */}
+										<div className="flex items-center gap-1 py-2">
+											<div>
+												{row.cases.slice(0, 1).map((c) => (
+													<Badge
+														key={c}
+														className="text-xs px-2 py-1 rounded-full flex items-center gap-1.5"
 													>
-														+{row.cases.length - 1}
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent className="max-h-48 overflow-y-auto w-[200px] space-y-3">
-													{row.cases.map((c, i) => (
-														<div
-															key={i}
-															className="flex items-center justify-between px-2 py-1 text-sm hover:bg-gray-100"
-														>
-															<span>{c}</span>
-															<X
-																className="w-3 h-3 cursor-pointer"
-																onClick={() => handleRemoveCase(index, c)}
-															/>
-														</div>
-													))}
-												</DropdownMenuContent>
-											</DropdownMenu>
-										)}
+														{c}{" "}
+														<X
+															className="w-3 h-3 cursor-pointer hover:text-red-500"
+															onClick={() => handleRemoveCase(index, c)}
+														/>
+													</Badge>
+												))}
+											</div>
+											<div>
+												{row.cases.length > 1 && (
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<Button
+																variant="ghost"
+																className="h-auto p-1 text-xs text-muted-foreground cursor-pointer"
+															>
+																+{row.cases.length - 1}
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent>
+															{row.cases.slice(1).map((caseName) => (
+																<DropdownMenuItem
+																	key={caseName}
+																	className="flex justify-between items-center"
+																	onSelect={(e) => e.preventDefault()}
+																>
+																	<span>{caseName}</span>
+																	<Button
+																		variant="ghost"
+																		onClick={() =>
+																			handleRemoveCase(index, caseName)
+																		}
+																		className="w-3 h-3 cursor-pointer text-muted-foreground hover:text-red-500"
+																	>
+																		<X />
+																	</Button>
+																</DropdownMenuItem>
+															))}
+														</DropdownMenuContent>
+													</DropdownMenu>
+												)}
+											</div>
+										</div>
+										{/* Popover to add new cases */}
+										<Popover
+											open={openPopoverIndex === index}
+											onOpenChange={(isOpen) =>
+												setOpenPopoverIndex(isOpen ? index : null)
+											}
+										>
+											<PopoverTrigger asChild>
+												<Button variant="outline" className="size-6 p-1">
+													<Plus className="w-4 h-4" />
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="w-[300px] p-0">
+												<Command>
+													<CommandInput placeholder="Search test cases..." />
+													<CommandList>
+														<CommandEmpty>No results found.</CommandEmpty>
+														<CommandGroup>
+															{testCases.map((testCase) => (
+																<CommandItem
+																	key={testCase.case}
+																	value={testCase.case}
+																	onSelect={() =>
+																		handleToggleCase(index, testCase.case)
+																	}
+																>
+																	<Check
+																		className={cn(
+																			"mr-2 h-4 w-4",
+																			row.cases.includes(testCase.case)
+																				? "opacity-100"
+																				: "opacity-0"
+																		)}
+																	/>
+																	{testCase.case}
+																</CommandItem>
+															))}
+														</CommandGroup>
+													</CommandList>
+												</Command>
+											</PopoverContent>
+										</Popover>
 									</div>
-
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="secondary" className="size-6">
-												<Plus />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px] space-y-4">
-											{caseOptions.map((option) => (
-												<DropdownMenuItem
-													key={option}
-													onClick={() => handleToggleCase(index, option)}
-													className={`cursor-pointer ${
-														row.cases.includes(option)
-															? "bg-blue-100 font-semibold rounded"
-															: ""
-													}`}
-												>
-													{option}
-												</DropdownMenuItem>
-											))}
-										</DropdownMenuContent>
-									</DropdownMenu>
 								</TableCell>
-
-								{/* Action Button */}
-								<TableCell className="px-4 py-2">
+								{/* Delete Action Cell */}
+								<TableCell className="py-2 px-4 text-center border-l">
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button
 												variant="ghost"
-												className="flex justify-center items-center"
+												size="icon"
 												onClick={() => setDeleteIndex(index)}
+												disabled={isSaving}
 											>
-												<Trash2
-													className="text-[#E2001A] cursor-pointer"
-													width={20}
-												/>
+												<Trash2 className="text-red-500 w-4 h-4" />
 											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
@@ -232,8 +374,7 @@ export default function PathVariable() {
 													Are you absolutely sure?
 												</AlertDialogTitle>
 												<AlertDialogDescription>
-													This action cannot be undone. This will permanently
-													delete your variable.
+													This will permanently delete your variable.
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter>
@@ -249,14 +390,13 @@ export default function PathVariable() {
 								</TableCell>
 							</TableRow>
 						))}
-
 						<TableRow
 							onClick={handleAddRow}
-							className="cursor-pointer border-t border-gray-200"
+							className="cursor-pointer hover:bg-muted/50"
 						>
 							<TableCell
 								colSpan={4}
-								className="px-4 py-3 text-sm text-gray-500"
+								className="py-3 px-4 text-sm text-muted-foreground"
 							>
 								+ Add Variable
 							</TableCell>
@@ -264,6 +404,9 @@ export default function PathVariable() {
 					</TableBody>
 				</Table>
 			</div>
+			{/* {isSaving && (
+				<p className="text-xs text-muted-foreground animate-pulse">Saving...</p>
+			)} */}
 		</div>
 	);
 }

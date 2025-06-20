@@ -12,10 +12,10 @@ import {
 import { Check, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import {
 	Command,
 	CommandEmpty,
@@ -45,6 +45,7 @@ import {
 	TableRowV2,
 } from "@/components/ui/table";
 import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 const frameworks = [
 	{ value: "no-auth", label: "No auth" },
@@ -54,7 +55,7 @@ const frameworks = [
 
 export function ApiRequestContentHeader() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [value, setValue] = useState("");
+	const [value, setValue] = useState("no-auth");
 	const [token, setToken] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
@@ -100,27 +101,30 @@ export function ApiRequestContentHeader() {
 					</TabsTriggerV2>
 				</TabsListV2>
 
-				<TabsContent value="authorization-type">
-					<Collapsible open={isOpen} onOpenChange={setIsOpen}>
-						<CollapsibleTrigger asChild>
+				{/* The content for the first tab now has its own spacing */}
+				<TabsContent value="authorization-type" className="space-y-5">
+					{/* The Popover is now used for selection only */}
+					<Popover open={isOpen} onOpenChange={setIsOpen}>
+						<PopoverTrigger asChild>
 							<Button
 								variant="outline"
 								role="combobox"
 								aria-expanded={isOpen}
-								className="w-1/7 justify-between text-[#006FEE]"
+								className="w-fit justify-between text-[#006FEE]"
 							>
 								{value
 									? frameworks.find((f) => f.value === value)?.label
 									: "No auth"}
 								{isOpen ? (
-									<ChevronUp className="h-5 w-5" />
+									<ChevronUp className="ml-2 h-5 w-5 shrink-0" />
 								) : (
-									<ChevronDown className="h-5 w-5" />
+									<ChevronDown className="ml-2 h-5 w-5 shrink-0" />
 								)}
 							</Button>
-						</CollapsibleTrigger>
+						</PopoverTrigger>
 
-						<CollapsibleContent className="mt-2">
+						{/* Popover content is now just the selection list */}
+						<PopoverContent className="w-[250px] p-0">
 							<Command>
 								<CommandList>
 									<CommandEmpty>No framework found.</CommandEmpty>
@@ -130,8 +134,8 @@ export function ApiRequestContentHeader() {
 												key={framework.value}
 												value={framework.value}
 												onSelect={(currentValue) => {
-													setValue(currentValue === value ? "" : currentValue);
-													setIsOpen(false);
+													setValue(currentValue);
+													setIsOpen(false); // Close the popover on selection
 												}}
 											>
 												{framework.label}
@@ -148,49 +152,49 @@ export function ApiRequestContentHeader() {
 									</CommandGroup>
 								</CommandList>
 							</Command>
-						</CollapsibleContent>
-						{value === "basic-auth" && (
-							<div>
-								<div className="mt-10 space-x-20 flex items-center w-1/2">
-									<label className="block text-sm font-medium text-gray-700">
-										Username
-									</label>
-									<Input
-										type="text"
-										value={username}
-										onChange={(e) => setUsername(e.target.value)}
-										placeholder="Enter username"
-									/>
-								</div>
-								<div className="mt-10 space-x-20 flex items-center w-1/2">
-									<label className="block text-sm font-medium text-gray-700">
-										Password
-									</label>
-									<Input
-										type="text"
-										value={password}
-										onChange={(e) => setPassword(e.target.value)}
-										placeholder="Enter password"
-									/>
-								</div>
-							</div>
-						)}
+						</PopoverContent>
+					</Popover>
 
-						{value === "JWT" && (
-							<div className="mt-10 space-x-20 flex items-center w-1/2">
-								<label className="block text-sm font-medium text-gray-700">
-									Token
-								</label>
-								<input
+					{/* These input fields now render outside and below the Popover, in the main page flow */}
+					{value === "basic-auth" && (
+						<div className="space-y-4 max-w-md">
+							<div className="grid w-full items-center gap-1.5">
+								<Label htmlFor="username">Username</Label>
+								<Input
+									id="username"
+									type="text"
+									value={username}
+									onChange={(e) => setUsername(e.target.value)}
+									placeholder="Enter username"
+								/>
+							</div>
+							<div className="grid w-full items-center gap-1.5">
+								<Label htmlFor="password">Password</Label>
+								<Input
+									id="password"
+									type="password"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									placeholder="Enter password"
+								/>
+							</div>
+						</div>
+					)}
+
+					{value === "JWT" && (
+						<div className="space-y-4 max-w-md">
+							<div className="grid w-full items-center gap-1.5">
+								<Label htmlFor="jwt-token">Token</Label>
+								<Input
+									id="jwt-token"
 									type="text"
 									value={token}
 									onChange={(e) => setToken(e.target.value)}
-									className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
 									placeholder="Enter JWT token"
 								/>
 							</div>
-						)}
-					</Collapsible>
+						</div>
+					)}
 				</TabsContent>
 
 				<TabsContent value="manual">
@@ -213,7 +217,7 @@ export function ApiRequestContentHeader() {
 											onChange={(e) =>
 												handleChange(index, "variable", e.target.value)
 											}
-											className="w-full py-1 px-2 text-sm border border-transparent focus:outline-none focus:border-gray-300 text-[#94A3B8]"
+											className="w-full py-1 px-2 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
 											placeholder="Enter key"
 										/>
 									</TableCell>
@@ -224,18 +228,19 @@ export function ApiRequestContentHeader() {
 											onChange={(e) =>
 												handleChange(index, "value", e.target.value)
 											}
-											className="w-full py-1 px-2 text-sm border border-transparent focus:outline-none focus:border-gray-300 text-[#94A3B8]"
+											className="w-full py-1 px-2 text-sm border border-transparent focus:outline-none focus:border-gray-300 bg-transparent"
 											placeholder="Enter value"
 										/>
 									</TableCell>
 									<TableCell>
 										<AlertDialog>
 											<AlertDialogTrigger asChild>
-												<Trash2
-													className="text-[#E2001A] cursor-pointer"
-													width={20}
-													onClick={() => setDeleteIndex(index)}
-												/>
+												<button onClick={() => setDeleteIndex(index)}>
+													<Trash2
+														className="text-[#E2001A] cursor-pointer"
+														width={20}
+													/>
+												</button>
 											</AlertDialogTrigger>
 											<AlertDialogContent>
 												<AlertDialogHeader>
@@ -244,7 +249,7 @@ export function ApiRequestContentHeader() {
 													</AlertDialogTitle>
 													<AlertDialogDescription>
 														This action cannot be undone. This will permanently
-														delete your endpoint
+														delete your header.
 													</AlertDialogDescription>
 												</AlertDialogHeader>
 												<AlertDialogFooter>
@@ -267,7 +272,7 @@ export function ApiRequestContentHeader() {
 								onClick={handleAddRow}
 								className="cursor-pointer hover:bg-muted"
 							>
-								<TableCell colSpan={3} className="text-sm text-[#94A3B8] py-3">
+								<TableCell colSpan={3} className="text-sm text-gray-500 py-3">
 									+ Add
 								</TableCell>
 							</TableRow>

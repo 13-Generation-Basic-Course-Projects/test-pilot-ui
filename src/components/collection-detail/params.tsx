@@ -1,11 +1,17 @@
-// Params.tsx
 import React, { useState } from "react";
 import PathVariable, { ParamRow } from "./path-variable";
 import QueryParams from "./query-params";
 import { Separator } from "../ui/separator";
 import { Tabs, TabsContent, TabsListV2, TabsTriggerV2 } from "../ui/tabs";
+import { EndpointItem } from "@/types";
 
-export const Params = () => {
+export const Params = ({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) => {
 	return (
 		<div className="w-full py-2">
 			<Separator />
@@ -20,10 +26,10 @@ export const Params = () => {
 				</TabsListV2>
 
 				<TabsContent value="path-variable">
-					<PathVariable />
+					<PathVariable request={request} requestId={requestId} />
 				</TabsContent>
 				<TabsContent value="query-params">
-					<QueryParams />
+					<QueryParams request={request} requestId={requestId} />
 				</TabsContent>
 			</Tabs>
 		</div>
