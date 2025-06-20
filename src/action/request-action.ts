@@ -1,31 +1,32 @@
-
 "use server";
 
 import {
-  createRequestByCollectionId,
-  deleteRequestByIdService,
-  duplicateRequest,
-  getRequestByCollectionId,
-  updateRequestByIdService,
+	CreateRequestBodyService,
+	createRequestByCollectionId,
+	createTestCaseService,
+	deleteRequestByIdService,
+	duplicateRequest,
+	getRequestByCollectionId,
+	getRequestTestCaseService,
+	updateRequestByIdService,
+	updateRequestPathVariablesService,
+	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
+import { TestCaseRequestType, VariableTestCase } from "@/types/request-type";
+import { revalidatePath } from "next/cache";
 
 export const fetchRequestForCollection = async (
   collectionId: string
 ): Promise<EndpointItem[]> => {
-  if (!collectionId) {
-    // console.warn("fetchRequestForCollection: No collectionId provided");
-    return [];
-  }
-  try {
-    // console.log(`fetchRequestForCollection: Fetching for collectionId ${collectionId}`);
-    const endpoints = await getRequestByCollectionId({ collectionId });
-    // console.log(`fetchRequestForCollection: Endpoints fetched:`, endpoints);
-    return endpoints;
-  } catch (error) {
-    console.error(`fetchRequestForCollection: Error:`, error);
-    return [];
-  }
+	if (!collectionId) {
+		console.warn("No collectionId provided for fetchRequestForCollection");
+		return [];
+	}
+	// const endpoints = await getAllRequest(collectionId);
+	const endpoints = await getRequestByCollectionId({ collectionId });
+	// Log endpoints returned
+	return endpoints;
 };
 
 // Create endpoint
@@ -55,23 +56,23 @@ export const createRequestByCollectionIdAction = async (payload: {
       return null;
     }
 
-    // console.log("createRequestByCollectionIdAction response:", response);
-    return {
-      id: response.id,
-      name: response.name || payload.requestName,
-      method: response.method || payload.method,
-      path: response.name || payload.requestName,
-    };
-  } catch (error) {
-    // console.error("createRequestByCollectionIdAction error:", error);
-    throw error;
-  }
+		return {
+			id: response.id,
+			name: response.name || payload.requestName,
+			method: response.method || payload.method,
+			path: response.name || payload.requestName,
+		};
+	} catch (error) {
+		console.error("createRequestByCollectionIdAction error:", error);
+		throw error;
+	}
 };
 
 // Delete endpoint
 export const deleteRequestAction = async (
-  collectionId: string,
-  endpointId: string
+	collectionId: string,
+	endpointId: string,
+	projectId: string
 ) => {
   try {
     await deleteRequestByIdService(endpointId);
@@ -90,22 +91,84 @@ export const updateRequestByIdAction = async (
   endpointId: string,
   payload: { name: string }
 ): Promise<void> => {
-  try {
-    console.log("updateRequestByIdAction:", { collectionId, endpointId, payload });
-    await updateRequestByIdService(endpointId, {
-      name: payload.name,
-      path: payload.name,
-      collectionId,
-    });
-    await getRequestByCollectionId({ collectionId });
-    console.log(`updateRequestByIdAction: Refetched collection ${collectionId}`);
-  } catch (error) {
-    console.error("updateRequestByIdAction error:", error);
-    throw error;
-  }
+	try {
+		await updateRequestByIdService(endpointId, {
+			name: payload.name,
+			path: payload.name, // Use name as path
+			collectionId, // Pass collectionId
+		});
+		await getRequestByCollectionId({ collectionId }); // Refetch for consistency
+	} catch (error) {
+		console.error("Error updating endpoint:", error);
+		throw error;
+	}
 };
 
-// Duplicate endpoint
+export const updateRequestUrlAndMethodAction = async (params: {
+	projectId: string;
+	collectionId: string;
+	requestId: string;
+	method: string;
+	url: string;
+}) => {
+	try {
+		await updateRequestUrlAndMethodService(params.requestId, {
+			method: params.method,
+			url: params.url,
+		});
+
+		const path = `/projects/${params.projectId}/collections/${params.collectionId}/requests/${params.requestId}`;
+		revalidatePath(path);
+	} catch (error) {
+		console.error("Error in updateRequestUrlAndMethodAction:", error);
+		throw error;
+	}
+};
+
+export const updateRequestPathVariablesAction = async (
+	requestId: string,
+	// The payload is the final object, not the complex array from the UI state
+	pathVariablesPayload: Record<string, any>
+) => {
+	try {
+		await updateRequestPathVariablesService(requestId, pathVariablesPayload);
+		revalidatePath(`/project/.*`, "layout"); // Revalidate the whole project layout
+	} catch (error) {
+		console.error("Failed to update path variables:", error);
+		throw new Error("Could not save path variables.");
+	}
+};
+
+export const createVariableTestAction = async (payload: {
+	requestId: string;
+	predefinedTestCaseId: string;
+	applicationContext: "PATH_VARIABLE";
+	targetFieldPath: string;
+}): Promise<VariableTestCase> => {
+	// Your real backend logic to create the record...
+	// const newTest = await db.test.create({ data: payload });
+
+	// For this example, we return a mock object.
+	const mockNewTest = {
+		id: `test_${Date.now()}`, // This ID must come from your database
+		predefinedTestCaseId: payload.predefinedTestCaseId,
+		predefinedTestCaseName: "A Test Case Name", // In a real app, you'd look this up
+	};
+
+	revalidatePath(`/project/.*`, "layout"); // Revalidate to update UI elsewhere
+	return mockNewTest;
+};
+
+/**
+ * ✨ NEW ACTION: Deletes a single test case instance by its unique ID.
+ */
+export const deleteVariableTestAction = async (testInstanceId: string) => {
+	// Your backend logic to delete the test...
+	// await db.test.delete({ where: { id: testInstanceId } });
+
+	revalidatePath(`/project/.*`, "layout");
+};
+//duplicate endpoint
 export const duplicateRequestAction = async (
   collectionId: string,
   requestId: string
@@ -126,15 +189,87 @@ export const duplicateRequestAction = async (
       return null;
     }
 
-    console.log("duplicateRequestAction response:", response);
-    return {
-      id: response.id,
-      name: response.name || "New Request (Copy)",
-      method: response.method || "GET",
-      path: response.name || "New Request (Copy)",
-    };
-  } catch (error) {
-    console.error("duplicateRequestAction error:", error);
-    throw error;
-  }
+		return {
+			id: response.id,
+			name: response.name || "New Request (Copy)",
+			method: response.method || "GET",
+			path: response.name || "New Request (Copy)",
+		};
+	} catch (error) {
+		console.error("duplicateRequestAction error:", error);
+		throw error;
+	}
 };
+
+export const getRequestTestCaseAction = async ({
+	requestId,
+}: {
+	requestId: string;
+}) => {
+	const data = await getRequestTestCaseService({ requestId });
+
+	return data;
+};
+
+// ✨ ACTION 1: To CREATE a new request test case
+export const createRequestTestCaseAction = async (
+	args: TestCaseRequestType
+) => {
+	try {
+		const result = await createTestCaseService({
+			...args,
+		});
+
+		// revalidatePath("/your-page-path"); // Revalidate if needed
+		return { success: true, data: result.payload };
+	} catch (error) {
+		console.error("Failed to create request test case:", error);
+		return { success: false, error: "Failed to create test case." };
+	}
+};
+
+export const createBodyTestCaseAction = async (args: TestCaseRequestType) => {
+	try {
+		const result = await createTestCaseService({
+			...args,
+		});
+
+		return { success: true, data: result.payload };
+	} catch (error) {
+		console.error("Failed to create request test case:", error);
+		return { success: false, error: "Failed to create test case." };
+	}
+};
+
+export const createRequestBodyAction = async (
+	requestId: string,
+	// The payload is the final object, not the complex array from the UI state
+	bodyPayload: Record<string, any>
+) => {
+	try {
+		await CreateRequestBodyService(requestId, bodyPayload);
+		revalidatePath(`/project/.*`, "layout"); // Revalidate the whole project layout
+	} catch (error) {
+		console.error("Failed to create or update body:", error);
+		throw new Error("Could not save body.");
+	}
+};
+
+// ✨ ACTION 2: To DELETE a request test case
+// NOTE: You will need to create the corresponding `deleteRequestTestCaseService`
+// It will likely take the ID of the `RequestTestCase` record itself.
+// export const deleteRequestTestCaseAction = async (
+// 	requestTestCaseId: string
+// ) => {
+// 	try {
+// 		// You need to implement this service on your backend
+// 		// e.g., DELETE /api/v1/request-test-cases/{requestTestCaseId}
+// 		await deleteRequestTestCaseService(requestTestCaseId);
+
+// 		// revalidatePath("/your-page-path");
+// 		return { success: true };
+// 	} catch (error) {
+// 		console.error("Failed to delete request test case:", error);
+// 		return { success: false, error: "Failed to delete test case." };
+// 	}
+// };

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react"; // 1. Ensure useEffect is imported
 
 import {
 	Table,
@@ -13,9 +13,23 @@ import {
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 
 import {
 	AlertDialog,
@@ -32,6 +46,9 @@ import {
 import { Trash2, Plus, X } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
+import { EndpointItem } from "@/types";
 
 interface ParamRow {
 	key: string;
@@ -39,10 +56,47 @@ interface ParamRow {
 	cases: string[];
 }
 
-export default function QueryParams() {
-	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+// 3. Define an interface for the test case data
+interface TestCase {
+	type: string;
+	case: string;
+	value: any;
+}
 
+// The hardcoded `testCases` array is no longer needed.
+// const testCases = [ ... ];
+
+export default function QueryParams({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) {
+	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+	const [openPopoverIndex, setOpenPopoverIndex] = useState<number | null>(null);
 	const { queryParams, setQueryParams } = useParamsApiStore();
+
+	// 4. Add state to hold the test cases from the backend
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+
+	// 5. Fetch and set the test cases when the component mounts
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			const backendData = await getAllPredefinedAction();
+
+			if (backendData && Array.isArray(backendData)) {
+				const transformedData: TestCase[] = backendData.map((item: any) => ({
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				}));
+				setTestCases(transformedData);
+			}
+		};
+
+		fetchTestCases();
+	}, []); // Empty dependency array ensures this runs only once
 
 	const handleAddRow = () => {
 		setQueryParams([...queryParams, { key: "", value: "", cases: [] }]);
@@ -78,16 +132,6 @@ export default function QueryParams() {
 		setQueryParams(updatedRows);
 	};
 
-	const caseOptions = [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"Number String",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	];
-
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
 			setQueryParams(queryParams.filter((_, i) => i !== deleteIndex));
@@ -97,7 +141,6 @@ export default function QueryParams() {
 
 	return (
 		<div className="space-y-5">
-			{/* Bordered & Rounded Table Container */}
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full m mx-auto">
 				<Table className="w-full">
 					<TableHeader>
@@ -148,16 +191,18 @@ export default function QueryParams() {
 								</TableCell>
 
 								{/* Case Selection */}
-								<TableCell className="px-4 py-2 border-r border-gray-200 flex items-center justify-end gap-6 flex-row-reverse">
-									<div className="flex flex-wrap items-center">
+								<TableCell className="border-r border-gray-200 flex h-full flex-row-reverse items-center justify-end gap-4">
+									<div className="flex flex-wrap items-center h-full py-2">
 										{row.cases.slice(0, 1).map((c, i) => (
 											<span
 												key={i}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+												className="bg-black text-white text-xs pl-2 pr-1 py-1 rounded-full flex items-center gap-1 max-w-[120px]"
 											>
-												{c}
+												<span className="truncate" title={c}>
+													{c}
+												</span>
 												<X
-													className="w-3 h-3 cursor-pointer"
+													className="w-3 h-3 cursor-pointer flex-shrink-0"
 													onClick={() => handleRemoveCase(index, c)}
 												/>
 											</span>
@@ -189,29 +234,53 @@ export default function QueryParams() {
 											</DropdownMenu>
 										)}
 									</div>
-
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="secondary" className="size-6">
-												<Plus />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px] space-y-4">
-											{caseOptions.map((option) => (
-												<DropdownMenuItem
-													key={option}
-													onClick={() => handleToggleCase(index, option)}
-													className={`cursor-pointer ${
-														row.cases.includes(option)
-															? "bg-blue-100 font-semibold rounded"
-															: ""
-													}`}
-												>
-													{option}
-												</DropdownMenuItem>
-											))}
-										</DropdownMenuContent>
-									</DropdownMenu>
+									<div className="py-2">
+										{/* Searchable Popover for adding cases */}
+										<Popover
+											open={openPopoverIndex === index}
+											onOpenChange={(isOpen) =>
+												setOpenPopoverIndex(isOpen ? index : null)
+											}
+										>
+											<PopoverTrigger asChild>
+												<Button variant="secondary" className="size-6 p-1">
+													<Plus />
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="w-[400px] p-0" align="end">
+												<Command>
+													<CommandInput placeholder="Search test case..." />
+													<CommandList>
+														<CommandEmpty>No test case found.</CommandEmpty>
+														<CommandGroup>
+															{/* 6. Map over the testCases from state */}
+															{testCases.map((testCase) => (
+																<CommandItem
+																	key={`${testCase.type}-${testCase.case}`}
+																	value={testCase.case}
+																	onSelect={() => {
+																		handleToggleCase(index, testCase.case);
+																	}}
+																	className={cn(
+																		"cursor-pointer my-2",
+																		row.cases.includes(testCase.case) &&
+																			"bg-accent text-accent-foreground"
+																	)}
+																>
+																	<div>
+																		<p>{testCase.case}</p>
+																		<p className="text-xs text-muted-foreground">
+																			{testCase.type}
+																		</p>
+																	</div>
+																</CommandItem>
+															))}
+														</CommandGroup>
+													</CommandList>
+												</Command>
+											</PopoverContent>
+										</Popover>
+									</div>
 								</TableCell>
 
 								{/* Action Button */}

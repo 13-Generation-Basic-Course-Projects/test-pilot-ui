@@ -38,7 +38,7 @@ export interface TestProgress {
 }
 
 export interface Endpoint {
-    name: any;
+	name: any;
 	id: string;
 	method: string;
 	path: string;
@@ -51,10 +51,18 @@ export interface Endpoint {
 }
 
 export interface EndpointItem {
-  id: string;
-  name : string;
-  method?: string; // Optional, as API might not return it
-  path?: string;   // Optional, as API might not return it
+	id: string;
+	name: string;
+	method?: string; // Optional, as API might not return it
+	path?: string; // Optional, as API might not return it
+	details?: {
+		url: string;
+		body: string;
+		header: string;
+		description: string;
+		queryParams: string;
+		pathVariables: string;
+	};
 }
 
 export interface CollectionItem {
@@ -63,10 +71,8 @@ export interface CollectionItem {
 	endpoints: Endpoint[];
 }
 
-
-
 export interface ProjectDetailPageProps {
-  params: Promise<{ projectId: string }>;
+	params: Promise<{ projectId: string }>;
 }
 
 export interface Project {
@@ -86,10 +92,8 @@ export interface ProjectItem {
 	title: string;
 	description: string;
 	creationDate: string;
-	userAvatarUrl?: string
+	userAvatarUrl?: string;
 }
-
-
 
 export interface ProjectProps {
 	projects: ProjectItem[];
@@ -105,19 +109,17 @@ export interface ProjectFormProps {
 }
 
 export interface User {
-  id: string;
-  email: string;
-  name?: string;
-  token?: string;
-  avatarUrl?: string;
-  role?: string;
+	id: string;
+	email: string;
+	name?: string;
+	token?: string;
+	avatarUrl?: string;
+	role?: string;
 }
-
 
 export type NewProjectPayload = Omit<ProjectItem, "id" | "creationDate">;
 
 export type NewRequestPayload = Omit<EndpointItem, "id" | "creationDate">;
-
 
 export type LoginResponseType = {
 	message: string;

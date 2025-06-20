@@ -1,6 +1,5 @@
 "use server";
-import { fetchAPI } from "@/lib/api";
-import { COLLECTION_ENDPOINT } from "@/lib/static";
+
 import {
 	createCollectionService,
 	deleteCollectionByIdService,
@@ -25,7 +24,7 @@ export const createCollectionAction = async (
 	title: string,
 	projectId: string
 ) => {
-	const newCollectionFromAPI = await createCollectionService(title, projectId);
+	await createCollectionService(title, projectId);
 };
 
 export const duplicateCollectionAction = async (

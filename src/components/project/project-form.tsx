@@ -82,7 +82,6 @@ const ProjectForm = ({
 				});
 
 				if (updatedProject && onProjectUpdated) {
-					// console.log("Update project", updatedProject);
 					onProjectUpdated(updatedProject);
 					toast.success("Project updated successfully!");
 				}

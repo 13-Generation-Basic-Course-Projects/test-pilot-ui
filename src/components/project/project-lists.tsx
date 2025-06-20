@@ -95,7 +95,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			setProjects((prev) => prev.filter((project) => project.id !== projectId));
 			setIsDeleteDialogOpen(false);
 			setSelectProjectForDelete(null);
-			toast.success(`Project delete successfully!`)
+			toast.success(`Project delete successfully!`);
 		} catch (error) {
 			console.error("Failed to delete project", error);
 		}
@@ -114,7 +114,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
 	//Update project
 	const handleProjectUpdated = (updatedProject: ProjectItem) => {
-		console.log("handleProjectUpdated called with:", updatedProject);
 		setProjects((prev) =>
 			prev.map((project) =>
 				project.id === updatedProject.id ? updatedProject : project
