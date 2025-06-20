@@ -26,6 +26,7 @@ import {
   getAllProjectVariableAction,
   dele,
 } from "@/action/project-variable-action";
+// import { createVariableAction } from "@/action/project-variable-action";
 
 interface ProjectVariableProps {
   projectId: string;
@@ -66,6 +67,32 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     const updatedRows = [...rows];
     updatedRows[index][field] = newValue;
     setRows(updatedRows);
+  };
+
+  const handleSaveNewRow = async (index: number) => {
+    const newRow = rows[index];
+
+    // Only create if both fields are filled and no variableId exists
+    if (newRow.variable && newRow.value && !newRow.variableId) {
+      try {
+        // const result = await createVariableAction({
+        //   keyName: newRow.variable,
+        //   keyValue: newRow.value,
+        //   enabled: true,
+        //   projectId,
+        // });
+
+        const updatedRows = [...rows];
+        // updatedRows[index] = {
+        //   ...newRow,
+        //   variableId: result.variableId, // set returned ID
+        // };
+        setRows(updatedRows);
+      } catch (err) {
+        console.error("Create variable failed", err);
+        setError("Failed to create variable.");
+      }
+    }
   };
 
   const handleDeleteRow = async () => {
@@ -111,6 +138,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                     if (originalVariable && row.variable !== originalVariable) {
                       setShowConfirmDialog(true);
                     }
+                    handleSaveNewRow(index); // <-- create if new
                   }}
                   onChange={(e) =>
                     handleChange(index, "variable", e.target.value)
@@ -132,6 +160,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                     if (originalValue && row.value !== originalValue) {
                       setShowConfirmDialog(true);
                     }
+                    handleSaveNewRow(index); // <-- create if new
                   }}
                   onChange={(e) => handleChange(index, "value", e.target.value)}
                   className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300"
@@ -187,7 +216,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
             onClick={handleAddRow}
             className="cursor-pointer hover:bg-muted"
           >
-            <TableCell colSpan={3} className="text-sm text-gray-500 py-3">
+            <TableCell colSpan={3} className="text-sm text-gray-500 py-3" onClick={handleAddRow}>
               + Add
             </TableCell>
           </TableRow>
