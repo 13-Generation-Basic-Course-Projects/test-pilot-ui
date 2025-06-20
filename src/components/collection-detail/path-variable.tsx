@@ -48,16 +48,17 @@ import {
 } from "../ui/dropdown-menu";
 import { Badge } from "../ui/badge";
 import { Application_Context } from "@/types/request-type";
+import { usePathname } from "next/navigation";
 
-// ✨ 1. Import all necessary actions, including for custom test cases
+// ✨ 1. Import all necessary actions, including the delete action
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
-import { getCustomTestCaseAction } from "@/action/custom-test-case-action"; // ✨ Add this
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import {
 	createRequestTestCaseAction,
 	getRequestTestCaseAction,
 	updateRequestPathVariablesAction,
+	deleteRequestTestCaseAction, // Import the delete action
 } from "@/action/request-action";
-import { usePathname } from "next/navigation";
 
 // Interfaces remain the same
 export interface ParamRow {
@@ -65,12 +66,22 @@ export interface ParamRow {
 	value: string;
 	cases: string[];
 }
-
 interface TestCase {
 	id: string;
 	type: string;
 	case: string;
 	value: any;
+}
+
+// ✨ 2. Define an interface for the full saved data we will cache locally
+interface SavedRequestTestCase {
+	id: string; // The ID of the LINK record we need for deletion
+	targetFieldPath: string;
+	testCase: {
+		id: string;
+		name: string;
+	};
+	// Include any other relevant fields from the API response
 }
 
 export default function PathVariable({
@@ -85,11 +96,28 @@ export default function PathVariable({
 	const [openPopoverIndex, setOpenPopoverIndex] = useState<number | null>(null);
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isSaving, startTransition] = useTransition();
+	const pathname = usePathname();
 
-	// This effect, for syncing the UI with saved data, is correct and remains unchanged.
+	// ✨ 3. Create a local state to cache the full test case data with IDs
+	const [savedPathTestCases, setSavedPathTestCases] = useState<
+		SavedRequestTestCase[]
+	>([]);
+
+	// This effect for syncing UI state is updated to populate the local cache
 	useEffect(() => {
 		const fetchData = async () => {
-			const testcases = await getRequestTestCaseAction({ requestId });
+			if (!requestId) {
+				setPathVariables([]);
+				return;
+			}
+
+			const savedTestCases = await getRequestTestCaseAction({ requestId });
+
+			// ✨ 4. Populate our local cache with the full data from the backend
+			if (Array.isArray(savedTestCases)) {
+				setSavedPathTestCases(savedTestCases);
+			}
+
 			const currentEndpoint = request.find((r) => r.id === requestId);
 			const pathVariablesObject = (currentEndpoint?.details?.pathVariables ??
 				{}) as Record<string, string>;
@@ -97,7 +125,7 @@ export default function PathVariable({
 			const formattedPathVariables: ParamRow[] = Object.entries(
 				pathVariablesObject
 			).map(([key, value]) => {
-				const casesForKey = testcases
+				const casesForKey = savedTestCases
 					.filter(
 						(tc: any) =>
 							tc.targetFieldPath === key &&
@@ -109,59 +137,39 @@ export default function PathVariable({
 			setPathVariables(formattedPathVariables);
 		};
 
-		if (requestId) {
-			fetchData();
-		} else {
-			setPathVariables([]);
-		}
+		fetchData();
 	}, [requestId, request, setPathVariables]);
 
-	const pathname = usePathname();
-
-	// ✨ 2. This is the useEffect hook we will modify to fetch ALL test cases.
+	// This effect for fetching available test cases is correct
 	useEffect(() => {
 		const fetchTestCases = async () => {
 			try {
-				// Get the projectId, which is needed to fetch the correct custom test cases.
 				const projectId = pathname.split("/")[2];
-
-				// Fetch both predefined and custom test cases in parallel for performance.
 				const [predefinedData, customData] = await Promise.all([
 					getAllPredefinedAction(),
-					// Ensure a projectId exists before trying to fetch custom cases.
 					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
 				]);
 
-				// Helper function to transform any test case data into the component's format.
 				const transformToTestCase = (item: any): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
 				});
-
 				const transformedPredefined = Array.isArray(predefinedData)
 					? predefinedData.map(transformToTestCase)
 					: [];
-
 				const transformedCustom = Array.isArray(customData)
 					? customData.map(transformToTestCase)
 					: [];
-
-				// Combine the two lists into one.
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 			} catch (error) {
-				console.error("Failed to fetch test cases:", error);
 				toast.error("Could not load test case data.");
 			}
 		};
-
 		fetchTestCases();
-	}, [request]); // ✨ Depend on `request` to get the projectId
-
-	// --- All handler functions below this point remain the same. ---
-	// They will now work with the merged list of test cases automatically.
+	}, [pathname]);
 
 	const handleSave = (variablesToSave: ParamRow[]) => {
 		const payload = variablesToSave.reduce((acc, row) => {
@@ -174,18 +182,107 @@ export default function PathVariable({
 		startTransition(async () => {
 			try {
 				await updateRequestPathVariablesAction(requestId, payload);
-				// toast.success("Path variables saved.");
 			} catch (error) {
 				toast.error("Path variables could not be saved.");
 			}
 		});
 	};
 
-	const handleAddRow = () => {
-		const updatedRows = [...pathVariables, { key: "", value: "", cases: [] }];
+	// ✨ 5. Implement the delete logic in handleRemoveCase using the local cache
+	const handleRemoveCase = (index: number, caseNameToRemove: string) => {
+		const rowData = pathVariables[index];
+
+		// Find the full saved test case link in our local cache
+		const linkToDelete = savedPathTestCases.find(
+			(rtc) =>
+				rtc.targetFieldPath === rowData.key &&
+				rtc.testCase.name === caseNameToRemove
+		);
+
+		if (!linkToDelete) {
+			toast.error(
+				"Could not find the test case to remove. It may be out of sync."
+			);
+			return;
+		}
+
+		const requestTestCaseIdToRemove = linkToDelete.id;
+
+		// Optimistically update the UI
+		const updatedRows = [...pathVariables];
+		updatedRows[index].cases = updatedRows[index].cases.filter(
+			(c) => c !== caseNameToRemove
+		);
 		setPathVariables(updatedRows);
+
+		// Call the backend to delete the record
+		startTransition(async () => {
+			const result = await deleteRequestTestCaseAction(
+				requestTestCaseIdToRemove
+			);
+			if (result.success) {
+				toast.success(result.message);
+				// On success, also remove it from our local cache
+				setSavedPathTestCases((prev) =>
+					prev.filter((rtc) => rtc.id !== requestTestCaseIdToRemove)
+				);
+			} else {
+				toast.error(result.error);
+				// Revert UI on failure
+				setPathVariables(pathVariables);
+			}
+		});
 	};
 
+	// ✨ 6. Update handleToggleCase to handle both adding and removing
+	const handleToggleCase = (index: number, selectedCase: string) => {
+		const rowData = pathVariables[index];
+		const isSelected = rowData.cases.includes(selectedCase);
+
+		if (isSelected) {
+			// If already selected, trigger the remove logic
+			handleRemoveCase(index, selectedCase);
+		} else {
+			// Otherwise, trigger the add logic
+			const testCaseToAdd = testCases.find((t) => t.case === selectedCase);
+			if (!testCaseToAdd)
+				return toast.error("Could not find test case details.");
+
+			startTransition(async () => {
+				const result = await createRequestTestCaseAction({
+					requestId,
+					testCaseId: testCaseToAdd.id,
+					applicationContext: Application_Context.PATH_VARIABLE,
+					targetFieldPath: rowData.key,
+					isExpectedSuccess: false,
+				});
+
+				if (result.success) {
+					// Add to UI
+					const updatedRows = [...pathVariables];
+					updatedRows[index].cases = [
+						...updatedRows[index].cases,
+						selectedCase,
+					];
+					setPathVariables(updatedRows);
+					// Refresh local cache with the new record from the backend
+					const updatedSavedCases = await getRequestTestCaseAction({
+						requestId,
+					});
+					setSavedPathTestCases(updatedSavedCases);
+
+					toast.success("Test case added.");
+				} else {
+					toast.error(result.error);
+				}
+			});
+		}
+	};
+
+	// --- Other handlers ---
+	const handleAddRow = () => {
+		setPathVariables([...pathVariables, { key: "", value: "", cases: [] }]);
+	};
 	const handleChange = (
 		index: number,
 		field: keyof ParamRow,
@@ -196,42 +293,6 @@ export default function PathVariable({
 		);
 		setPathVariables(updatedRows);
 	};
-
-	const handleRemoveCase = (index: number, caseToRemove: string) => {
-		const updatedRows = [...pathVariables];
-		updatedRows[index].cases = updatedRows[index].cases.filter(
-			(c) => c !== caseToRemove
-		);
-		setPathVariables(updatedRows);
-		// You may want to add a backend call here to remove the test case association.
-	};
-
-	const handleToggleCase = (index: number, selectedCase: string) => {
-		const updatedRows = [...pathVariables];
-		const currentCases = updatedRows[index].cases || [];
-		const isSelected = currentCases.includes(selectedCase);
-
-		updatedRows[index].cases = isSelected
-			? currentCases.filter((c) => c !== selectedCase)
-			: [...currentCases, selectedCase];
-
-		setPathVariables(updatedRows);
-
-		startTransition(async () => {
-			try {
-				await createRequestTestCaseAction({
-					requestId,
-					testCaseId: testCases.find((t) => t.case === selectedCase)?.id || "",
-					applicationContext: Application_Context.PATH_VARIABLE,
-					targetFieldPath: updatedRows[index].key,
-					isExpectedSuccess: false,
-				});
-			} catch (err) {
-				toast.error("Failed to save test case.");
-			}
-		});
-	};
-
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
 			const updatedRows = pathVariables.filter((_, i) => i !== deleteIndex);
@@ -241,7 +302,7 @@ export default function PathVariable({
 		}
 	};
 
-	// The entire JSX return block is unchanged.
+	// ✨ 7. The JSX is already set up correctly to call handleRemoveCase
 	return (
 		<div className="space-y-5">
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
@@ -287,10 +348,12 @@ export default function PathVariable({
 														className="text-xs px-2 py-1 rounded-full flex items-center gap-1.5"
 													>
 														{c}{" "}
-														<X
+														<Button
 															className="w-3 h-3 cursor-pointer hover:text-red-500"
 															onClick={() => handleRemoveCase(index, c)}
-														/>
+														>
+															<X />
+														</Button>
 													</Badge>
 												))}
 											</div>
@@ -348,7 +411,7 @@ export default function PathVariable({
 														<CommandGroup>
 															{testCases.map((testCase) => (
 																<CommandItem
-																	key={testCase.case}
+																	key={testCase.id}
 																	value={testCase.case}
 																	onSelect={() =>
 																		handleToggleCase(index, testCase.case)

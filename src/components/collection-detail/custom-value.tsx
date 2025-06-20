@@ -1,6 +1,6 @@
 "use client";
 
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useTransition, useEffect, useState } from "react"; // ✨ 1. Import useTransition
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,36 +26,35 @@ import { z } from "zod";
 import { customValueSchema } from "@/lib/zodSchema";
 import { DeleteCustomValue } from "../delete/delete-custom-value";
 import { CustomValueForm } from "./custom-value-form";
-import {
-	createCustomTestCaseAction,
-	getCustomTestCaseAction,
-} from "@/action/custom-test-case-action";
 import { toast } from "sonner";
 import { usePathname } from "next/navigation";
-import { getAllPredefinedAction } from "@/action/pre-defined-action";
 
-// Interface for your state
-interface RequestParam {
+// ✨ 2. Import the delete action
+import {
+	getCustomTestCaseAction,
+	deleteCustomTestCaseAction, // Import the delete action
+} from "@/action/custom-test-case-action";
+
+// ✨ 3. Update the state interface to include the ID
+interface CustomValueRow {
+	id: string; // The ID is crucial for deletion
 	name: string;
 	value: string;
 	type: string;
 }
 
-// Interface for the data coming from your API
-// This is helpful for TypeScript to understand the data structure
 interface ApiData {
 	id: string;
 	name: string;
 	value: string;
 	dataType: {
-		name: string; // Assuming the type name is here
-		// add other properties of dataType if they exist
+		name: string;
 	};
-	// add other properties from your API response
 }
 
 export const CustomValue = (): React.JSX.Element => {
-	const [requestParams, setRequestParams] = useState<RequestParam[]>([]);
+	// ✨ Use the updated interface for your state
+	const [requestParams, setRequestParams] = useState<CustomValueRow[]>([]);
 
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -65,42 +64,36 @@ export const CustomValue = (): React.JSX.Element => {
 		typeof customValueSchema
 	> | null>(null);
 
+	const [isPending, startTransition] = useTransition(); // ✨ 4. Add transition for loading state
 	const pathname = usePathname();
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const dataFromApi: ApiData[] = (await getCustomTestCaseAction(
+			const dataFromApi = (await getCustomTestCaseAction(
 				pathname.split("/")[2]
 			)) as ApiData[];
 
-			console.log("Data from API:", dataFromApi); // Good for debugging
-
 			if (dataFromApi && Array.isArray(dataFromApi)) {
-				// Map the API response to the structure your state expects
-				const formattedParams: RequestParam[] = dataFromApi.map((item) => ({
+				// ✨ 5. Map the `id` from the API into your state
+				const formattedParams: CustomValueRow[] = dataFromApi.map((item) => ({
+					id: item.id, // Make sure to include the ID here
 					name: item.name,
 					value: item.value,
-					type: item.dataType.name, // Adjust this property name if necessary
+					type: item.dataType.name,
 				}));
-
-				// Set the formatted data into your state
 				setRequestParams(formattedParams);
 			}
 		};
 		fetchData();
-	}, [pathname]); // Added pathname as a dependency
+	}, [pathname]);
 
 	const handleAddCustomValue = async (
 		data: z.infer<typeof customValueSchema>
 	) => {
-		setRequestParams((prev) => [
-			...prev,
-			{
-				name: data.nameCase,
-				value: data.value,
-				type: data.typeCase,
-			},
-		]);
+		// This function will need to be updated to also call a create action
+		// and get the new ID back from the database to add to the state.
+		// For now, we'll leave it as a UI-only addition.
+		// setRequestParams((prev) => [ ...prev, { id: newId, name: ..., etc... }]);
 	};
 
 	const handleEdit = (index: number) => {
@@ -113,11 +106,19 @@ export const CustomValue = (): React.JSX.Element => {
 		});
 	};
 
-	const handleDeleteConfirm = () => {
-		if (deleteIndex !== null) {
-			setRequestParams((prev) => prev.filter((_, i) => i !== deleteIndex));
+	// ✨ 6. Implement the delete handler to call the server action
+	const handleDeleteConfirm = async () => {
+		if (deleteIndex === null) return;
+		setRequestParams((prev) => prev.filter((_, i) => i !== deleteIndex));
+
+		const itemToDelete = requestParams[deleteIndex];
+		if (!itemToDelete) return;
+
+		startTransition(async () => {
+			await deleteCustomTestCaseAction(itemToDelete.id);
+
 			setDeleteIndex(null);
-		}
+		});
 	};
 
 	return (
@@ -143,17 +144,7 @@ export const CustomValue = (): React.JSX.Element => {
 				<CustomValueForm
 					onAddCustomValue={handleAddCustomValue}
 					onEditCustomValue={(data, index) => {
-						setRequestParams((prev) =>
-							prev.map((item, i) =>
-								i === index
-									? {
-											name: data.nameCase,
-											value: data.value,
-											type: data.typeCase,
-									  }
-									: item
-							)
-						);
+						// This would need to call an "update" server action
 					}}
 					editingIndex={editingIndex}
 					editingValue={editingValue}
@@ -175,7 +166,7 @@ export const CustomValue = (): React.JSX.Element => {
 						<TableBody>
 							{requestParams.map((param, index) => (
 								<TableRow
-									key={index}
+									key={param.id}
 									className="border-b border-slate-200 h-12"
 								>
 									<TableCell className="pl-6">{param.name}</TableCell>
@@ -190,9 +181,14 @@ export const CustomValue = (): React.JSX.Element => {
 											{param.type}
 										</Badge>
 									</TableCell>
-									<TableCell className="pl-6 py-4 flex  items-center gap-4">
+									<TableCell className="pl-6 py-4 flex items-center gap-4">
 										<Trash
 											className="text-red-500 cursor-pointer size-4"
+											// ✨ 7. Disable button while an action is pending
+											style={{
+												pointerEvents: isPending ? "none" : "auto",
+												opacity: isPending ? 0.5 : 1,
+											}}
 											onClick={() => {
 												setDeleteIndex(index);
 												setIsDialogOpen(true);
@@ -200,6 +196,10 @@ export const CustomValue = (): React.JSX.Element => {
 										/>
 										<Edit
 											className="cursor-pointer size-4"
+											style={{
+												pointerEvents: isPending ? "none" : "auto",
+												opacity: isPending ? 0.5 : 1,
+											}}
 											onClick={() => handleEdit(index)}
 										/>
 									</TableCell>
@@ -210,7 +210,6 @@ export const CustomValue = (): React.JSX.Element => {
 				</CardContent>
 			</Card>
 
-			{/* Confirmation Dialog */}
 			<DeleteCustomValue
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
