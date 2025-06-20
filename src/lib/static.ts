@@ -10,3 +10,4 @@ export const TEST_EXECUTION_ENDPOINT = `${API_BASE_URL}/executions/trigger`;
 export const HISTORY_ENDPOINT = `${API_BASE_URL}/executions/projects/batches/by-project`;
 export const PUBLIC_SHARE_LINK = `${API_BASE_URL}/public-share-link`;
 export const TEST_CASE_ENDPOINT = `${API_BASE_URL}/test-cases`;
+export const VARIABLE_ENDPOINT = `${API_BASE_URL}/variables`;

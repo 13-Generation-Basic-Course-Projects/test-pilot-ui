@@ -95,6 +95,12 @@ export interface ProjectItem {
 	userAvatarUrl?: string;
 }
 
+export interface ProjectVariableItem {
+	id: string;
+	variable: string;
+	value: string;
+}
+
 export interface ProjectProps {
 	projects: ProjectItem[];
 }
