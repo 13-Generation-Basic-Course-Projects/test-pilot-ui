@@ -31,7 +31,7 @@ export function RequestContentDetail({
 			<TabsContent value="request-content">
 				<ApiRequestDetailParam request={request} requestId={requestId} />
 				<ApiRequestContentHeader requests={request} requestId={requestId} />
-				<Body request={request} requestId={requestId} />
+				<Body request={request} requestId={requestId} projectId={projectId} />
 			</TabsContent>
 			<TabsContent value="predefined-value">
 				<PredefinedTestCase />

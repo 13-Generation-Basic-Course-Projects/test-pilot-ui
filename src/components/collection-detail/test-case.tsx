@@ -96,14 +96,11 @@ export const TestCase = ({
 
 				// Fetch previously saved test cases for this request
 				const savedTestCases = await getRequestTestCaseAction({ requestId });
-				console.log("saveTestCase", savedTestCases);
 				const bodyFieldCases = savedTestCases.filter(
 					(tc: any) =>
 						tc.applicationContext === Application_Context.BODY_FIELD &&
 						tc.targetFieldPath
 				);
-
-				console.log("bodyFieldCases", bodyFieldCases);
 
 				const casesByField = bodyFieldCases.reduce<Record<string, string[]>>(
 					(acc, savedCase: any) => {
