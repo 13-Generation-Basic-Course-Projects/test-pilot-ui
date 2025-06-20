@@ -33,7 +33,6 @@ export function ExportCollection({ open, onOpenChange, collection }: ExportProps
 
     // Prepare the collection data for export
     const exportData = {
-      id: collection.id,
       title: collection.title,
       endpoints: collection.endpoints.map((endpoint) => ({
         id: endpoint.id,
