@@ -4,7 +4,6 @@ import {
 	LoginResponseType,
 	RegisterResponseType,
 } from "@/types";
-
 export const signInService = async ({
 	credentials,
 }: {
