@@ -84,30 +84,43 @@ export default function PathVariable({
 	const [isSaving, startTransition] = useTransition();
 
 	// ✨ 3. This effect synchronizes the UI state with the selected request from props
+	// ✨ useEffect hook (Corrected version)
 	useEffect(() => {
 		const fetchData = async () => {
-			const testcases = (await getRequestTestCaseAction({ requestId })).map(
-				(tc) => tc.testCase
-			);
+			const testcases = await getRequestTestCaseAction({ requestId });
 			const currentEndpoint = request.find((r) => r.id === requestId);
-			// Safely access pathVariables from the endpoint, defaulting to an empty object
-			const pathVariablesObject = currentEndpoint?.details?.pathVariables ?? {};
 
-			// Transform the object { key: value } from the backend into the array format [{ key, value, cases }] the UI needs
+			// Safely access pathVariables, defaulting to an empty object
+			const pathVariablesObject = (currentEndpoint?.details?.pathVariables ??
+				{}) as Record<string, string>;
+
+			// Transform the object from the backend into the array format the UI needs
 			const formattedPathVariables: ParamRow[] = Object.entries(
 				pathVariablesObject
-			).map(([key, value]) => ({
-				key,
-				value: String(
-					testcases.find((tc) => tc.value === value)?.value || value
-				),
-				cases: testcases.map((tc) => tc.name) || [],
-			}));
+			).map(([key, value]) => {
+				// ✅ CORRECTION: Filter testcases for the CURRENT key
+				const casesForKey = testcases
+					.filter((tc) => tc.targetFieldPath === key)
+					.map((tc) => tc.testCase.name);
 
-			// Update the global store, which in turn updates this component's display
+				return {
+					key,
+					value: String(value),
+					cases: casesForKey,
+				};
+			});
+
+			// Update the global store
 			setPathVariables(formattedPathVariables);
 		};
-		fetchData();
+
+		// Only fetch if a valid requestId is present
+		if (requestId) {
+			fetchData();
+		} else {
+			// Clear variables if no request is selected
+			setPathVariables([]);
+		}
 	}, [requestId, request, setPathVariables]);
 
 	const handleRemoveCase = (index: number, caseToRemove: string) => {

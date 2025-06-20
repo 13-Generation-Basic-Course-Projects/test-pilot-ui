@@ -30,7 +30,7 @@ export function RequestContentDetail({
 			</TabsListV2>
 			<TabsContent value="request-content">
 				<ApiRequestDetailParam request={request} requestId={requestId} />
-				<ApiRequestContentHeader />
+				<ApiRequestContentHeader requests={request} requestId={requestId} />
 				<Body request={request} requestId={requestId} />
 			</TabsContent>
 			<TabsContent value="predefined-value">

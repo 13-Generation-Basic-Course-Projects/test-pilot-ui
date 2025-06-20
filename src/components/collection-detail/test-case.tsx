@@ -103,7 +103,7 @@ export const TestCase = ({
 						tc.targetFieldPath
 				);
 
-				console.log(bodyFieldCases);
+				console.log("bodyFieldCases", bodyFieldCases);
 
 				const casesByField = bodyFieldCases.reduce<Record<string, string[]>>(
 					(acc, savedCase: any) => {
