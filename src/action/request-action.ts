@@ -10,6 +10,7 @@ import {
 	getRequestTestCaseService,
 	updateRequestByIdService,
 	updateRequestPathVariablesService,
+	updateRequestQueryParamsService,
 	updateRequestUrlAndMethodService,
 } from "@/service/request-service";
 import { EndpointItem } from "@/types";
@@ -17,7 +18,7 @@ import { TestCaseRequestType, VariableTestCase } from "@/types/request-type";
 import { revalidatePath } from "next/cache";
 
 export const fetchRequestForCollection = async (
-  collectionId: string
+	collectionId: string
 ): Promise<EndpointItem[]> => {
 	if (!collectionId) {
 		console.warn("No collectionId provided for fetchRequestForCollection");
@@ -31,30 +32,33 @@ export const fetchRequestForCollection = async (
 
 // Create endpoint
 export const createRequestByCollectionIdAction = async (payload: {
-  collectionId: string;
-  requestName: string;
-  method: string;
-  details: {
-    url: string;
-    pathVariables: Record<string, string>;
-    queryParams: Record<string, string>;
-    headers: Record<string, string>;
-    body: any;
-    description: string;
-  };
+	collectionId: string;
+	requestName: string;
+	method: string;
+	details: {
+		url: string;
+		pathVariables: Record<string, string>;
+		queryParams: Record<string, string>;
+		headers: Record<string, string>;
+		body: any;
+		description: string;
+	};
 }): Promise<EndpointItem | null> => {
-  try {
-    const response = await createRequestByCollectionId({
-      collectionId: payload.collectionId,
-      name: payload.requestName.trim(),
-      method: payload.method,
-      details: payload.details,
-    });
+	try {
+		const response = await createRequestByCollectionId({
+			collectionId: payload.collectionId,
+			name: payload.requestName.trim(),
+			method: payload.method,
+			details: payload.details,
+		});
 
-    if (!response || !response.id) {
-      console.error("createRequestByCollectionIdAction: Invalid response", response);
-      return null;
-    }
+		if (!response || !response.id) {
+			console.error(
+				"createRequestByCollectionIdAction: Invalid response",
+				response
+			);
+			return null;
+		}
 
 		return {
 			id: response.id,
@@ -74,22 +78,22 @@ export const deleteRequestAction = async (
 	endpointId: string,
 	projectId: string
 ) => {
-  try {
-    await deleteRequestByIdService(endpointId);
-    const endpoints = await getRequestByCollectionId({ collectionId });
-    // console.log(`deleteRequestAction: Refetched endpoints for collection ${collectionId}:`, endpoints);
-    return endpoints;
-  } catch (error) {
-    console.error("deleteRequestAction error:", error);
-    throw error;
-  }
+	try {
+		await deleteRequestByIdService(endpointId);
+		const endpoints = await getRequestByCollectionId({ collectionId });
+		// console.log(`deleteRequestAction: Refetched endpoints for collection ${collectionId}:`, endpoints);
+		return endpoints;
+	} catch (error) {
+		console.error("deleteRequestAction error:", error);
+		throw error;
+	}
 };
 
 // Update endpoint
 export const updateRequestByIdAction = async (
-  collectionId: string,
-  endpointId: string,
-  payload: { name: string }
+	collectionId: string,
+	endpointId: string,
+	payload: { name: string }
 ): Promise<void> => {
 	try {
 		await updateRequestByIdService(endpointId, {
@@ -122,6 +126,19 @@ export const updateRequestUrlAndMethodAction = async (params: {
 	} catch (error) {
 		console.error("Error in updateRequestUrlAndMethodAction:", error);
 		throw error;
+	}
+};
+
+export const updateRequestQueryParamsAction = async (
+	requestId: string,
+	queryParamsPayload: Record<string, any>
+) => {
+	try {
+		await updateRequestQueryParamsService(requestId, queryParamsPayload);
+		revalidatePath(`/project/.*`, "layout");
+	} catch (error) {
+		console.error("Failed to update query params:", error);
+		throw new Error("Could not save query params.");
 	}
 };
 
@@ -170,24 +187,24 @@ export const deleteVariableTestAction = async (testInstanceId: string) => {
 };
 //duplicate endpoint
 export const duplicateRequestAction = async (
-  collectionId: string,
-  requestId: string
+	collectionId: string,
+	requestId: string
 ): Promise<EndpointItem | null> => {
-  try {
-    if (!requestId) {
-      console.error("duplicateRequestAction: Invalid requestId", requestId);
-      throw new Error("Invalid request ID");
-    }
+	try {
+		if (!requestId) {
+			console.error("duplicateRequestAction: Invalid requestId", requestId);
+			throw new Error("Invalid request ID");
+		}
 
-    const response = await duplicateRequest({
-      requestId,
-      collectionId,
-    });
+		const response = await duplicateRequest({
+			requestId,
+			collectionId,
+		});
 
-    if (!response || !response.id) {
-      console.error("duplicateRequestAction: Invalid response", response);
-      return null;
-    }
+		if (!response || !response.id) {
+			console.error("duplicateRequestAction: Invalid response", response);
+			return null;
+		}
 
 		return {
 			id: response.id,

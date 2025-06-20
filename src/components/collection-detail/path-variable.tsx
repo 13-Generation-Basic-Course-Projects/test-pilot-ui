@@ -37,16 +37,9 @@ import { Trash2, Plus, X, Check } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { Input } from "../ui/input";
 import { EndpointItem } from "@/types";
 import { toast } from "sonner";
-// ✨ 1. Import the server action for saving
-import {
-	createRequestTestCaseAction,
-	getRequestTestCaseAction,
-	updateRequestPathVariablesAction,
-} from "@/action/request-action";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -56,6 +49,17 @@ import {
 import { Badge } from "../ui/badge";
 import { Application_Context } from "@/types/request-type";
 
+// ✨ 1. Import all necessary actions, including for custom test cases
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action"; // ✨ Add this
+import {
+	createRequestTestCaseAction,
+	getRequestTestCaseAction,
+	updateRequestPathVariablesAction,
+} from "@/action/request-action";
+import { usePathname } from "next/navigation";
+
+// Interfaces remain the same
 export interface ParamRow {
 	key: string;
 	value: string;
@@ -69,7 +73,6 @@ interface TestCase {
 	value: any;
 }
 
-// ✨ 2. The component accepts `requestId` to know which request it's editing
 export default function PathVariable({
 	request,
 	requestId,
@@ -83,85 +86,86 @@ export default function PathVariable({
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isSaving, startTransition] = useTransition();
 
-	// ✨ 3. This effect synchronizes the UI state with the selected request from props
-	// ✨ useEffect hook (Corrected version)
+	// This effect, for syncing the UI with saved data, is correct and remains unchanged.
 	useEffect(() => {
 		const fetchData = async () => {
 			const testcases = await getRequestTestCaseAction({ requestId });
 			const currentEndpoint = request.find((r) => r.id === requestId);
-
-			// Safely access pathVariables, defaulting to an empty object
 			const pathVariablesObject = (currentEndpoint?.details?.pathVariables ??
 				{}) as Record<string, string>;
 
-			// Transform the object from the backend into the array format the UI needs
 			const formattedPathVariables: ParamRow[] = Object.entries(
 				pathVariablesObject
 			).map(([key, value]) => {
-				// ✅ CORRECTION: Filter testcases for the CURRENT key
 				const casesForKey = testcases
-					.filter((tc) => tc.targetFieldPath === key)
-					.map((tc) => tc.testCase.name);
-
-				return {
-					key,
-					value: String(value),
-					cases: casesForKey,
-				};
+					.filter(
+						(tc: any) =>
+							tc.targetFieldPath === key &&
+							tc.applicationContext === Application_Context.PATH_VARIABLE
+					)
+					.map((tc: any) => tc.testCase.name);
+				return { key, value: String(value), cases: casesForKey };
 			});
-
-			// Update the global store
 			setPathVariables(formattedPathVariables);
 		};
 
-		// Only fetch if a valid requestId is present
 		if (requestId) {
 			fetchData();
 		} else {
-			// Clear variables if no request is selected
 			setPathVariables([]);
 		}
 	}, [requestId, request, setPathVariables]);
 
-	const handleRemoveCase = (index: number, caseToRemove: string) => {
-		// 1. Create a shallow copy of your variables array to avoid mutating state directly.
-		const updatedRows = [...pathVariables];
+	const pathname = usePathname();
 
-		// 2. Use .filter() to create a NEW array of cases, excluding the one to be removed.
-		updatedRows[index].cases = updatedRows[index].cases.filter(
-			(c) => c !== caseToRemove
-		);
-
-		// 3. Update the component's state to reflect the change on the screen.
-		setPathVariables(updatedRows);
-
-		// 4. Call handleSave to persist this new state to your backend.
-		// handleSave(updatedRows);
-	};
-
-	// This effect fetches predefined test cases and is unchanged
+	// ✨ 2. This is the useEffect hook we will modify to fetch ALL test cases.
 	useEffect(() => {
 		const fetchTestCases = async () => {
-			const backendData = await getAllPredefinedAction();
-			if (backendData && Array.isArray(backendData)) {
-				const transformedData: TestCase[] = backendData.map((item: any) => ({
+			try {
+				// Get the projectId, which is needed to fetch the correct custom test cases.
+				const projectId = pathname.split("/")[2];
+
+				// Fetch both predefined and custom test cases in parallel for performance.
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					// Ensure a projectId exists before trying to fetch custom cases.
+					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
+				]);
+
+				// Helper function to transform any test case data into the component's format.
+				const transformToTestCase = (item: any): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
-				}));
-				setTestCases(transformedData);
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// Combine the two lists into one.
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
+			} catch (error) {
+				console.error("Failed to fetch test cases:", error);
+				toast.error("Could not load test case data.");
 			}
 		};
-		fetchTestCases();
-	}, []);
 
-	// ✨ 4. A single, explicit save handler function
+		fetchTestCases();
+	}, [request]); // ✨ Depend on `request` to get the projectId
+
+	// --- All handler functions below this point remain the same. ---
+	// They will now work with the merged list of test cases automatically.
+
 	const handleSave = (variablesToSave: ParamRow[]) => {
-		// Transform the UI's array state back into the simple { key: value } object the backend expects
 		const payload = variablesToSave.reduce((acc, row) => {
 			if (row.key.trim()) {
-				// Only include rows that have a key
 				acc[row.key.trim()] = row.value;
 			}
 			return acc;
@@ -180,7 +184,6 @@ export default function PathVariable({
 	const handleAddRow = () => {
 		const updatedRows = [...pathVariables, { key: "", value: "", cases: [] }];
 		setPathVariables(updatedRows);
-		// handleSave(updatedRows); // Save immediately
 	};
 
 	const handleChange = (
@@ -192,7 +195,15 @@ export default function PathVariable({
 			i === index ? { ...row, [field]: newValue } : row
 		);
 		setPathVariables(updatedRows);
-		// We save on blur, not on every keystroke, for a better experience
+	};
+
+	const handleRemoveCase = (index: number, caseToRemove: string) => {
+		const updatedRows = [...pathVariables];
+		updatedRows[index].cases = updatedRows[index].cases.filter(
+			(c) => c !== caseToRemove
+		);
+		setPathVariables(updatedRows);
+		// You may want to add a backend call here to remove the test case association.
 	};
 
 	const handleToggleCase = (index: number, selectedCase: string) => {
@@ -206,8 +217,6 @@ export default function PathVariable({
 
 		setPathVariables(updatedRows);
 
-		// Saving on case toggle is optional, but can be added here if needed:
-		// handleSave(updatedRows);
 		startTransition(async () => {
 			try {
 				await createRequestTestCaseAction({
@@ -217,7 +226,6 @@ export default function PathVariable({
 					targetFieldPath: updatedRows[index].key,
 					isExpectedSuccess: false,
 				});
-				// Optionally toast here
 			} catch (err) {
 				toast.error("Failed to save test case.");
 			}
@@ -228,11 +236,12 @@ export default function PathVariable({
 		if (deleteIndex !== null) {
 			const updatedRows = pathVariables.filter((_, i) => i !== deleteIndex);
 			setPathVariables(updatedRows);
-			handleSave(updatedRows); // Save immediately
+			handleSave(updatedRows);
 			setDeleteIndex(null);
 		}
 	};
 
+	// The entire JSX return block is unchanged.
 	return (
 		<div className="space-y-5">
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
@@ -255,7 +264,6 @@ export default function PathVariable({
 										onBlur={() => handleSave(pathVariables)}
 										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter key"
-										// disabled={isSaving}
 									/>
 								</TableCell>
 								<TableCell className="py-0 px-2 border-r">
@@ -267,13 +275,10 @@ export default function PathVariable({
 										onBlur={() => handleSave(pathVariables)}
 										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter value"
-										// disabled={isSaving}
 									/>
 								</TableCell>
-								{/* ✨ FULL CASE SELECTION UI */}
 								<TableCell className="py-2 px-4">
 									<div className="flex items-center gap-2 flex-row-reverse justify-end">
-										{/* Display selected cases as pills */}
 										<div className="flex items-center gap-1 py-2">
 											<div>
 												{row.cases.slice(0, 1).map((c) => (
@@ -324,7 +329,6 @@ export default function PathVariable({
 												)}
 											</div>
 										</div>
-										{/* Popover to add new cases */}
 										<Popover
 											open={openPopoverIndex === index}
 											onOpenChange={(isOpen) =>
@@ -368,7 +372,6 @@ export default function PathVariable({
 										</Popover>
 									</div>
 								</TableCell>
-								{/* Delete Action Cell */}
 								<TableCell className="py-2 px-4 text-center border-l">
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
@@ -417,9 +420,6 @@ export default function PathVariable({
 					</TableBody>
 				</Table>
 			</div>
-			{/* {isSaving && (
-				<p className="text-xs text-muted-foreground animate-pulse">Saving...</p>
-			)} */}
 		</div>
 	);
 }

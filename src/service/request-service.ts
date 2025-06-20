@@ -9,36 +9,39 @@ import {
 } from "@/types/request-type";
 
 export const getRequestByCollectionId = async ({
-  collectionId,
+	collectionId,
 }: {
-  collectionId: string;
+	collectionId: string;
 }): Promise<EndpointItem[]> => {
-  try {
-    const response = await fetchAPI<RequestResponseTypes>(
-      `${REQUEST_ENDPOINT}/by-collection/${collectionId}`
-    );
+	try {
+		const response = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/by-collection/${collectionId}`
+		);
 
-    console.log("getRequestByCollectionId response:", response);
+		console.log("getRequestByCollectionId response:", response);
 
-    if (!response.success || !response.payload) {
-      console.warn(
-        `getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
-        response
-      );
-      return [];
-    }
+		if (!response.success || !response.payload) {
+			console.warn(
+				`getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
+				response
+			);
+			return [];
+		}
 
-    return response.payload.map((request) => ({
-      id: request.id,
-      name: request.name,
-      method: request.method || "GET",
-      path: request.path || "/new-request",
-	  details: request.details,
-    }));
-  } catch (error) {
-    console.error(`getRequestByCollectionId Error for collectionId ${collectionId}:`, error);
-    return [];
-  }
+		return response.payload.map((request) => ({
+			id: request.id,
+			name: request.name,
+			method: request.method || "GET",
+			path: request.path || "/new-request",
+			details: request.details,
+		}));
+	} catch (error) {
+		console.error(
+			`getRequestByCollectionId Error for collectionId ${collectionId}:`,
+			error
+		);
+		return [];
+	}
 };
 
 //Add request
@@ -186,6 +189,35 @@ export const updateRequestPathVariablesService = async (
 		});
 	} catch (error) {
 		console.error("updateRequestPathVariablesService error:", error);
+		throw error;
+	}
+};
+
+export const updateRequestQueryParamsService = async (
+	requestId: string,
+	queryParamsPayload: Record<string, any>
+): Promise<void> => {
+	try {
+		const existingRequest = await fetchAPI<RequestResponseTypes>(
+			`${REQUEST_ENDPOINT}/${requestId}`
+		);
+
+		const updatedDetails = {
+			...existingRequest.payload.details,
+			queryParams: queryParamsPayload, // Set the new query params
+		};
+
+		const updatedPayload = {
+			...existingRequest.payload,
+			details: updatedDetails,
+		};
+
+		await fetchAPI(`${REQUEST_ENDPOINT}/${requestId}`, {
+			method: "PUT",
+			body: JSON.stringify(updatedPayload),
+		});
+	} catch (error) {
+		console.error("updateRequestQueryParamsService error:", error);
 		throw error;
 	}
 };

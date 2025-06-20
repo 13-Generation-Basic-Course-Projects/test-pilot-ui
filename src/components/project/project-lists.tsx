@@ -22,7 +22,6 @@ import {
 	ShareIcon,
 	Trash2Icon,
 	EditIcon,
-	FolderPlusIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +30,6 @@ import { DeleteProject } from "../delete/delete-project";
 import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { deleteProjectAction } from "@/action/project-action";
-import { Button } from "../ui/button";
 import { toast } from "sonner";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
@@ -156,7 +154,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-					{projects.map((project) => (
+					{filteredProjects.map((project) => (
 						<Card key={project.id}>
 							<CardHeader>
 								<div className="flex justify-between items-start">

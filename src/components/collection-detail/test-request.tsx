@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react"; // 1. Import useEffect and useState
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
@@ -7,9 +7,15 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { getAllPredefinedAction } from "@/action/pre-defined-action"; // 2. Import your action
+import { EndpointItem } from "@/types"; // ✨ 1. Import EndpointItem type
 
+// ✨ 2. Import BOTH actions
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+
+// Interfaces remain the same
 interface TestCase {
+	id: string; // ✨ Add id for consistency
 	type: string;
 	case: string;
 	value: any;
@@ -23,30 +29,61 @@ interface ValidTestCase {
 	variableIndex: number;
 }
 
-export default function TestRequest() {
+// ✨ 3. Update the component to accept props
+export default function TestRequest({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) {
 	const { pathVariables, queryParams } = useParamsApiStore();
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
-
-	// 4. Add state to hold the test cases from the backend
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
-
-	// 5. Fetch and set the test cases when the component mounts
+	// ✨ 4. This useEffect is now updated to fetch ALL test cases (predefined and custom)
 	useEffect(() => {
 		const fetchTestCases = async () => {
-			const backendData = await getAllPredefinedAction();
-			if (backendData && Array.isArray(backendData)) {
-				const transformedData: TestCase[] = backendData.map((item: any) => ({
+			try {
+				// Get projectId from the request prop
+				const projectId = pathname.split("/")[2];
+
+				// Fetch both in parallel
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
+				]);
+
+				// Helper to transform data consistently
+				const transformToTestCase = (item: any): TestCase => ({
+					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
-				}));
-				setTestCases(transformedData);
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// Combine into a single list
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
+			} catch (error) {
+				console.error("Failed to fetch all test cases:", error);
 			}
 		};
+
 		fetchTestCases();
-	}, []);
+	}, [request]); // ✨ Depend on `request` prop to refetch if it changes
+
+	// The rest of your component logic does not need to change.
+	// `generatePreviewUrl` will now correctly find custom test cases in the `testCases` state.
 
 	const getValidTestCases = (variables: any[], type: "path" | "query") => {
 		return (
@@ -82,13 +119,11 @@ export default function TestRequest() {
 		// Replace path parameters
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
-
 			const isCurrentVariable =
 				currentTestCase.type === "path" &&
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
-			// This logic now uses the `testCases` state variable automatically
 			const valueToUse = isCurrentVariable
 				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value ??
 				  ""
@@ -104,13 +139,11 @@ export default function TestRequest() {
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
-
 			const isCurrentVariable =
 				currentTestCase.type === "query" &&
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
-			// This logic also uses the `testCases` state variable
 			const valueToUse = isCurrentVariable
 				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value
 				: variable.value;
@@ -132,7 +165,6 @@ export default function TestRequest() {
 			constructedUrl +=
 				(constructedUrl.includes("?") ? "&" : "?") + queryParts.join("&");
 		}
-
 		return constructedUrl;
 	};
 
@@ -144,12 +176,13 @@ export default function TestRequest() {
 		  ]
 		: [];
 
+	// The rest of the JSX is unchanged.
 	if (!hasUrl) {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
 				<p className="text-gray-500">
-					Please enter a **URL** in the request builder to generate and run test
-					cases.
+					Please enter a <strong>URL</strong> in the request builder to generate
+					and run test cases.
 				</p>
 			</div>
 		);
@@ -159,7 +192,8 @@ export default function TestRequest() {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
 				<p className="text-gray-500">
-					No valid test cases available. Please provide a **key** and **value**
+					No valid test cases available. Please provide a <strong>key</strong>{" "}
+					and <strong>value</strong>
 					for each variable, and ensure test cases are defined.
 				</p>
 			</div>

@@ -7,23 +7,23 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { toast } from "sonner";
-
-// ✨ 1. Import the new action and payload type
 import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
 
+// ✨ 1. Import both predefined and custom test case actions
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+
 interface TestCase {
-	id: string; // Add ID to the interface
+	id: string;
 	type: string;
 	case: string;
 	value: any;
 }
 
-// ✨ 2. Accept projectId and requestId as props
 export const TestRequestBody = ({
 	projectId,
 	requestId,
@@ -39,30 +39,54 @@ export const TestRequestBody = ({
 
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [isPending, startTransition] = useTransition(); // For the run action
+	const [isPending, startTransition] = useTransition();
 
+	// ✨ 2. This useEffect is now updated to fetch ALL test cases
 	useEffect(() => {
 		const fetchTestCases = async () => {
 			setIsLoading(true);
 			try {
-				const backendData = await getAllPredefinedAction();
-				if (backendData && Array.isArray(backendData)) {
-					const transformedData: TestCase[] = backendData.map((item: any) => ({
-						id: item.id, // Ensure ID is mapped
-						type: item.dataType.name,
-						case: item.name,
-						value: item.value,
-					}));
-					setTestCases(transformedData);
-				}
+				// Fetch both in parallel for better performance
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					// Use the projectId prop to get the correct custom cases
+					getCustomTestCaseAction(projectId),
+				]);
+
+				const transformToTestCase = (item: any): TestCase => ({
+					id: item.id,
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// Combine into a single, complete list
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
 			} catch (error) {
 				console.error("Failed to fetch test cases:", error);
+				toast.error("Failed to load test case data.");
 			} finally {
 				setIsLoading(false);
 			}
 		};
-		fetchTestCases();
-	}, []);
+
+		// Only fetch if a projectId is available
+		if (projectId) {
+			fetchTestCases();
+		}
+	}, [projectId]); // ✨ Depend on projectId to refetch if it changes
+
+	// The rest of your component logic is already correct and will now work as expected.
+	// ...
 
 	// This logic now generates the final payloads for each test case
 	const testCasePayloads = apiBodyRows.flatMap((row) => {
@@ -76,7 +100,7 @@ export const TestRequestBody = ({
 		return row.testCases
 			.map((testCaseName) => {
 				const fullTestCase = testCases.find((tc) => tc.case === testCaseName);
-				if (!fullTestCase) return null; // Skip if test case not found
+				if (!fullTestCase) return null; // This will no longer fail for custom cases
 
 				const modifiedPayload = { ...basePayload };
 				modifiedPayload[row.id] = fullTestCase.value;
@@ -91,24 +115,19 @@ export const TestRequestBody = ({
 			.filter(Boolean); // Filter out any nulls
 	});
 
-	// ✨ 3. The new handleRun function that builds and sends the payload
 	const handleRun = () => {
-		// Build the `requestExecution` array from our generated payloads
 		const requestExecution = testCasePayloads.map((testCase) => ({
-			url: url, // From useRequestStore
-			method: method || "GET", // From useRequestStore
+			url: url,
+			method: method || "GET",
 			headers: {
 				// You would get the final merged headers from your header store/state here
-				...pathVariables, // Example of including other params
-				...queryParams,
 			},
-			body: testCase!.payload, // The generated body for this specific test case
-			requestId: requestId, // The ID of the request being tested
-			testCaseId: testCase!.testCaseId, // The ID of the test case being applied
-			isExpectedSuccess: false, // Defaulting this, can be configured later
+			body: testCase!.payload,
+			requestId: requestId,
+			testCaseId: testCase!.testCaseId,
+			isExpectedSuccess: false,
 		}));
 
-		// Build the final payload object
 		const finalPayload: TestRunPayload = {
 			projectId: projectId,
 			triggerType: "SELECTED_TEST_CASES",
@@ -119,7 +138,6 @@ export const TestRequestBody = ({
 			toast.promise(runTestCasesAction(finalPayload), {
 				loading: "Starting test run...",
 				success: (result) => {
-					// Navigate to the monitoring page on success
 					// router.push(`${pathname}/monitoring`);
 					return "Test run started successfully!";
 				},
@@ -128,6 +146,7 @@ export const TestRequestBody = ({
 		});
 	};
 
+	// --- The rest of the component's JSX remains the same ---
 	const CardSkeleton = () => (
 		<Card className="w-full">
 			<CardHeader className="flex flex-row justify-between items-start">
@@ -161,7 +180,6 @@ export const TestRequestBody = ({
 					<Play className="ml-2 h-4 w-4" />
 				</Button>
 			</div>
-			{/* The rest of your JSX for displaying cards remains the same */}
 			<div className="flex flex-col items-center gap-6">
 				{isLoading ? (
 					[...Array(3)].map((_, index) => <CardSkeleton key={index} />)
@@ -191,7 +209,6 @@ export const TestRequestBody = ({
 									</CardTitle>
 									<CardTitle className="text-md">Request Body :</CardTitle>
 								</div>
-								{/* Per-test run button can be added later if needed */}
 							</CardHeader>
 							<CardContent>
 								<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">

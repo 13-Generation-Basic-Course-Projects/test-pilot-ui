@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useTransition } from "react";
 import {
 	Table,
@@ -22,32 +23,41 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Plus, X } from "lucide-react";
-import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import { getAllPredefinedAction } from "@/action/pre-defined-action";
-import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { Plus, X } from "lucide-react";
+import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
+// NEW: Import your custom test case action
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import {
 	createRequestTestCaseAction,
 	getRequestTestCaseAction,
 } from "@/action/request-action";
 import { Application_Context } from "@/types/request-type";
 import { EndpointItem } from "@/types";
-import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 
+// NEW: A consistent type for data coming from both predefined and custom actions
+interface ApiTestCaseData {
+	id: string;
+	name: string;
+	value: any;
+	dataType: {
+		name: string;
+	};
+}
+
+// The internal representation of a test case in this component
 interface TestCase {
 	id: string;
 	type: string;
@@ -69,32 +79,61 @@ export const TestCase = ({
 	const [isLoading, setIsLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
 
+	const pathname = usePathname();
+
 	useEffect(() => {
 		const fetchAndSyncData = async () => {
 			setIsLoading(true);
 			try {
-				// Fetch all possible test cases
-				const backendData = await getAllPredefinedAction();
-				if (backendData && Array.isArray(backendData)) {
-					const transformedData: TestCase[] = backendData.map((item: any) => ({
-						id: item.id,
-						type: item.dataType.name,
-						case: item.name,
-						value: item.value,
-					}));
-					setTestCases(transformedData);
-					const uniqueTypes = [
-						...new Set(transformedData.map((item) => item.type)),
-					];
-					setDataTypeOptions(uniqueTypes);
+				// NEW: Fetch both predefined and custom test cases in parallel
+				// NOTE: This assumes you can get a `projectId`. You must pass this to your component
+				// or find a way to derive it. Here, we try to get it from the `request` prop.
+				const projectId = pathname.split("/")[2];
+
+				if (!projectId) {
+					console.error(
+						"Project ID is missing, cannot load custom test cases."
+					);
+					// We can continue with just predefined cases if we want, or stop.
+					// For this example, we'll try to fetch custom with an empty string,
+					// but a real implementation should handle this more gracefully.
 				}
 
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					getCustomTestCaseAction(projectId || ""), // Use the found projectId
+				]);
+
+				// NEW: Helper function to prevent repeating the transformation logic
+				const transformToTestCase = (item: ApiTestCaseData): TestCase => ({
+					id: item.id,
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// NEW: Combine both lists into one single source of truth for the popover
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
+
+				// This part now works on the merged data, creating a full list of data types
+				const uniqueTypes = [...new Set(allTestCases.map((item) => item.type))];
+				setDataTypeOptions(uniqueTypes);
+
+				// --- This section for syncing SAVED cases remains the same ---
 				if (apiBodyRows.length === 0) {
 					setIsLoading(false);
 					return;
 				}
 
-				// Fetch previously saved test cases for this request
 				const savedTestCases = await getRequestTestCaseAction({ requestId });
 				const bodyFieldCases = savedTestCases.filter(
 					(tc: any) =>
@@ -130,14 +169,10 @@ export const TestCase = ({
 		};
 
 		fetchAndSyncData();
-	}, [requestId, apiBodyRows.length, setApiBodyRows]);
+	}, [requestId, apiBodyRows.length, setApiBodyRows, request]); // NEW: Added `request` to dependency array
 
 	const handleToggleCase = (row: ApiBodyRow, selectedCaseName: string) => {
-		// --- THIS IS THE FIX ---
-		// 1. Find the full test case object ONCE at the beginning.
 		const selectedTestCase = testCases.find((t) => t.case === selectedCaseName);
-
-		// 2. Guard Clause: If we can't find the test case, stop immediately.
 		if (!selectedTestCase) {
 			toast.error(`Could not find details for test case: ${selectedCaseName}`);
 			return;
@@ -147,24 +182,20 @@ export const TestCase = ({
 			? row.testCases.filter((c) => c !== selectedCaseName)
 			: [...row.testCases, selectedCaseName];
 
-		// Update the UI immediately for a responsive feel
 		updateRow(row.id, { testCases: newTestCases });
 
-		// 3. Perform the backend action inside a transition.
 		startTransition(async () => {
 			try {
 				await createRequestTestCaseAction({
 					requestId,
-					testCaseId: selectedTestCase.id, // Use the ID from the object we found
+					testCaseId: selectedTestCase.id,
 					applicationContext: Application_Context.BODY_FIELD,
 					targetFieldPath: row.id,
-					isExpectedSuccess: false,
+					isExpectedSuccess: false, // You might want to make this dynamic
 				});
-				// Optionally show a success toast here if you want confirmation
-				// toast.success(`Test case for '${row.id}' updated.`);
 			} catch (err) {
 				toast.error(`Failed to save test case for '${row.id}'.`);
-				// Optional: Revert the UI state on failure
+				// Revert the UI state on failure
 				updateRow(row.id, { testCases: row.testCases });
 			}
 		});
@@ -173,7 +204,7 @@ export const TestCase = ({
 	const handleRemoveCase = (row: ApiBodyRow, caseToRemove: string) => {
 		const newTestCases = row.testCases.filter((c) => c !== caseToRemove);
 		updateRow(row.id, { testCases: newTestCases });
-		// Here you would also add a call to a backend action to DELETE the test case.
+		// You would also add a call to a backend action to DELETE the test case linkage.
 	};
 
 	const handleChangeDataType = (rowId: string, newType: string) => {

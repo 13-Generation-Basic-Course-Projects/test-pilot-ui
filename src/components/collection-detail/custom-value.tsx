@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { startTransition, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,21 +26,36 @@ import { z } from "zod";
 import { customValueSchema } from "@/lib/zodSchema";
 import { DeleteCustomValue } from "../delete/delete-custom-value";
 import { CustomValueForm } from "./custom-value-form";
+import {
+	createCustomTestCaseAction,
+	getCustomTestCaseAction,
+} from "@/action/custom-test-case-action";
+import { toast } from "sonner";
+import { usePathname } from "next/navigation";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
 
+// Interface for your state
 interface RequestParam {
 	name: string;
 	value: string;
 	type: string;
 }
 
+// Interface for the data coming from your API
+// This is helpful for TypeScript to understand the data structure
+interface ApiData {
+	id: string;
+	name: string;
+	value: string;
+	dataType: {
+		name: string; // Assuming the type name is here
+		// add other properties of dataType if they exist
+	};
+	// add other properties from your API response
+}
+
 export const CustomValue = (): React.JSX.Element => {
-	const [requestParams, setRequestParams] = useState<RequestParam[]>([
-		{
-			name: "My Phone Number",
-			value: "^(\\+0?1\\s)?\\(?\\d{3}\\)?[\\s.-]\\d{3}[\\s.-]\\d{4}$",
-			type: "string",
-		},
-	]);
+	const [requestParams, setRequestParams] = useState<RequestParam[]>([]);
 
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,7 +65,34 @@ export const CustomValue = (): React.JSX.Element => {
 		typeof customValueSchema
 	> | null>(null);
 
-	const handleAddCustomValue = (data: z.infer<typeof customValueSchema>) => {
+	const pathname = usePathname();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const dataFromApi: ApiData[] = (await getCustomTestCaseAction(
+				pathname.split("/")[2]
+			)) as ApiData[];
+
+			console.log("Data from API:", dataFromApi); // Good for debugging
+
+			if (dataFromApi && Array.isArray(dataFromApi)) {
+				// Map the API response to the structure your state expects
+				const formattedParams: RequestParam[] = dataFromApi.map((item) => ({
+					name: item.name,
+					value: item.value,
+					type: item.dataType.name, // Adjust this property name if necessary
+				}));
+
+				// Set the formatted data into your state
+				setRequestParams(formattedParams);
+			}
+		};
+		fetchData();
+	}, [pathname]); // Added pathname as a dependency
+
+	const handleAddCustomValue = async (
+		data: z.infer<typeof customValueSchema>
+	) => {
 		setRequestParams((prev) => [
 			...prev,
 			{
@@ -68,7 +110,6 @@ export const CustomValue = (): React.JSX.Element => {
 			nameCase: param.name,
 			value: param.value,
 			typeCase: param.type,
-			description: "",
 		});
 	};
 
@@ -149,7 +190,7 @@ export const CustomValue = (): React.JSX.Element => {
 											{param.type}
 										</Badge>
 									</TableCell>
-									<TableCell className="pl-6 py-4 flex  items-center gap-4">
+									<TableCell className="pl-6 py-4 flex  items-center gap-4">
 										<Trash
 											className="text-red-500 cursor-pointer size-4"
 											onClick={() => {

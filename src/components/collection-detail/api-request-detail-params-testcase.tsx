@@ -22,7 +22,7 @@ export function ApiRequestDetailParam({
 				<Params request={request} requestId={requestId} />
 			</TabsContent>
 			<TabsContent value="test-request">
-				<ApiRequestDetailTestRequest />
+				<ApiRequestDetailTestRequest request={request} requestId={requestId} />
 			</TabsContent>
 		</Tabs>
 	);
