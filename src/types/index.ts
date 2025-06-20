@@ -38,7 +38,7 @@ export interface TestProgress {
 }
 
 export interface Endpoint {
-    name: any;
+	name: any;
 	id: string;
 	method: string;
 	path: string;

@@ -13,9 +13,11 @@ import { useApiBodyStore } from "@/store/body-api-slice";
 export const Body = ({
 	request,
 	requestId,
+	projectId,
 }: {
 	request: EndpointItem[];
 	requestId: string;
+	projectId: string;
 }) => {
 	const [selectedTab, setSelectedTab] = useState("none");
 	const [innerTab, setInnerTab] = useState("raw-body");
@@ -77,7 +79,7 @@ export const Body = ({
 						</TabsContent>
 
 						<TabsContent value="test-request">
-							<TestRequestBody />
+							<TestRequestBody requestId={requestId} projectId={projectId} />
 						</TabsContent>
 					</Tabs>
 				)}

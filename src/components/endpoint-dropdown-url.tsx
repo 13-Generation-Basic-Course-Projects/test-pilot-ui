@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import CodeSnippet from "./code-snippet/code-snippet";
 import { EndpointItem } from "@/types";
-import { useEffect, useState, useRef, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateRequestUrlAndMethodAction } from "@/action/request-action";
 import { useRequestStore } from "@/store/request-url-slice";
@@ -52,32 +52,39 @@ export function EndpointDropdownUrl({
 	const [currentMethod, setCurrentMethod] = useState<string | undefined>("GET");
 	const [currentUrl, setCurrentUrl] = useState("");
 	const [isPending, startTransition] = useTransition();
-	const { setUrl } = useRequestStore();
+
+	// ✨ 1. Get the `setMethod` function from the store as well
+	const { setUrl, setMethod } = useRequestStore();
 
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
-	// This effect populates the form with the correct data when you navigate
+	// This effect correctly populates the local state from props
 	useEffect(() => {
 		if (endpoint) {
 			setCurrentMethod(endpoint.method);
 			setCurrentUrl(endpoint.details?.url || "");
 		}
-	}, [endpoint]); // Runs whenever the endpoint prop changes
+	}, [endpoint]);
 
-	// Runs whenever the input changes
+	// This effect correctly syncs the local URL with the store
 	useEffect(() => {
 		setUrl(currentUrl);
-	}, [currentUrl]);
+	}, [currentUrl, setUrl]); // Dependency array best practice
 
-	// ✨ NEW ARCHITECTURE: An explicit save handler.
-	// This function is called only when a user action occurs.
+	// ✨ 2. Add a new useEffect to sync the local method with the store
+	// This is the missing piece that fixes the bug.
+	useEffect(() => {
+		if (currentMethod) {
+			setMethod(currentMethod);
+		}
+	}, [currentMethod, setMethod]); // Dependency array best practice
+
 	const handleSave = (values: { url?: string; method?: string }) => {
 		if (!endpoint) return;
 
 		const newUrl = values.url ?? currentUrl;
 		const newMethod = values.method ?? currentMethod;
 
-		// Check if anything actually changed before saving.
 		if (
 			newUrl === (endpoint.details?.url || "") &&
 			newMethod === endpoint.method
@@ -111,7 +118,6 @@ export function EndpointDropdownUrl({
 								variant="outline"
 								role="combobox"
 								className="w-[150px] h-[40px] justify-between rounded-r-none"
-								// disabled={isPending}
 							>
 								<span className={getMethodColor(currentMethod || "GET")}>
 									{currentMethod}
@@ -132,7 +138,6 @@ export function EndpointDropdownUrl({
 												key={item.value}
 												value={item.value}
 												onSelect={() => {
-													// ✨ EXPLICIT ACTION: Set state and then call save.
 													setCurrentMethod(item.value);
 													handleSave({ method: item.value });
 													setOpen(false);
@@ -161,9 +166,7 @@ export function EndpointDropdownUrl({
 						placeholder="http://test-pilot/enter-request-url"
 						value={currentUrl}
 						onChange={(e) => setCurrentUrl(e.target.value)}
-						// ✨ EXPLICIT ACTION: Save when the user clicks away from the input.
 						onBlur={() => handleSave({ url: currentUrl })}
-						// disabled={isPending}
 					/>
 				</div>
 				<div className="flex items-center gap-2">
@@ -185,9 +188,6 @@ export function EndpointDropdownUrl({
 					</Sheet>
 				</div>
 			</div>
-			{/* {isPending && (
-				<p className="text-sm text-gray-500 self-start">Saving...</p>
-			)} */}
 		</div>
 	);
 }

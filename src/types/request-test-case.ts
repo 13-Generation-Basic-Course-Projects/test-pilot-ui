@@ -49,6 +49,7 @@ type PayloadItem = {
 	id: string;
 	request: RequestInfoType;
 	requestId: string;
+	targetFieldPath: string;
 	testCase: TestCaseType;
 	testCaseId: string;
 	updateAt: string;

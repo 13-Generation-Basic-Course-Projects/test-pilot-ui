@@ -6,3 +6,5 @@ export const USER_ENDPOINT = `${API_BASE_URL}/users`;
 export const REQUEST_ENDPOINT = `${API_BASE_URL}/requests`;
 export const REQUEST_TEST_CASE_ENDPOINT = `${API_BASE_URL}/request-test-cases`;
 export const PREDEFINED_ENDPOINT = `${API_BASE_URL}/test-cases`;
+export const TEST_EXECUTION_ENDPOINT = `${API_BASE_URL}/executions/trigger`;
+export const HISTORY_ENDPOINT = `${API_BASE_URL}/executions/projects/batches/by-project`;
