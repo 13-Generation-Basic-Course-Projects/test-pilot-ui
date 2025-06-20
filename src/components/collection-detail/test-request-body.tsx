@@ -138,7 +138,7 @@ export const TestRequestBody = ({
 			toast.promise(runTestCasesAction(finalPayload), {
 				loading: "Starting test run...",
 				success: (result) => {
-					// router.push(`${pathname}/monitoring`);
+					router.push(`${pathname}/monitoring`);
 					return "Test run started successfully!";
 				},
 				error: "Failed to start test run.",
