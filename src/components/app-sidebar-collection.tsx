@@ -36,7 +36,6 @@ import { DeleteCollection } from "./delete/delete-collection";
 import { DeleteEndpoint } from "./delete/delete-endpoint";
 import { getMethodColor } from "@/lib/utils";
 import { fetchCollectionsForProject } from "@/actions/collection-action";
-
 interface Project {
   id: string;
   collections: CollectionItem[];

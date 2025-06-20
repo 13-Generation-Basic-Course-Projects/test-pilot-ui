@@ -18,7 +18,7 @@ interface EditProfileProps {
 		username: string;
 		email: string;
 		password: string;
-		imageUrl?: string;
+		profileImage?: string;
 	};
 	onSave: (data: {
 		username: string;
@@ -34,7 +34,7 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 	const [email, setEmail] = useState(profile.email);
 	const [password, setPassword] = useState(profile.password);
 	const [imageFile, setImageFile] = useState<File | null>(null);
-	const [imagePreview, setImagePreview] = useState(profile.imageUrl || "/profile.png");
+	const [imagePreview, setImagePreview] = useState(profile.profileImage || "/profile.png");
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -43,7 +43,7 @@ export default function EditProfile({ profile, onSave }: EditProfileProps) {
 			setEmail(profile.email);
 			setPassword(profile.password);
 			setImageFile(null);
-			setImagePreview(profile.imageUrl || "/profile.png");
+			setImagePreview(profile.profileImage || "/profile.png");
 		}
 	}, [open, profile]);
 

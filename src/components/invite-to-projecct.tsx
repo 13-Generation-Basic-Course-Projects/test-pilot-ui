@@ -107,7 +107,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
         setMembers([
           {
             id: "owner-id",
-            name: "tebyuma@gmail.com",
+            name: "You",
             role: "Owner",
             image: Profile,
           },

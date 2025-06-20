@@ -1,5 +1,3 @@
-// next.config.js or next.config.ts
-
 const nextConfig = {
 	images: {
 		remotePatterns: [
@@ -20,9 +18,14 @@ const nextConfig = {
 				pathname: "/api/v1/users/preview-file/**",
 			},
 			{
-				protocol: "https",
+				protocol: "http", // <-- ADD THIS for http access
 				hostname: "testpilot.yamu.me",
-				pathname: "/api/v1/files/preview-file/**",
+				pathname: "/api/v1/users/preview-file/**",
+			},
+			{
+				protocol: "https", // <-- ALSO ADD https in case it's used later
+				hostname: "testpilot.yamu.me",
+				pathname: "/api/v1/users/preview-file/**",
 			},
 		],
 	},

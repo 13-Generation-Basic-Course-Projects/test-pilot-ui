@@ -15,9 +15,7 @@ export const handleUserUpdate = async (
     }
 };
 
-export const handleUploadProfileImage = async (
-    file: File
-) => {
+export const handleUploadProfileImage = async (file: File) => {
     try {
         const upload = await uploadProfileImageService(file);
         return upload;
@@ -26,5 +24,6 @@ export const handleUploadProfileImage = async (
         return null;
     }
 };
+
 
 

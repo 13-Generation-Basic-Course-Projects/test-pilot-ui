@@ -14,16 +14,22 @@ export async function userUpdateService(data: { name: string; email: string }) {
 
 export async function uploadProfileImageService(file: File) {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file-name", file);
 
     const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/upload/profile-image`, {
         method: "PUT",
         body: formData,
     });
 
+    if (res.payload && res.payload.profileImage)
 
-    return res.payload.profileImage;
+        return res.payload.profileImage;
+
+
 }
+
+
+
 export async function getUserProfileService(): Promise<{
     username: string;
     email: string;
@@ -33,13 +39,17 @@ export async function getUserProfileService(): Promise<{
         method: "GET",
     });
 
+    if (!res.payload) {
+        throw new Error("User profile response payload is undefined");
+    }
+
     return {
         username: res.payload.name,
         email: res.payload.email,
         profileImage: res.payload.profileImage,
     };
-
 }
+
 
 
 

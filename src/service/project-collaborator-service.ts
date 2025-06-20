@@ -1,6 +1,7 @@
 import { fetchAPI } from "@/lib/api";
 
 import { projectCollaboratorType } from "@/types/ProjectCollaboratorType";
+import {API_BASE_URL} from "@/lib/static";
 
 interface InviteData {
 
@@ -30,7 +31,7 @@ export async function verifyCollaboratorToken(token: string) {
     const authToken = localStorage.getItem("auth-token");
 
 
-    const res = await fetchAPI<projectCollaboratorType>(`http://localhost:8080/api/v1/collaborators/verify?token=${encodeURIComponent(token)}`, {
+    const res = await fetchAPI<projectCollaboratorType>(`${API_BASE_URL}/collaborators/verify?token=${encodeURIComponent(token)}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -45,7 +46,7 @@ export async function verifyCollaboratorToken(token: string) {
 
 export async function getInviteCollaboratorService(projectId: string) {
     const res = await fetchAPI<projectCollaboratorType>(
-        `http://localhost:8080/api/v1/collaborators/by-project/${encodeURIComponent(projectId)}`,
+        `${API_BASE_URL}/collaborators/by-project/${encodeURIComponent(projectId)}`,
         {
             method: "GET",
             headers: {
@@ -58,7 +59,7 @@ export async function getInviteCollaboratorService(projectId: string) {
 
 export async function deleteInviteProjectService(id: string){
     const res = await fetchAPI<projectCollaboratorType>(
-        `http://localhost:8080/api/v1/collaborators/${encodeURIComponent(id)}`,
+        `${API_BASE_URL}/collaborators/${encodeURIComponent(id)}`,
         {
             method: "DELETE",
             headers: {
