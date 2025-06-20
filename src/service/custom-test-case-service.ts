@@ -51,3 +51,20 @@ export const createCustomTestCaseService = async (
 		throw error;
 	}
 };
+
+export const deleteCustomTestCaseService = async (testcaseId: string) => {
+	try {
+		// The service should call the API with the DELETE method.
+		await fetchAPI(`${TEST_CASE_ENDPOINT}/${testcaseId}`, {
+			method: "DELETE",
+		});
+
+		// On success, a DELETE request often returns a 204 No Content response,
+		// so we don't necessarily need to check the response body. If the fetchAPI
+		// throws an error for non-2xx responses, this is sufficient.
+	} catch (error) {
+		console.error("Error in deleteCustomTestCaseService:", error);
+		// Re-throw the error so the action can catch it and handle it.
+		throw error;
+	}
+};

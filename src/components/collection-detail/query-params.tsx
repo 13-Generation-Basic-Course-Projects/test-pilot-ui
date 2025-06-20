@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState, useTransition } from "react";
 import {
 	Table,
@@ -49,27 +50,38 @@ import { Badge } from "../ui/badge";
 import { Application_Context } from "@/types/request-type";
 import { usePathname } from "next/navigation";
 
-// ✨ 1. Import all necessary actions
+// ✨ 1. Import all necessary actions, including the delete action
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import {
 	createRequestTestCaseAction,
 	getRequestTestCaseAction,
-	updateRequestQueryParamsAction, // ✨ Use the new action
+	updateRequestQueryParamsAction,
+	deleteRequestTestCaseAction, // Import delete action
 } from "@/action/request-action";
 
-// Interfaces are the same, but add 'id' to TestCase for consistency
+// Interfaces for component state
 export interface ParamRow {
 	key: string;
 	value: string;
 	cases: string[];
 }
-
 interface TestCase {
 	id: string;
 	type: string;
 	case: string;
 	value: any;
+}
+
+// ✨ 2. Define an interface for the full saved data we will cache locally
+interface SavedRequestTestCase {
+	id: string; // The ID of the LINK record we need for deletion
+	targetFieldPath: string;
+	applicationContext: string;
+	testCase: {
+		id: string;
+		name: string;
+	};
 }
 
 export default function QueryParams({
@@ -83,23 +95,37 @@ export default function QueryParams({
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [openPopoverIndex, setOpenPopoverIndex] = useState<number | null>(null);
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
-	const [isSaving, startTransition] = useTransition(); // ✨ Add useTransition for loading states
-	const pathname = usePathname(); // ✨ Add usePathname to get project ID
+	const [isSaving, startTransition] = useTransition();
+	const pathname = usePathname();
 
-	// ✨ 2. Add useEffect to sync UI state with saved data from the backend
+	// ✨ 3. Create a local state to cache the full test case data with IDs
+	const [savedQueryTestCases, setSavedQueryTestCases] = useState<
+		SavedRequestTestCase[]
+	>([]);
+
+	// Effect to sync UI state with saved data from the backend
 	useEffect(() => {
 		const fetchData = async () => {
-			const testcases = await getRequestTestCaseAction({ requestId });
+			if (!requestId) {
+				setQueryParams([]);
+				return;
+			}
+
+			const savedTestCases = await getRequestTestCaseAction({ requestId });
+
+			// ✨ 4. Populate our local cache with the full data
+			if (Array.isArray(savedTestCases)) {
+				setSavedQueryTestCases(savedTestCases);
+			}
+
 			const currentEndpoint = request.find((r) => r.id === requestId);
-			// Use queryParams from the endpoint details
 			const queryParamsObject = (currentEndpoint?.details?.queryParams ??
 				{}) as Record<string, string>;
 
 			const formattedQueryParams: ParamRow[] = Object.entries(
 				queryParamsObject
 			).map(([key, value]) => {
-				// Filter for test cases that are for QUERY_PARAM context
-				const casesForKey = testcases
+				const casesForKey = savedTestCases
 					.filter(
 						(tc: any) =>
 							tc.targetFieldPath === key &&
@@ -111,14 +137,10 @@ export default function QueryParams({
 			setQueryParams(formattedQueryParams);
 		};
 
-		if (requestId) {
-			fetchData();
-		} else {
-			setQueryParams([]);
-		}
+		fetchData();
 	}, [requestId, request, setQueryParams]);
 
-	// ✨ 3. Add useEffect to fetch ALL available test cases (predefined + custom)
+	// Effect to fetch ALL available test cases (predefined + custom)
 	useEffect(() => {
 		const fetchTestCases = async () => {
 			try {
@@ -134,15 +156,12 @@ export default function QueryParams({
 					case: item.name,
 					value: item.value,
 				});
-
 				const transformedPredefined = Array.isArray(predefinedData)
 					? predefinedData.map(transformToTestCase)
 					: [];
-
 				const transformedCustom = Array.isArray(customData)
 					? customData.map(transformToTestCase)
 					: [];
-
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 			} catch (error) {
@@ -150,9 +169,8 @@ export default function QueryParams({
 			}
 		};
 		fetchTestCases();
-	}, [pathname]); // Depend on pathname to get the correct projectId
+	}, [pathname]);
 
-	// ✨ 4. Add a robust handleSave function
 	const handleSave = (variablesToSave: ParamRow[]) => {
 		const payload = variablesToSave.reduce((acc, row) => {
 			if (row.key.trim()) {
@@ -163,7 +181,6 @@ export default function QueryParams({
 
 		startTransition(async () => {
 			try {
-				// Use the new action for query params
 				await updateRequestQueryParamsAction(requestId, payload);
 			} catch (error) {
 				toast.error("Query params could not be saved.");
@@ -171,11 +188,89 @@ export default function QueryParams({
 		});
 	};
 
-	// ✨ 5. Upgrade all handlers to be robust and call server actions
+	// ✨ 5. Implement the delete logic in handleRemoveCase using the local cache
+	const handleRemoveCase = (index: number, caseNameToRemove: string) => {
+		const rowData = queryParams[index];
+
+		const linkToDelete = savedQueryTestCases.find(
+			(rtc) =>
+				rtc.applicationContext === Application_Context.QUERY_PARAM &&
+				rtc.targetFieldPath === rowData.key &&
+				rtc.testCase.name === caseNameToRemove
+		);
+
+		if (!linkToDelete) {
+			return toast.error(
+				"Could not find the test case to remove. It may be out of sync."
+			);
+		}
+
+		const requestTestCaseIdToRemove = linkToDelete.id;
+
+		const updatedRows = [...queryParams];
+		updatedRows[index].cases = updatedRows[index].cases.filter(
+			(c) => c !== caseNameToRemove
+		);
+		setQueryParams(updatedRows);
+
+		startTransition(async () => {
+			const result = await deleteRequestTestCaseAction(
+				requestTestCaseIdToRemove
+			);
+			if (result.success) {
+				toast.success(result.message);
+				setSavedQueryTestCases((prev) =>
+					prev.filter((rtc) => rtc.id !== requestTestCaseIdToRemove)
+				);
+			} else {
+				toast.error(result.error);
+				setQueryParams(queryParams); // Revert UI on failure
+			}
+		});
+	};
+
+	// ✨ 6. Update handleToggleCase to handle both adding and removing
+	const handleToggleCase = (index: number, selectedCase: string) => {
+		const rowData = queryParams[index];
+		const isSelected = rowData.cases.includes(selectedCase);
+
+		if (isSelected) {
+			handleRemoveCase(index, selectedCase);
+		} else {
+			const testCaseToAdd = testCases.find((t) => t.case === selectedCase);
+			if (!testCaseToAdd)
+				return toast.error("Could not find test case details.");
+
+			startTransition(async () => {
+				const result = await createRequestTestCaseAction({
+					requestId,
+					testCaseId: testCaseToAdd.id,
+					applicationContext: Application_Context.QUERY_PARAM,
+					targetFieldPath: rowData.key,
+					isExpectedSuccess: false,
+				});
+
+				if (result.success) {
+					const updatedRows = [...queryParams];
+					updatedRows[index].cases.push(selectedCase);
+					setQueryParams(updatedRows);
+
+					const updatedSavedCases = await getRequestTestCaseAction({
+						requestId,
+					});
+					setSavedQueryTestCases(updatedSavedCases);
+					toast.success("Test case added.");
+				} else {
+					toast.error(result.error);
+				}
+			});
+		}
+	};
+
+	// --- Other handlers ---
 	const handleAddRow = () => {
 		setQueryParams([...queryParams, { key: "", value: "", cases: [] }]);
 	};
-
 	const handleChange = (
 		index: number,
 		field: keyof ParamRow,
@@ -185,54 +280,16 @@ export default function QueryParams({
 			i === index ? { ...row, [field]: newValue } : row
 		);
 		setQueryParams(updatedRows);
-		// Saving is handled onBlur
 	};
-
-	const handleRemoveCase = (index: number, caseToRemove: string) => {
-		const updatedRows = [...queryParams];
-		updatedRows[index].cases = updatedRows[index].cases.filter(
-			(c) => c !== caseToRemove
-		);
-		setQueryParams(updatedRows);
-		// Here you would call a DELETE action for the test case association
-	};
-
-	const handleToggleCase = (index: number, selectedCase: string) => {
-		const updatedRows = [...queryParams];
-		const currentCases = updatedRows[index].cases || [];
-		const isSelected = currentCases.includes(selectedCase);
-
-		updatedRows[index].cases = isSelected
-			? currentCases.filter((c) => c !== selectedCase)
-			: [...currentCases, selectedCase];
-
-		setQueryParams(updatedRows);
-
-		startTransition(async () => {
-			try {
-				await createRequestTestCaseAction({
-					requestId,
-					testCaseId: testCases.find((t) => t.case === selectedCase)?.id || "",
-					applicationContext: Application_Context.QUERY_PARAM, // Correct context
-					targetFieldPath: updatedRows[index].key,
-					isExpectedSuccess: false,
-				});
-			} catch (err) {
-				toast.error("Failed to save test case.");
-			}
-		});
-	};
-
 	const handleDeleteRow = () => {
 		if (deleteIndex !== null) {
 			const updatedRows = queryParams.filter((_, i) => i !== deleteIndex);
 			setQueryParams(updatedRows);
-			handleSave(updatedRows); // Save after deleting a row
+			handleSave(updatedRows);
 			setDeleteIndex(null);
 		}
 	};
 
-	// The JSX is updated to match PathVariable's functionality
 	return (
 		<div className="space-y-5">
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
@@ -252,7 +309,7 @@ export default function QueryParams({
 									<Input
 										value={row.key}
 										onChange={(e) => handleChange(index, "key", e.target.value)}
-										onBlur={() => handleSave(queryParams)} // ✨ Save on blur
+										onBlur={() => handleSave(queryParams)}
 										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter key"
 									/>
@@ -263,7 +320,7 @@ export default function QueryParams({
 										onChange={(e) =>
 											handleChange(index, "value", e.target.value)
 										}
-										onBlur={() => handleSave(queryParams)} // ✨ Save on blur
+										onBlur={() => handleSave(queryParams)}
 										className="h-10 border-transparent focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
 										placeholder="Enter value"
 									/>
@@ -278,10 +335,12 @@ export default function QueryParams({
 														className="text-xs px-2 py-1 rounded-full flex items-center gap-1.5"
 													>
 														{c}{" "}
-														<X
+														<Button
 															className="w-3 h-3 cursor-pointer hover:text-red-500"
 															onClick={() => handleRemoveCase(index, c)}
-														/>
+														>
+															<X />
+														</Button>
 													</Badge>
 												))}
 											</div>
@@ -304,15 +363,14 @@ export default function QueryParams({
 																	onSelect={(e) => e.preventDefault()}
 																>
 																	<span>{caseName}</span>
-																	<Button
-																		variant="ghost"
-																		onClick={() =>
-																			handleRemoveCase(index, caseName)
-																		}
-																		className="w-3 h-3 cursor-pointer text-muted-foreground hover:text-red-500"
-																	>
-																		<X />
-																	</Button>
+																	<X
+																		className="w-4 h-4 p-0.5 rounded-full cursor-pointer text-muted-foreground hover:bg-destructive/20 hover:text-red-500"
+																		// ✨ 7. Fix the unclickable 'X' button
+																		onClick={(e) => {
+																			e.stopPropagation();
+																			handleRemoveCase(index, caseName);
+																		}}
+																	/>
 																</DropdownMenuItem>
 															))}
 														</DropdownMenuContent>

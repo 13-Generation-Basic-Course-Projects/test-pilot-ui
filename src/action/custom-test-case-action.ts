@@ -4,6 +4,7 @@ import {
 	createCustomTestCaseService,
 	CreateCustomTestCasePayload,
 	getCustomTestCaseService,
+	deleteCustomTestCaseService,
 } from "@/service/custom-test-case-service";
 import { revalidatePath } from "next/cache";
 
@@ -37,6 +38,23 @@ export const createCustomTestCaseAction = async (
 		// revalidatePath(`/project/${payload.projectId}/settings`);
 
 		return data;
+	} catch (error) {
+		// Return a structured error so the frontend can display it
+		return {
+			success: false,
+			message:
+				error instanceof Error ? error.message : "An unknown error occurred.",
+			payload: null,
+		};
+	}
+};
+
+export const deleteCustomTestCaseAction = async (testcaseId: string) => {
+	try {
+		await deleteCustomTestCaseService(testcaseId);
+
+		// Optional: Revalidate the path if you want the list to be fresh on next visit
+		// revalidatePath(`/project/${payload.projectId}/settings`);
 	} catch (error) {
 		// Return a structured error so the frontend can display it
 		return {

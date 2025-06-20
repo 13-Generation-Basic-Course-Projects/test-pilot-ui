@@ -343,3 +343,17 @@ export const CreateRequestBodyService = async (
 		throw error;
 	}
 };
+
+export const deleteRequestTestCaseService = async (
+	requestTestCaseId: string
+) => {
+	try {
+		// This sends a DELETE request to /api/v1/request-test-cases/{id}
+		await fetchAPI(`${REQUEST_TEST_CASE_ENDPOINT}/${requestTestCaseId}`, {
+			method: "DELETE",
+		});
+	} catch (error) {
+		console.error("Error in deleteRequestTestCaseService:", error);
+		throw error; // Re-throw to be caught by the action
+	}
+};

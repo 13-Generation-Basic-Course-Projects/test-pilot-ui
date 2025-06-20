@@ -5,6 +5,7 @@ import {
 	createRequestByCollectionId,
 	createTestCaseService,
 	deleteRequestByIdService,
+	deleteRequestTestCaseService,
 	duplicateRequest,
 	getRequestByCollectionId,
 	getRequestTestCaseService,
@@ -272,21 +273,19 @@ export const createRequestBodyAction = async (
 	}
 };
 
-// ✨ ACTION 2: To DELETE a request test case
-// NOTE: You will need to create the corresponding `deleteRequestTestCaseService`
-// It will likely take the ID of the `RequestTestCase` record itself.
-// export const deleteRequestTestCaseAction = async (
-// 	requestTestCaseId: string
-// ) => {
-// 	try {
-// 		// You need to implement this service on your backend
-// 		// e.g., DELETE /api/v1/request-test-cases/{requestTestCaseId}
-// 		await deleteRequestTestCaseService(requestTestCaseId);
-
-// 		// revalidatePath("/your-page-path");
-// 		return { success: true };
-// 	} catch (error) {
-// 		console.error("Failed to delete request test case:", error);
-// 		return { success: false, error: "Failed to delete test case." };
-// 	}
-// };
+export const deleteRequestTestCaseAction = async (
+	requestTestCaseId: string
+) => {
+	try {
+		await deleteRequestTestCaseService(requestTestCaseId);
+		// You can revalidate paths here if needed
+		// revalidatePath("/your-path-to-update");
+		return { success: true, message: "Test case removed." };
+	} catch (error) {
+		console.error("Failed to delete request test case:", error);
+		return {
+			success: false,
+			error: "Failed to remove test case.",
+		};
+	}
+};
