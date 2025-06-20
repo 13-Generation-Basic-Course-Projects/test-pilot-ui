@@ -29,6 +29,8 @@ import ProjectForm from "./project-form";
 import { DeleteProject } from "../delete/delete-project";
 import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
+import { deleteProjectAction } from "@/action/project-action";
+import { toast } from "sonner";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
@@ -44,6 +46,10 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [selectedProjectForShare, setSelectedProjectForShare] =
 		useState<ProjectItem | null>(null);
 	const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
+
+	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const handleShare = (project: ProjectItem) => {
 		setSelectedProjectForShare(project);
@@ -82,18 +88,29 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	};
 
 	const deleteProject = async (projectId: string) => {
-		// Simulate API call for deleting a project
-		// In a real app, this would be `await fetch(...)`
-		setProjects((prev) => prev.filter((project) => project.id !== projectId));
-		console.log(`Simulating deletion of project with ID: ${projectId}`);
+		try {
+			await deleteProjectAction(projectId);
+			setProjects((prev) => prev.filter((project) => project.id !== projectId));
+			setIsDeleteDialogOpen(false);
+			setSelectProjectForDelete(null);
+			toast.success(`Project delete successfully!`);
+		} catch (error) {
+			console.error("Failed to delete project", error);
+		}
 	};
 
-	// New handler for when a project is created
+	//create project
+	const handleDialogCloseCreate = (open: boolean) => {
+		setIsCreateDialogOpen(open);
+	};
+
 	const handleProjectCreated = (newProject: ProjectItem) => {
-		setProjects((prev) => [...prev, newProject]);
+		if (!newProject?.id || !newProject?.title) return;
+		setProjects((prev) => [newProject, ...prev]);
+		setIsCreateDialogOpen(false);
 	};
 
-	// New handler for when a project is updated
+	//Update project
 	const handleProjectUpdated = (updatedProject: ProjectItem) => {
 		setProjects((prev) =>
 			prev.map((project) =>
@@ -101,6 +118,15 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			)
 		);
 	};
+
+	//Search project
+	const handleSearchChange = (query: string) => {
+		setSearchQuery(query.toLowerCase());
+	};
+
+	const filteredProjects = projects.filter((project) =>
+		project.title.toLowerCase().includes(searchQuery)
+	);
 
 	return (
 		<>
@@ -112,18 +138,23 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 							Manage your API testing projects
 						</p>
 					</div>
-					<ProjectForm mode="create" onProjectCreated={handleProjectCreated} />
+					<ProjectForm
+						mode="create"
+						isOpen={isCreateDialogOpen}
+						onOpenChange={handleDialogCloseCreate}
+						onProjectCreated={handleProjectCreated}
+					/>
 				</div>
-				<SearchForm className="mt-10" />
+				<SearchForm className="mt-10" onSearch={handleSearchChange} />
 			</div>
 
-			{projects.length === 0 ? (
+			{filteredProjects.length === 0 ? (
 				<div className="text-center text-slate-500 mt-10 justify-center">
 					<p className="text-lg font-medium ">No projects found</p>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-					{projects.map((project) => (
+					{filteredProjects.map((project) => (
 						<Card key={project.id}>
 							<CardHeader>
 								<div className="flex justify-between items-start">
@@ -144,6 +175,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 														e.preventDefault();
 														handleShare(project);
 													}}
+													className="cursor-pointer"
 												>
 													<ShareIcon className="mr-2 h-4 w-4" />
 													<span>Share</span>
@@ -155,6 +187,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 														e.preventDefault();
 														handleEditClick(project);
 													}}
+													className="cursor-pointer"
 												>
 													<EditIcon className="mr-2 h-4 w-4" />
 													<span>Edit</span>
@@ -164,6 +197,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 														e.preventDefault();
 														handleDelete(project);
 													}}
+													className="cursor-pointer"
 												>
 													<Trash2Icon className="mr-2 h-4 w-4 text-red-500" />
 													<span className="text-red-500">Delete</span>
@@ -190,7 +224,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 										</p>
 									</div>
 									<Image
-										src={project.userAvatarUrl || "/defaultAvatar.png"}
+										src={"/profile.png"} // not yet to fetch
 										alt="user profile"
 										width={35}
 										height={35}
@@ -209,7 +243,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 					initialData={selectedProjectForEdit}
 					isOpen={isEditDialogOpen}
 					onOpenChange={handleDialogClose}
-					onProjectUpdated={handleProjectUpdated} // Pass the update handler
+					onProjectUpdated={handleProjectUpdated}
 				/>
 			)}
 

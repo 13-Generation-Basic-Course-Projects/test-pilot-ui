@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
@@ -7,6 +7,19 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { EndpointItem } from "@/types"; // ✨ 1. Import EndpointItem type
+
+// ✨ 2. Import BOTH actions
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+
+// Interfaces remain the same
+interface TestCase {
+	id: string; // ✨ Add id for consistency
+	type: string;
+	case: string;
+	value: any;
+}
 
 interface ValidTestCase {
 	key: string;
@@ -16,11 +29,61 @@ interface ValidTestCase {
 	variableIndex: number;
 }
 
-export default function TestRequest() {
+// ✨ 3. Update the component to accept props
+export default function TestRequest({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) {
 	const { pathVariables, queryParams } = useParamsApiStore();
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+	// ✨ 4. This useEffect is now updated to fetch ALL test cases (predefined and custom)
+	useEffect(() => {
+		const fetchTestCases = async () => {
+			try {
+				// Get projectId from the request prop
+				const projectId = pathname.split("/")[2];
+
+				// Fetch both in parallel
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
+				]);
+
+				// Helper to transform data consistently
+				const transformToTestCase = (item: any): TestCase => ({
+					id: item.id,
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// Combine into a single list
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
+			} catch (error) {
+				console.error("Failed to fetch all test cases:", error);
+			}
+		};
+
+		fetchTestCases();
+	}, [request]); // ✨ Depend on `request` prop to refetch if it changes
+
+	// The rest of your component logic does not need to change.
+	// `generatePreviewUrl` will now correctly find custom test cases in the `testCases` state.
 
 	const getValidTestCases = (variables: any[], type: "path" | "query") => {
 		return (
@@ -41,12 +104,7 @@ export default function TestRequest() {
 		);
 	};
 
-	// State per test case
-
 	const handleRun = () => {
-		console.log(`Running test case with method: ${method}, URL: ${url}`);
-		console.log(`pathname : ${pathname}`);
-		// Here you would typically construct and send your API request
 		router.push(`${pathname}/monitoring`);
 	};
 
@@ -61,14 +119,14 @@ export default function TestRequest() {
 		// Replace path parameters
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
-
 			const isCurrentVariable =
 				currentTestCase.type === "path" &&
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
 			const valueToUse = isCurrentVariable
-				? currentTestCase.testCase
+				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value ??
+				  ""
 				: variable.value || `{${variable.key}}`;
 
 			constructedUrl = constructedUrl.replace(
@@ -81,17 +139,20 @@ export default function TestRequest() {
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
-
 			const isCurrentVariable =
 				currentTestCase.type === "query" &&
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
 			const valueToUse = isCurrentVariable
-				? currentTestCase.testCase // Use test case value
+				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value
 				: variable.value;
 
-			if (valueToUse !== undefined && valueToUse !== "") {
+			if (
+				valueToUse !== undefined &&
+				valueToUse !== null &&
+				valueToUse !== ""
+			) {
 				queryParts.push(
 					`${encodeURIComponent(variable.key)}=${encodeURIComponent(
 						valueToUse
@@ -104,11 +165,9 @@ export default function TestRequest() {
 			constructedUrl +=
 				(constructedUrl.includes("?") ? "&" : "?") + queryParts.join("&");
 		}
-
 		return constructedUrl;
 	};
 
-	// Only generate and display test cases if a URL is provided
 	const hasUrl = url && url.trim() !== "";
 	const validTestCases: ValidTestCase[] = hasUrl
 		? [
@@ -117,12 +176,13 @@ export default function TestRequest() {
 		  ]
 		: [];
 
+	// The rest of the JSX is unchanged.
 	if (!hasUrl) {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
 				<p className="text-gray-500">
-					Please enter a **URL** in the request builder to generate and run test
-					cases.
+					Please enter a <strong>URL</strong> in the request builder to generate
+					and run test cases.
 				</p>
 			</div>
 		);
@@ -132,7 +192,8 @@ export default function TestRequest() {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
 				<p className="text-gray-500">
-					No valid test cases available. Please provide a **key** and **value**
+					No valid test cases available. Please provide a <strong>key</strong>{" "}
+					and <strong>value</strong>
 					for each variable, and ensure test cases are defined.
 				</p>
 			</div>
@@ -144,7 +205,7 @@ export default function TestRequest() {
 			<div className=" min-h-[480px] flex flex-col space-y-4">
 				<div className="flex h-full justify-end items-center mt-1">
 					<Button onClick={() => handleRun()}>
-						Run All <Play />
+						Run All <Play className="ml-2 h-4 w-4" />
 					</Button>
 				</div>
 				<div className="flex flex-col items-center gap-6">
@@ -160,7 +221,7 @@ export default function TestRequest() {
 								key={`${testcase.key}-${testcase.testCase}-${idx}`}
 								className="break-all w-full"
 							>
-								<CardHeader className="flex justify-between items-start">
+								<CardHeader className="flex flex-row justify-between items-start">
 									<div className="space-y-4 w-full">
 										<CardTitle className="text-md">
 											Fields :{" "}
@@ -183,7 +244,7 @@ export default function TestRequest() {
 										</CardTitle>
 									</div>
 									<Button onClick={() => handleRun()}>
-										Run <Play />
+										Run <Play className="ml-2 h-4 w-4" />
 									</Button>
 								</CardHeader>
 								<CardContent>

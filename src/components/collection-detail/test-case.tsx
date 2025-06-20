@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
 
+import React, { useState, useEffect, useTransition } from "react";
 import {
 	Table,
 	TableBody,
@@ -9,63 +9,215 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 import { Plus, X } from "lucide-react";
 import { useApiBodyStore, ApiBodyRow } from "@/store/body-api-slice";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
-// Available data types
-const dataTypeOptions = ["string", "number", "boolean", "date"] as const;
-type DataType = (typeof dataTypeOptions)[number];
+// NEW: Import your custom test case action
+import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import {
+	createRequestTestCaseAction,
+	getRequestTestCaseAction,
+} from "@/action/request-action";
+import { Application_Context } from "@/types/request-type";
+import { EndpointItem } from "@/types";
+import { usePathname } from "next/navigation";
 
-// Predefined case options by data type
-const caseByDataType: Record<DataType, string[]> = {
-	string: [
-		"Empty String",
-		"Null Value",
-		"Length",
-		"Alphanumeric Mix",
-		"Only Space",
-		"Special Character",
-	],
-	number: ["Zero", "Negative", "Non-numeric String", "Large Number"],
-	boolean: ["True", "False", "Not Boolean"],
-	date: ["Invalid Date", "Future Date", "Past Date", "ISO Format"],
-};
+// NEW: A consistent type for data coming from both predefined and custom actions
+interface ApiTestCaseData {
+	id: string;
+	name: string;
+	value: any;
+	dataType: {
+		name: string;
+	};
+}
 
-export const TestCase = () => {
-	// The component now consumes the simplified state
-	const { apiBodyRows, updateRow } = useApiBodyStore();
+// The internal representation of a test case in this component
+interface TestCase {
+	id: string;
+	type: string;
+	case: string;
+	value: any;
+}
 
-	if (!apiBodyRows || apiBodyRows.length === 0) {
-		return (
-			<p className="min-h-[480px]">Parse a JSON body to see test cases.</p>
-		);
-	}
+export const TestCase = ({
+	request,
+	requestId,
+}: {
+	request: EndpointItem[];
+	requestId: string;
+}) => {
+	const { apiBodyRows, updateRow, setApiBodyRows } = useApiBodyStore();
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
+	const [dataTypeOptions, setDataTypeOptions] = useState<string[]>([]);
+	const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isPending, startTransition] = useTransition();
 
-	// Handlers are now simpler, calling the centralized `updateRow` function
-	const handleToggleCase = (row: ApiBodyRow, selectedCase: string) => {
-		const newTestCases = row.testCases.includes(selectedCase)
-			? row.testCases.filter((c) => c !== selectedCase)
-			: [...row.testCases, selectedCase];
+	const pathname = usePathname();
+
+	useEffect(() => {
+		const fetchAndSyncData = async () => {
+			setIsLoading(true);
+			try {
+				// NEW: Fetch both predefined and custom test cases in parallel
+				// NOTE: This assumes you can get a `projectId`. You must pass this to your component
+				// or find a way to derive it. Here, we try to get it from the `request` prop.
+				const projectId = pathname.split("/")[2];
+
+				if (!projectId) {
+					console.error(
+						"Project ID is missing, cannot load custom test cases."
+					);
+					// We can continue with just predefined cases if we want, or stop.
+					// For this example, we'll try to fetch custom with an empty string,
+					// but a real implementation should handle this more gracefully.
+				}
+
+				const [predefinedData, customData] = await Promise.all([
+					getAllPredefinedAction(),
+					getCustomTestCaseAction(projectId || ""), // Use the found projectId
+				]);
+
+				// NEW: Helper function to prevent repeating the transformation logic
+				const transformToTestCase = (item: ApiTestCaseData): TestCase => ({
+					id: item.id,
+					type: item.dataType.name,
+					case: item.name,
+					value: item.value,
+				});
+
+				const transformedPredefined = Array.isArray(predefinedData)
+					? predefinedData.map(transformToTestCase)
+					: [];
+
+				const transformedCustom = Array.isArray(customData)
+					? customData.map(transformToTestCase)
+					: [];
+
+				// NEW: Combine both lists into one single source of truth for the popover
+				const allTestCases = [...transformedPredefined, ...transformedCustom];
+				setTestCases(allTestCases);
+
+				// This part now works on the merged data, creating a full list of data types
+				const uniqueTypes = [...new Set(allTestCases.map((item) => item.type))];
+				setDataTypeOptions(uniqueTypes);
+
+				// --- This section for syncing SAVED cases remains the same ---
+				if (apiBodyRows.length === 0) {
+					setIsLoading(false);
+					return;
+				}
+
+				const savedTestCases = await getRequestTestCaseAction({ requestId });
+				const bodyFieldCases = savedTestCases.filter(
+					(tc: any) =>
+						tc.applicationContext === Application_Context.BODY_FIELD &&
+						tc.targetFieldPath
+				);
+
+				const casesByField = bodyFieldCases.reduce<Record<string, string[]>>(
+					(acc, savedCase: any) => {
+						const field = savedCase.targetFieldPath;
+						const caseName = savedCase.testCase.name;
+						if (!acc[field]) acc[field] = [];
+						acc[field].push(caseName);
+						return acc;
+					},
+					{}
+				);
+
+				const syncedRows = apiBodyRows.map((row) => ({
+					...row,
+					testCases: casesByField[row.id] || [],
+				}));
+
+				if (JSON.stringify(syncedRows) !== JSON.stringify(apiBodyRows)) {
+					setApiBodyRows(syncedRows);
+				}
+			} catch (error) {
+				console.error("Failed to fetch or sync test cases:", error);
+				toast.error("Failed to load test case data.");
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchAndSyncData();
+	}, [requestId, apiBodyRows.length, setApiBodyRows, request]); // NEW: Added `request` to dependency array
+
+	const handleToggleCase = (row: ApiBodyRow, selectedCaseName: string) => {
+		const selectedTestCase = testCases.find((t) => t.case === selectedCaseName);
+		if (!selectedTestCase) {
+			toast.error(`Could not find details for test case: ${selectedCaseName}`);
+			return;
+		}
+
+		const newTestCases = row.testCases.includes(selectedCaseName)
+			? row.testCases.filter((c) => c !== selectedCaseName)
+			: [...row.testCases, selectedCaseName];
+
 		updateRow(row.id, { testCases: newTestCases });
+
+		startTransition(async () => {
+			try {
+				await createRequestTestCaseAction({
+					requestId,
+					testCaseId: selectedTestCase.id,
+					applicationContext: Application_Context.BODY_FIELD,
+					targetFieldPath: row.id,
+					isExpectedSuccess: false, // You might want to make this dynamic
+				});
+			} catch (err) {
+				toast.error(`Failed to save test case for '${row.id}'.`);
+				// Revert the UI state on failure
+				updateRow(row.id, { testCases: row.testCases });
+			}
+		});
 	};
 
 	const handleRemoveCase = (row: ApiBodyRow, caseToRemove: string) => {
 		const newTestCases = row.testCases.filter((c) => c !== caseToRemove);
 		updateRow(row.id, { testCases: newTestCases });
+		// You would also add a call to a backend action to DELETE the test case linkage.
 	};
 
 	const handleChangeDataType = (rowId: string, newType: string) => {
-		updateRow(rowId, { dataType: newType });
+		updateRow(rowId, { dataType: newType, testCases: [] });
 	};
+
+	if (!isLoading && (!apiBodyRows || apiBodyRows.length === 0)) {
+		return (
+			<div className="flex items-center justify-center p-4 text-center text-muted-foreground min-h-[480px]">
+				Parse a JSON body to see test cases.
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-5 min-h-[480px]">
@@ -88,106 +240,116 @@ export const TestCase = () => {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{apiBodyRows.map((row) => (
-							<TableRow
-								key={row.id}
-								className="hover:bg-gray-50 border-b border-gray-200"
-							>
-								{/* Field Name */}
-								<TableCell className="py-2 border-r border-gray-200">
-									<span className="block px-2 py-1 text-sm">{row.id}</span>
-								</TableCell>
-
-								{/* Value */}
-								<TableCell className="px-4 py-2 border-r border-gray-200">
-									<span className="block px-2 py-1 text-sm">
-										{String(row.value)}
-									</span>
-								</TableCell>
-
-								{/* Data Type Dropdown */}
-								<TableCell className="px-4 py-2 border-r border-gray-200">
-									<select
-										value={row.dataType}
-										onChange={(e) =>
-											handleChangeDataType(row.id, e.target.value)
-										}
-										className="w-full px-2 py-1 text-sm bg-transparent focus:outline-none"
+						{isLoading
+							? [...Array(3)].map((_, i) => (
+									<TableRow key={i} className="border-b border-gray-200">
+										<TableCell className="p-4 border-r border-gray-200">
+											<Skeleton className="h-5 w-3/4" />
+										</TableCell>
+										<TableCell className="p-4 border-r border-gray-200">
+											<Skeleton className="h-5 w-1/2" />
+										</TableCell>
+										<TableCell className="p-4 border-r border-gray-200">
+											<Skeleton className="h-10 w-[180px]" />
+										</TableCell>
+										<TableCell className="p-4 flex items-center justify-start gap-2">
+											<Skeleton className="size-8 rounded-md" />
+										</TableCell>
+									</TableRow>
+							  ))
+							: apiBodyRows.map((row) => (
+									<TableRow
+										key={row.id}
+										className="hover:bg-gray-50 border-b border-gray-200"
 									>
-										{dataTypeOptions.map((type) => (
-											<option key={type} value={type}>
-												{type.charAt(0).toUpperCase() + type.slice(1)}
-											</option>
-										))}
-									</select>
-								</TableCell>
-
-								{/* Test Cases */}
-								<TableCell className="px-4 py-2 border-r border-gray-200 flex items-center justify-end gap-6 flex-row-reverse">
-									<div className="flex flex-wrap items-center">
-										{row.testCases.slice(0, 1).map((c) => (
-											<span
-												key={c}
-												className="bg-black text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+										<TableCell className="p-4 border-r border-gray-200">
+											<span className="block text-sm">{row.id}</span>
+										</TableCell>
+										<TableCell className="p-4 border-r border-gray-200">
+											<span className="block text-sm">{String(row.value)}</span>
+										</TableCell>
+										<TableCell className="p-4 border-r border-gray-200">
+											<Select
+												value={row.dataType}
+												onValueChange={(value) =>
+													handleChangeDataType(row.id, value)
+												}
 											>
-												{c}
-												<X
-													className="w-3 h-3 cursor-pointer"
-													onClick={() => handleRemoveCase(row, c)}
-												/>
-											</span>
-										))}
-										{row.testCases.length > 1 && (
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button variant="link" size="sm">
-														+{row.testCases.length - 1}
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent>
-													{row.testCases.map((c) => (
-														<div
-															key={c}
-															className="flex items-center justify-between px-2 py-1 text-sm hover:bg-gray-100"
-														>
-															<span>{c}</span>
-															<X
-																className="w-3 h-3 cursor-pointer"
-																onClick={() => handleRemoveCase(row, c)}
-															/>
-														</div>
+												<SelectTrigger className="w-[180px]">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													{dataTypeOptions.map((type) => (
+														<SelectItem key={type} value={type}>
+															{type.charAt(0).toUpperCase() + type.slice(1)}
+														</SelectItem>
 													))}
-												</DropdownMenuContent>
-											</DropdownMenu>
-										)}
-									</div>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="secondary" className="size-6">
-												<Plus />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="max-h-48 overflow-y-auto w-[220px] space-y-1">
-											{(caseByDataType[row.dataType as DataType] || []).map(
-												(option) => (
-													<DropdownMenuItem
-														key={option}
-														onClick={() => handleToggleCase(row, option)}
-														className={`cursor-pointer ${
-															row.testCases.includes(option)
-																? "bg-blue-100 font-semibold rounded"
-																: ""
-														}`}
-													>
-														{option}
-													</DropdownMenuItem>
-												)
-											)}
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</TableCell>
-							</TableRow>
-						))}
+												</SelectContent>
+											</Select>
+										</TableCell>
+										<TableCell className="p-4 flex items-center justify-start gap-2 flex-wrap">
+											{row.testCases.map((c) => (
+												<span
+													key={c}
+													className="bg-gray-800 text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5"
+												>
+													<span className="truncate" title={c}>
+														{c}
+													</span>
+													<X
+														className="w-3 h-3 cursor-pointer flex-shrink-0 hover:text-red-400"
+														onClick={() => handleRemoveCase(row, c)}
+													/>
+												</span>
+											))}
+											<Popover
+												open={openPopoverId === row.id}
+												onOpenChange={(isOpen) =>
+													setOpenPopoverId(isOpen ? row.id : null)
+												}
+											>
+												<PopoverTrigger asChild>
+													<Button variant="outline" className="size-7 p-1">
+														<Plus className="w-4 h-4" />
+													</Button>
+												</PopoverTrigger>
+												<PopoverContent className="w-[300px] p-0" align="start">
+													<Command>
+														<CommandInput placeholder="Search test case..." />
+														<CommandList>
+															<CommandEmpty>No test case found.</CommandEmpty>
+															<CommandGroup>
+																{testCases
+																	.filter(
+																		(tc) =>
+																			tc.type.toLowerCase() ===
+																			row.dataType.toLowerCase()
+																	)
+																	.map((testCase) => (
+																		<CommandItem
+																			key={testCase.id}
+																			value={testCase.case}
+																			onSelect={() => {
+																				handleToggleCase(row, testCase.case);
+																				setOpenPopoverId(null);
+																			}}
+																			className={cn(
+																				"cursor-pointer",
+																				row.testCases.includes(testCase.case) &&
+																					"bg-accent text-accent-foreground"
+																			)}
+																		>
+																			{testCase.case}
+																		</CommandItem>
+																	))}
+															</CommandGroup>
+														</CommandList>
+													</Command>
+												</PopoverContent>
+											</Popover>
+										</TableCell>
+									</TableRow>
+							  ))}
 					</TableBody>
 				</Table>
 			</div>

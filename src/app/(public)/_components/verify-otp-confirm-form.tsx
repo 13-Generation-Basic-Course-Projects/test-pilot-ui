@@ -18,10 +18,13 @@ import {
 	InputOTPGroup,
 	InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { verifyOTPAction, resendOTPAction } from "@/action/auth-action"; // Ensure resendOTPAction is imported
+import { useRegister } from "@/store/email-register-slice"; // Assuming this is your Zustand store
+import { useState, useEffect } from "react"; // Add useEffect for redirection and toast
+import { useRouter } from "next/navigation";
+import { toast } from "sonner"; // For displaying notifications
 
-// Define form schema with zod
 const FormSchema = z.object({
-	email: z.string().email({ message: "Invalid email address." }),
 	pin: z.string().length(6, {
 		message: "Your one-time password must be exactly 6 characters.",
 	}),
@@ -31,18 +34,94 @@ export function VerifyOtpConfirmForm({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"form">) {
+	const router = useRouter();
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			email: "",
 			pin: "",
 		},
 	});
 
-	function onSubmit(data: z.infer<typeof FormSchema>) {
-		console.log("OTP Verify Data:", data);
-		// TODO: handle OTP verification (e.g., call API)
+	const { registeredEmail } = useRegister(); // Get clearRegisteredEmail if you have it
+
+	const [isResending, setIsResending] = useState(false); // State for resend loading
+	const [resendCooldown, setResendCooldown] = useState(0); // State for cooldown timer
+
+	// Redirect if no email is registered (good practice from previous feedback)
+	useEffect(() => {
+		if (!registeredEmail) {
+			toast.error("No email found for verification. Please register again.");
+			router.replace("/register");
+		}
+	}, [registeredEmail, router]);
+
+	async function onSubmit(data: z.infer<typeof FormSchema>) {
+		if (!registeredEmail) {
+			toast.error("Email is missing. Cannot verify OTP.");
+			router.replace("/register");
+			return;
+		}
+
+		const verifyData = await verifyOTPAction({
+			otp: data.pin,
+			email: registeredEmail as string,
+		});
+
+		if (verifyData && verifyData.success) {
+			toast.success(verifyData.message || "Account verified successfully!");
+			router.push("/login");
+		} else {
+			toast.error(
+				verifyData?.message || "OTP verification failed. Please try again."
+			);
+		}
 	}
+
+	const handleResendOTP = async (e: React.MouseEvent) => {
+		e.preventDefault();
+		if (isResending || resendCooldown > 0) {
+			return;
+		}
+
+		if (!registeredEmail) {
+			toast.error("No registered email found to resend OTP.");
+			router.replace("/register");
+			return;
+		}
+
+		setIsResending(true);
+		toast.info("Sending new OTP...");
+		try {
+			const result = await resendOTPAction({
+				email: registeredEmail as string,
+			});
+
+			if (result && result.success) {
+				toast.success(result.message || "New OTP sent successfully!");
+				setResendCooldown(60);
+			} else {
+				toast.error(
+					result?.message || "Failed to resend OTP. Please try again later."
+				);
+			}
+		} catch (error) {
+			console.error("Error resending OTP:", error);
+			toast.error("An error occurred while resending OTP.");
+		} finally {
+			setIsResending(false);
+		}
+	};
+
+	useEffect(() => {
+		let timer: NodeJS.Timeout;
+		if (resendCooldown > 0) {
+			timer = setInterval(() => {
+				setResendCooldown((prev) => prev - 1);
+			}, 1000);
+		}
+		return () => clearInterval(timer);
+	}, [resendCooldown]);
+
 	return (
 		<Form {...form}>
 			<form
@@ -52,9 +131,15 @@ export function VerifyOtpConfirmForm({
 			>
 				{/* Header */}
 				<div className="flex flex-col items-center gap-2 text-center">
-					<h1 className="text-2xl font-bold text-[#34302B]">Verify your Account</h1>
-					<p className="text-balance text-sm  text-[#94A3B8]">
-						OTP already sent to your email address. Enter to verify.
+					<h1 className="text-2xl font-bold text-[#34302B]">
+						Verify your Account
+					</h1>
+					<p className="text-balance text-sm  text-[#94A3B8]">
+						OTP already sent to{" "}
+						<span className="font-semibold text-gray-800">
+							{registeredEmail || "your email address"}
+						</span>
+						. Enter to verify.
 					</p>
 				</div>
 				{/* OTP Input Field */}
@@ -81,16 +166,32 @@ export function VerifyOtpConfirmForm({
 					)}
 				/>
 				{/* Submit Button */}
-				<Button type="submit" className="w-full">
-					<Link href={"/verify-otp-update"}>Verify</Link>
+				<Button
+					type="submit"
+					className="w-full"
+					disabled={form.formState.isSubmitting}
+				>
+					{form.formState.isSubmitting ? "Verifying..." : "Verify"}
 				</Button>
 				{/* Resend OTP */}
 				<div className="text-center text-sm">
 					<div className="flex justify-between">
-						<div />
+						<div />{" "}
+						{/* This empty div seems to be for spacing, you can adjust your layout */}
 						<div className="-mt-7 text-[#94A3B8]">
-							<a href="#" className="underline">
-								Resend OTP
+							<a
+								href="#"
+								className={cn("underline", {
+									"opacity-50 cursor-not-allowed":
+										isResending || resendCooldown > 0,
+								})}
+								onClick={handleResendOTP}
+							>
+								{isResending
+									? "Sending..."
+									: resendCooldown > 0
+									? `Resend OTP in ${resendCooldown}s`
+									: "Resend OTP"}
 							</a>
 						</div>
 					</div>

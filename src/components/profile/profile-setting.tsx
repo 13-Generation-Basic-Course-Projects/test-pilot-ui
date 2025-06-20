@@ -1,40 +1,69 @@
-"use client";
-import React, { useState } from "react";
+"use client"
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { BreadcrumbProfile } from "../breadcrumb-profile";
 import EditProfile from "../profile/edit-profile-setting";
+import { handleUploadProfileImage, handleUserUpdate } from "@/action/user-action";
+import { getUserProfileService } from "@/service/user-service";
 
 export default function ProfileSetting() {
 	const [profile, setProfile] = useState({
-		username: "Teb Yuma",
-		email: "yuma123@gmail.com",
+		username: "",
+		email: "",
 		password: "********",
-		imageUrl: "/profile-img.png",
+		profileImage: "/profile.png",
 	});
 
-	const handleUpdateProfile = (updatedData: {
+	useEffect(() => {
+		async function fetchProfile() {
+			const userData = await getUserProfileService();
+			if (userData) {
+				setProfile({
+					username: userData.username,
+					email: userData.email,
+					password: "********",
+					profileImage: userData.profileImage || "/profile.png",
+				});
+			}
+		}
+		fetchProfile();
+	}, []);
+
+	const handleUpdateProfile = async (updatedData: {
 		username: string;
 		email: string;
-		password: string;
-		image?: File | null;
+		password?: string;
+		profileImage?: File | null;
 	}) => {
-		if (updatedData.image) {
-			const imageUrl = URL.createObjectURL(updatedData.image);
-			setProfile({
+		try {
+			let profileImageUrl = profile.profileImage;
+
+
+			if (updatedData.profileImage) {
+				const uploadedImageUrl = await handleUploadProfileImage(updatedData.profileImage);
+				if (uploadedImageUrl) {
+					profileImageUrl = uploadedImageUrl;
+				}
+			}
+
+
+			await handleUserUpdate({
+				name: updatedData.username,
+				email: updatedData.email,
+			});
+
+
+			setProfile((prev) => ({
+				...prev,
 				username: updatedData.username,
 				email: updatedData.email,
-				password: updatedData.password,
-				imageUrl: imageUrl,
-			});
-		} else {
-			setProfile({
-				username: updatedData.username,
-				email: updatedData.email,
-				password: updatedData.password,
-				imageUrl: profile.imageUrl,
-			});
+				profileImage: profileImageUrl,
+			}));
+		} catch (error) {
+			console.error("Failed to update profile:", error);
 		}
 	};
+
 
 	return (
 		<div className="min-w-screen">
@@ -42,36 +71,31 @@ export default function ProfileSetting() {
 				<BreadcrumbProfile />
 			</div>
 			<div className="max-h-screen rounded-xl p-8 mt-10 ms-32 me-32 border-1">
-				{/* Header */}
 				<div className="border-b border-gray-200 mb-4">
-					<h2 className="text-xl font-semibold text-gray-900 mb-8">
-						Profile details
-					</h2>
+					<h2 className="text-xl font-semibold text-gray-900 mb-8">Profile details</h2>
 				</div>
 
-				{/* Top Section */}
 				<div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-8">
 					<div className="flex items-center gap-5">
 						<Image
-							src={profile.imageUrl}
+							src={
+								profile.profileImage.startsWith("https://")
+									? profile.profileImage.replace("https://", "https://")
+									: profile.profileImage
+							}
 							alt="Profile"
-							className="w-20 h-20 rounded-full object-cover"
 							width={80}
 							height={80}
+							className="w-20 h-20 rounded-full object-cover"
 						/>
 						<div>
-							<p className="text-lg font-semibold text-gray-900">
-								{profile.username}
-							</p>
-							<p className="text-md text-gray-400 font-medium">
-								{profile.email}
-							</p>
+							<p className="text-lg font-semibold text-gray-900">{profile.username}</p>
+							<p className="text-md text-gray-400 font-medium">{profile.email}</p>
 						</div>
 					</div>
 					<EditProfile profile={profile} onSave={handleUpdateProfile} />
 				</div>
 
-				{/* Detail Rows */}
 				<div className="space-y-12 max-w-3xl ml-25">
 					<div className="flex">
 						<div className="w-40 font-semibold text-gray-900">Username</div>

@@ -39,7 +39,6 @@ export const CollectionForm = ({
 		},
 	});
 	function onSubmit(values: z.infer<typeof collectionFormSchema>) {
-		console.log(values);
 		onCollectionCreate(values.collectionName);
 		setOpen((prev) => !prev);
 		form.reset({

@@ -11,19 +11,20 @@ import Form from "next/form";
 interface SearchFormProps {
 	className?: string;
 	defaultValue?: string;
+	onSearch: (query: string) => void;
 }
 
 export function SearchForm({
 	className,
 	defaultValue = "",
-	...props
+	onSearch,
 }: SearchFormProps) {
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		e.currentTarget.form?.requestSubmit();
+		onSearch(e.target.value);
 	};
 
 	return (
-		<Form action="/project" {...props} className="w-full">
+		<Form action="/project" className="w-full">
 			<SidebarGroup className="py-0 px-0">
 				<SidebarGroupContent className="relative">
 					<Label htmlFor="search" className="sr-only">

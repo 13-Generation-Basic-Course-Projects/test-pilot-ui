@@ -1,8 +1,11 @@
-// components/project-form.tsx
 "use client";
-import { ProjectFormProps, NewProjectPayload, ProjectItem } from "@/types"; // Import NewProjectPayload and ProjectItem
+
 import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
+import { FolderPlusIcon } from "lucide-react";
+import { toast } from "sonner";
 import {
 	Dialog,
 	DialogContent,
@@ -10,21 +13,22 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { FolderPlusIcon } from "lucide-react";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { projectFormSchema } from "@/lib/zodSchema";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { projectFormSchema } from "@/lib/zodSchema";
+import { ProjectFormProps, ProjectItem } from "@/types";
+import {
+	createProjectAction,
+	updateProjectByIdAction,
+} from "@/action/project-action";
 
 const ProjectForm = ({
 	mode,
@@ -34,7 +38,7 @@ const ProjectForm = ({
 	onProjectCreated,
 	onProjectUpdated,
 }: ProjectFormProps) => {
-	const [openCreated, setOpenCreated] = useState(false);
+	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const form = useForm<z.infer<typeof projectFormSchema>>({
 		resolver: zodResolver(projectFormSchema),
@@ -47,10 +51,10 @@ const ProjectForm = ({
 	useEffect(() => {
 		if (mode === "edit" && initialData) {
 			form.reset({
-				projectName: initialData.title || "",
-				projectDescription: initialData.description || "",
+				projectName: initialData.title,
+				projectDescription: initialData.description,
 			});
-		} else if (mode === "create") {
+		} else {
 			form.reset({
 				projectName: "",
 				projectDescription: "",
@@ -58,42 +62,47 @@ const ProjectForm = ({
 		}
 	}, [mode, initialData, form]);
 
-	async function onSubmit(values: z.infer<typeof projectFormSchema>) {
-		if (mode === "create") {
-			// Simulate API call for creating a new project
-			const newProject: ProjectItem = {
-				id: crypto.randomUUID(), // Generate a unique ID
-				title: values.projectName,
-				description: values.projectDescription,
-				creationDate: new Date().toLocaleDateString("en-US"), // Set current date
-				userAvatarUrl: "/profile-img.png", // Default avatar for new projects
-			};
-			console.log("New project created:", newProject);
-			if (onProjectCreated) {
-				onProjectCreated(newProject);
-				setOpenCreated((prev) => !prev);
-			}
-		} else if (mode === "edit" && initialData) {
-			// Simulate API call for updating an existing project
-			const updatedProject: ProjectItem = {
-				...initialData,
-				title: values.projectName,
-				description: values.projectDescription,
-			};
-			console.log("Project updated:", updatedProject);
-			if (onProjectUpdated) {
-				onProjectUpdated(updatedProject);
-			}
-		}
+	const onSubmit = async (values: z.infer<typeof projectFormSchema>) => {
+		try {
+			if (mode === "create") {
+				const newProject = await createProjectAction({
+					projectName: values.projectName,
+					projectDescription: values.projectDescription,
+				});
 
-		if (onOpenChange) {
-			onOpenChange(false);
+				if (newProject && onProjectCreated) {
+					onProjectCreated(newProject);
+					toast.success("Project created successfully!");
+				}
+				setDialogOpen(false);
+			} else if (mode === "edit" && initialData) {
+				const updatedProject = await updateProjectByIdAction(initialData.id, {
+					projectName: values.projectName,
+					projectDescription: values.projectDescription,
+				});
+
+				if (updatedProject && onProjectUpdated) {
+					onProjectUpdated(updatedProject);
+					toast.success("Project updated successfully!");
+				}
+
+				if (onOpenChange) {
+					onOpenChange(false);
+				}
+			}
+		} catch (error) {
+			// console.error("Project action failed:", error);
+			toast.error(
+				`Failed to ${
+					mode === "create" ? "create" : "update"
+				} project. Please try again.`
+			);
 		}
-	}
+	};
 
 	const formContent = (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 				<FormField
 					control={form.control}
 					name="projectName"
@@ -103,13 +112,11 @@ const ProjectForm = ({
 							<FormControl>
 								<Input placeholder="Enter project name" {...field} />
 							</FormControl>
-							<FormDescription>
-								This is the name of your project.
-							</FormDescription>
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
+
 				<FormField
 					control={form.control}
 					name="projectDescription"
@@ -119,23 +126,24 @@ const ProjectForm = ({
 							<FormControl>
 								<Input placeholder="Describe your project" {...field} />
 							</FormControl>
-							<FormDescription>Provide a brief description.</FormDescription>
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
-				<div className="w-full flex items-center justify-end gap-4">
+
+				<div className="flex justify-end gap-2">
 					{mode === "edit" && onOpenChange && (
 						<Button
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							className="ml-2"
 						>
 							Cancel
 						</Button>
 					)}
-					<Button type="submit">Submit</Button>
+					<Button type="submit" className="cursor-pointer">
+						Submit
+					</Button>
 				</div>
 			</form>
 		</Form>
@@ -146,8 +154,8 @@ const ProjectForm = ({
 			<Dialog open={isOpen} onOpenChange={onOpenChange}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>
-							<p className="text-2xl text-center mb-6">Edit existing project</p>
+						<DialogTitle className="text-xl text-center">
+							Edit Project
 						</DialogTitle>
 					</DialogHeader>
 					{formContent}
@@ -157,17 +165,17 @@ const ProjectForm = ({
 	}
 
 	return (
-		<Dialog open={openCreated} onOpenChange={setOpenCreated}>
+		<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 			<DialogTrigger asChild>
-				<Button className="cursor-pointer">
+				<Button onClick={() => setDialogOpen(true)} className="cursor-pointer">
 					<FolderPlusIcon className="mr-2 h-4 w-4" />
 					New Project
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>
-						<p className="text-2xl text-center mb-6">Create a new project</p>
+					<DialogTitle className="text-xl text-center">
+						Create a New Project
 					</DialogTitle>
 				</DialogHeader>
 				{formContent}

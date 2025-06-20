@@ -1,0 +1,12 @@
+export const API_BASE_URL = process.env.NEXT_PUBLIC_AUTH_BASE_URL;
+export const AUTH_ENDPOINT = `${API_BASE_URL}/auths`;
+export const PROJECT_ENDPOINT = `${API_BASE_URL}/projects`;
+export const COLLECTION_ENDPOINT = `${API_BASE_URL}/collections`;
+export const USER_ENDPOINT = `${API_BASE_URL}/users`;
+export const REQUEST_ENDPOINT = `${API_BASE_URL}/requests`;
+export const REQUEST_TEST_CASE_ENDPOINT = `${API_BASE_URL}/request-test-cases`;
+export const PREDEFINED_ENDPOINT = `${API_BASE_URL}/test-cases`;
+export const TEST_EXECUTION_ENDPOINT = `${API_BASE_URL}/executions/trigger`;
+export const HISTORY_ENDPOINT = `${API_BASE_URL}/executions/projects/batches/by-project`;
+export const PUBLIC_SHARE_LINK = `${API_BASE_URL}/public-share-link`;
+export const TEST_CASE_ENDPOINT = `${API_BASE_URL}/test-cases`;

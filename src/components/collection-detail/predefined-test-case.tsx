@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import {
 	Table,
@@ -12,92 +12,63 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { getAllPredefinedAction } from "@/action/pre-defined-action";
+import { Skeleton } from "@/components/ui/skeleton"; // 1. Import the Skeleton component
 
-interface TestCase {
-	name: string;
-	value: string | number;
+interface PredefinedCase {
+	case: string;
+	value: any;
 	type: string;
 }
 
-const predefinedValues: TestCase[] = [
-	{ name: "Empty String", value: "", type: "String" },
-	{ name: "Null", value: "null", type: "String" },
-	{ name: "length", value: "define length for validation", type: "String" },
-	{ name: "Numeric String", value: "12345", type: "String" },
-	{ name: "Alphanumeric Mix", value: "12345abc", type: "String" },
-	{ name: "Only Space", value: " ", type: "String" },
-	{ name: "Special Character", value: "@#&*!", type: "String" },
-
-	{ name: "Valid Date Format", value: "2023-01-01T10:00:00Z", type: "Date" },
-	{ name: "Invalid Date Format", value: "22/04/202aaa", type: "Date" },
-	{ name: "Past Date", value: "1900-01-01", type: "Date" },
-	{ name: "Future Date", value: "2050-01-01", type: "Date" },
-	{ name: "Invalid Calendar Date", value: "2023-02-30", type: "Date" },
-	{ name: "Invalid Month Date", value: "2023-13-01", type: "Date" },
-
-	{ name: "Incorrect File Type", value: ".exe", type: "File" },
-	{ name: "Image File", value: ".jpg", type: "File" },
-	{ name: "Video File", value: ".mp4", type: "File" },
-	{ name: "Empty File", value: "0 byte file", type: "File" },
-	{ name: "MaxSize (single file)", value: "5Mb (limit 5Mb)", type: "File" },
-	{ name: "MaxSize (multiple file)", value: "25Mb (limit 5Mb)", type: "File" },
-
-	{ name: "Positive Number", value: 5, type: "Integer" },
-	{ name: "Large Positive Number", value: 1000, type: "Integer" },
-	{ name: "Null", value: "null", type: "Integer" },
-	{ name: "Float Number", value: 1.23, type: "Integer" },
-	{ name: "Negative Number", value: -1, type: "Integer" },
-	{ name: "Zero", value: 0, type: "Integer" },
-	{ name: "Max boundary", value: "max", type: "Integer" },
-	{ name: "Min boundary", value: "min", type: "Integer" },
-	{ name: "String number", value: "12", type: "Integer" },
-	{ name: "High Precision Float", value: 0.12345678912345, type: "Integer" },
-
-	{ name: "Null", value: "null", type: "Boolean" },
-	{ name: "True", value: "true", type: "Boolean" },
-	{ name: "False", value: "false", type: "Boolean" },
-	{ name: "Boolean as Integer (1)", value: 1, type: "Boolean" },
-	{ name: "Boolean as Integer (0)", value: 0, type: "Boolean" },
-	{ name: "Boolean as String (true)", value: "true", type: "Boolean" },
-	{ name: "Boolean as String (false)", value: "false", type: "Boolean" },
-
-	{ name: "Valid UUID", value: "550e8400-e29b-41d4-a716-446655440000", type: "UUID" },
-	{ name: "Invalid UUID", value: "550e8400-e29b-41d4-a716", type: "UUID" },
-
-	{ name: "Valid Enum Value", value: "active", type: "ENUM" },
-	{ name: "Invalid Enum Value", value: "deleted", type: "ENUM" },
-
-	{ name: "Empty Array", value: "[]", type: "Array" },
-	{ name: "Non-Empty Integer Array", value: "[1]", type: "Array" },
-	{ name: "Non-Empty String Array", value: "['1']", type: "Array" },
-	{ name: "Non-Empty Boolean Array", value: "[true,false]", type: "Array" },
-	{ name: "Mixed Data Type Array", value: "[1, 'string', true]", type: "Array" },
-	{ name: "Nested Arrays", value: "[[1,2], [3,4]]", type: "Array" },
-	{ name: "Duplicate Elements", value: "[1, 2, 2]", type: "Array" },
-	{ name: "Array with Null Element (Number)", value: "[1, null]", type: "Array" },
-	{ name: "Array with Null Element (String)", value: "['1', null]", type: "Array" },
-	{ name: "Array with Null Element (Boolean)", value: "[true, null]", type: "Array" }
-];
-
-const filterTypes: string[] = [
-	"String",
-	"Date",
-	"Integer",
-	"Array",
-	"File",
-	"UUID",
-	"ENUM",
-];
 export default function PredefinedTestCase() {
 	const [selectedType, setSelectedType] = useState<string>("");
 	const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+	const [predefined, setPredefined] = useState<PredefinedCase[]>([]);
+	const [filterTypes, setFilterTypes] = useState<string[]>([]);
+
+	// 2. Add the isLoading state
+	const [isLoading, setIsLoading] = useState(true);
+
+	useEffect(() => {
+		const handlePredefined = async () => {
+			// It's good practice to ensure loading is true at the start of a fetch.
+			setIsLoading(true);
+			try {
+				const backendData = await getAllPredefinedAction();
+				if (backendData && Array.isArray(backendData)) {
+					const transformedData: PredefinedCase[] = backendData.map(
+						(item: any) => ({
+							case: item.name,
+							value: item.value,
+							type: item.dataType.name,
+						})
+					);
+					setPredefined(transformedData);
+					const uniqueTypes = [
+						...new Set(transformedData.map((item) => item.type)),
+					];
+					setFilterTypes(uniqueTypes);
+				}
+			} catch (error) {
+				console.error("Failed to fetch predefined cases:", error);
+				// Optionally, you could set an error state here
+			} finally {
+				// 3. Set loading to false after the fetch is complete (or fails)
+				setIsLoading(false);
+			}
+		};
+		handlePredefined();
+	}, []);
+
 	const filteredValues = selectedType
-		? predefinedValues.filter((item) => item.type === selectedType)
-		: predefinedValues;
+		? predefined.filter((item) => item.type === selectedType)
+		: predefined;
 
 	return (
 		<div className="p-6 mx-auto space-y-6">
 			<div className="flex justify-end">
+				{/* ... your filter dropdown code remains the same ... */}
 				<div className="relative w-64 text-sm">
 					<button
 						onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -105,20 +76,21 @@ export default function PredefinedTestCase() {
 					>
 						<span>{selectedType || "Select to filter"}</span>
 						<ChevronDown
-							className={`h-4 w-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
-								}`}
+							className={`h-4 w-4 transition-transform duration-200 ${
+								dropdownOpen ? "rotate-180" : ""
+							}`}
 						/>
 					</button>
 					{dropdownOpen && (
-						<ul className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-40 overflow-y-auto">
+						<ul className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
 							<li
 								onClick={() => {
 									setSelectedType("");
 									setDropdownOpen(false);
 								}}
-								className="px-4 py-2 border border-gray-200 hover:bg-gray-100 cursor-pointer font-semibold"
+								className="px-4 py-2 border-b border-gray-200 hover:bg-gray-100 cursor-pointer font-semibold"
 							>
-								Predefined Case
+								All Predefined Cases
 							</li>
 							{filterTypes.map((type, index) => (
 								<li
@@ -154,24 +126,51 @@ export default function PredefinedTestCase() {
 							</TableRowV2>
 						</TableHeader>
 						<TableBody>
-							{filteredValues.map((item) => (
-								<TableRow key={`${item.name}-${item.type}`} className="...">
-									<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200">
-										{item.name}
-									</TableCell>
-									<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200">
-										{item.value}
-									</TableCell>
-									<TableCell className="h-12 pl-6">
-										<Badge
-											variant="outline"
-											className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
+							{/* 4. Conditional rendering: Show skeletons or data */}
+							{isLoading
+								? [...Array(5)].map((_, index) => (
+										<TableRow
+											key={index}
+											className="border-b border-slate-200 last:border-b-0"
 										>
-											{item.type}
-										</Badge>
-									</TableCell>
-								</TableRow>
-							))}
+											<TableCell className="h-12 pl-6 border-r border-slate-200">
+												<Skeleton className="h-4 w-3/4" />
+											</TableCell>
+											<TableCell className="h-12 pl-6 border-r border-slate-200">
+												<Skeleton className="h-4 w-1/2" />
+											</TableCell>
+											<TableCell className="h-12 pl-6">
+												<Skeleton className="h-6 w-16 rounded-full" />
+											</TableCell>
+										</TableRow>
+								  ))
+								: filteredValues.map((item) => (
+										<TableRow
+											key={`${item.case}-${item.type}`}
+											className="border-b border-slate-200 last:border-b-0"
+										>
+											<TableCell className="h-12 pl-6 font-body text-[#34302b] border-r border-slate-200">
+												{item.case}
+											</TableCell>
+											<TableCell className="h-12 pl-6 font-detail text-slate-500 border-r border-slate-200 max-w-xs">
+												<div
+													className="truncate"
+													title={JSON.stringify(item.value)}
+												>
+													{/* Handle rendering of different value types, e.g., null or arrays */}
+													{JSON.stringify(item.value)}
+												</div>
+											</TableCell>
+											<TableCell className="h-12 pl-6">
+												<Badge
+													variant="outline"
+													className="bg-[#ffffff] text-[#006fee] font-medium text-xs"
+												>
+													{item.type}
+												</Badge>
+											</TableCell>
+										</TableRow>
+								  ))}
 						</TableBody>
 					</Table>
 				</CardContent>

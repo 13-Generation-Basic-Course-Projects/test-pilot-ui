@@ -18,6 +18,7 @@ import { FaCode, FaGithub, FaGoogle } from "react-icons/fa";
 import { RiNextjsFill, RiTailwindCssFill } from "react-icons/ri";
 import { SiShadcnui } from "react-icons/si";
 import { BiLogoSpringBoot, BiLogoTypescript } from "react-icons/bi";
+import Link from "next/link";
 
 export default function LandingPageComponent() {
 	return (
@@ -52,9 +53,11 @@ export default function LandingPageComponent() {
 						</p>
 						{/* Buttons */}
 						<div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-							<button className="bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-800 transition shadow">
-								Get Started
-							</button>
+							<Link href={"/login"}>
+								<button className="bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-800 transition shadow">
+									Get Started
+								</button>
+							</Link>
 							<button className="border border-gray-300 px-6 py-3 rounded-md text-sm hover:bg-gray-100 transition flex items-center gap-2">
 								<FaGithub className="w-4 h-4" />
 								GitHub
