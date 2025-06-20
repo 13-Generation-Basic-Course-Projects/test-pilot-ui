@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle, Mail } from "lucide-react";
 import { verifyShareToken } from "@/service/collection-service";
-
 export default function VerifyForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -53,7 +52,6 @@ export default function VerifyForm() {
   const handleContinue = () => {
     router.push("/");
   };
-
   if (isVerified) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -90,7 +88,6 @@ export default function VerifyForm() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
