@@ -107,7 +107,6 @@ export function LoginForm({
 						<Link href={"/forgot-password"}>Forgot your password ?</Link>
 					</button>
 				</div>
-
 				<Button type="submit" className="w-full cursor-pointer">
 					Login
 				</Button>
