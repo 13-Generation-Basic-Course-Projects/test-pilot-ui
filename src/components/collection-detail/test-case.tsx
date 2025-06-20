@@ -91,7 +91,10 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 		() => [...predefinedTestCases, ...customTestCases],
 		[predefinedTestCases, customTestCases]
 	);
-	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+	// ✨ FIX 1: State now holds the ID of the open popover, or null.
+	const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dataTypeChangeInfo, setDataTypeChangeInfo] = useState<{
 		rowId: string;
@@ -236,32 +239,20 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 								</TableCell>
 								<TableCell className="px-4 py-2 align-top">
 									<div className="flex items-center gap-2 flex-wrap py-[3px]">
+										{/* ✨ FIX 2: Update Popover props */}
 										<Popover
-											open={isPopoverOpen}
-											onOpenChange={setIsPopoverOpen}
+											open={openPopoverId === row.id}
+											onOpenChange={(isOpen) => {
+												setOpenPopoverId(isOpen ? row.id : null);
+											}}
 											modal={true}
 										>
-											<PopoverTrigger
-												asChild
-												onMouseDown={(e) => e.preventDefault()}
-												onClick={(e) => {
-													e.preventDefault();
-													setIsPopoverOpen(true);
-													e.stopPropagation();
-												}}
-												type="button"
-											>
+											<PopoverTrigger asChild>
 												<Button
 													variant="outline"
 													size="icon"
 													type="button"
 													className="h-8 w-8 shrink-0 cursor-pointer"
-													onClick={(e) => {
-														e.preventDefault();
-														setIsPopoverOpen(true);
-														e.stopPropagation();
-													}}
-													onMouseDown={(e) => e.preventDefault()}
 												>
 													<Plus className="h-6 w-6 size-5" />
 												</Button>
@@ -294,8 +285,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 																	<CommandItem
 																		key={testCase.name}
 																		value={testCase.name}
-																		onSelect={(currentValue) => {
-																			// ✨ The fix is here! Prevent the default behavior.
+																		onSelect={() => {
 																			handleToggleCase(row, testCase.name);
 																		}}
 																	>
@@ -344,7 +334,7 @@ export const TestCase = ({ onTestCasesAdded, isGenerating }: TestCaseProps) => {
 														<DropdownMenuItem
 															key={caseName}
 															className="flex justify-between items-center cursor-pointer"
-															onSelect={(e) => e.preventDefault()} // This is also good practice
+															onSelect={(e) => e.preventDefault()}
 														>
 															{caseName}
 															<button
