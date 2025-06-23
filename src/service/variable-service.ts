@@ -81,28 +81,88 @@ export const deleteVariableById = async (variableId: string) => {
   }
 };
 
-// //  Create a new variable (returns array of created variable(s))
-// export const createProjectVariable = async (
-//   payload: CreateVariablePayload
-// ): Promise<VariableItem[]> => {
-//   try {
-//     const response = await fetchAPI<VariableResponseTypes>(
-//       `${VARIABLE_ENDPOINT}/create`, // Make sure this is the correct endpoint
-//       {
-//         method: "POST",
-//         body: JSON.stringify(payload),
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
+// ✅ Create a new variable
+// export const createProjectVariableService = async (data: {
+//   name?: string;
+//   value?: string;
+//   projectId?: string;
+// }) => {
+//   console.log("Service: createProjectVariableService called with:", data);
 
-//     if (response.success && Array.isArray(response.payload)) {
-//       return response.payload;
-//     } else {
-//       throw new Error(response.message || "Variable creation failed.");
+//   const response = await fetchAPI<VariableResponseTypes>(
+//     `${VARIABLE_ENDPOINT}`,
+//     {
+//       method: "POST",
+//       body: JSON.stringify({
+//         keyName: data.name,
+//         keyValue: data.value,
+//         enabled: true,
+//         projectId: data.projectId,
+//       }),
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
 //     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
+//   );
+
+//   if (!response.success || !response.payload || !response.payload.variableId) {
+//     throw new Error("API did not return expected variable");
 //   }
+
+//   const variable = response.payload;
+
+//   return {
+//     variableId: variable.variableId,
+//     variable: variable.keyName,
+//     value: variable.keyValue,
+//   };
 // };
+
+export type VariableResponseSingle = {
+  variableId: any;
+  keyName: string;
+  keyValue: string;
+  success: boolean;
+  message: string;
+  status: string;
+  timestamps?: string;
+  payload: VariableItem;
+};
+
+export const createProjectVariableService = async (data: {
+  name?: string;
+  value?: string;
+  projectId?: string;
+}): Promise<{
+  variableId: string;
+  variable: string;
+  value: string;
+}> => {
+  const response = await fetchAPI<VariableResponseSingle>(
+    `${VARIABLE_ENDPOINT}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        keyName: data.name,
+        keyValue: data.value,
+        enabled: true,
+        projectId: data.projectId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const variable = response.payload;
+
+  if (!response.success || !variable?.variableId) {
+    throw new Error("API did not return expected variable");
+  }
+
+  return {
+    variableId: variable.variableId,
+    variable: variable.keyName,
+    value: variable.keyValue,
+  };
+};
