@@ -15,7 +15,11 @@ export const getAllProjectService = async (): Promise<ProjectItem[]> => {
 		id: project.projectId,
 		title: project.projectName,
 		description: project.projectDescription,
-		creationDate: new Date(project.createdAt).toLocaleDateString(),
+		creationDate: new Date(project.createdAt).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "2-digit",
+		}).replace(",", "/").replace(" ", "/"),
 		userAvatarUrl: project.projectOwner?.profileImage || "/defaultAvatar.png",
 	}));
 };
