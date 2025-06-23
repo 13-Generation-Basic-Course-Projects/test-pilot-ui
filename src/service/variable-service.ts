@@ -81,42 +81,6 @@ export const deleteVariableById = async (variableId: string) => {
   }
 };
 
-// ✅ Create a new variable
-// export const createProjectVariableService = async (data: {
-//   name?: string;
-//   value?: string;
-//   projectId?: string;
-// }) => {
-//   console.log("Service: createProjectVariableService called with:", data);
-
-//   const response = await fetchAPI<VariableResponseTypes>(
-//     `${VARIABLE_ENDPOINT}`,
-//     {
-//       method: "POST",
-//       body: JSON.stringify({
-//         keyName: data.name,
-//         keyValue: data.value,
-//         enabled: true,
-//         projectId: data.projectId,
-//       }),
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//     }
-//   );
-
-//   if (!response.success || !response.payload || !response.payload.variableId) {
-//     throw new Error("API did not return expected variable");
-//   }
-
-//   const variable = response.payload;
-
-//   return {
-//     variableId: variable.variableId,
-//     variable: variable.keyName,
-//     value: variable.keyValue,
-//   };
-// };
 
 export type VariableResponseSingle = {
   variableId: any;
