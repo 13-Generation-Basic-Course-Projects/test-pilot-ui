@@ -58,11 +58,22 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     if (!email || !projectId) return;
 
     setError(null);
+
     startTransition(async () => {
       try {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           setError("Invalid email format.");
+          return;
+        }
+
+        //Check if email already exists in members list
+        const isAlreadyInvited = members.some(
+            (member) => member.name.toLowerCase() === email.toLowerCase()
+        );
+
+        if (isAlreadyInvited) {
+          setError("This email has already been invited.");
           return;
         }
 
@@ -77,6 +88,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
             image: Collaborate,
           },
         ]);
+
         setEmail("");
       } catch (err) {
         setError("Failed to invite collaborator. Please try again.");
@@ -84,6 +96,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
       }
     });
   };
+
 
   const handleDelete = async (id: string) => {
     try {
