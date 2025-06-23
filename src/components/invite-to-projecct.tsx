@@ -21,12 +21,13 @@ import Collaborate from "../../public/collborate-img.png";
 import { getInviteCollaboratorService } from "@/service/project-collaborator-service";
 import { toast } from "sonner";
 import {deleteInviteProjectAction, inviteCollaboratorAction} from "@/actions/ inviteCollaboratorAction";
+import {getUserProfileService} from "@/service/user-service";
 
 interface Member {
   id: string;
   name: string;
   role: string;
-  image: StaticImageData;
+  image: StaticImageData | string;
 }
 
 interface InviteToProjectProps {
@@ -91,6 +92,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
       try {
         const data = await getInviteCollaboratorService(projectId);
         console.log("data", data);
+        const userData = await getUserProfileService();
 
         if (!data || !Array.isArray(data)) {
           console.warn("No valid collaborators found or invalid response.");
@@ -101,15 +103,16 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
           id: collab.projectCollaboratorId,
           name: collab.user?.email ?? "Unknown",
           role: collab.role || "Collaborator",
-          image: Collaborate,
+          image: collab.user?.profileImage ?? Profile,
         }));
+
 
         setMembers([
           {
             id: "owner-id",
-            name: "You",
+            name: userData.email,
             role: "Owner",
-            image: Profile,
+            image: userData.profileImage?? Profile,
           },
           ...fetchedMembers,
         ]);

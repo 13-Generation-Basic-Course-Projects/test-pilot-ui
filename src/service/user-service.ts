@@ -1,6 +1,7 @@
 import {fetchAPI} from "@/lib/api";
 import {USER_ENDPOINT} from "@/lib/static";
 import {UserProfileType} from "@/types/user-profile-type";
+import {auth} from "@/auth";
 
 export async function userUpdateService(data: { name: string; email: string }) {
     const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/update/profile-info`, {
@@ -15,11 +16,21 @@ export async function userUpdateService(data: { name: string; email: string }) {
 export async function uploadProfileImageService(file: File) {
     const formData = new FormData();
     formData.append("file-name", file);
+    console.log("FILE PROFILE",file)
+    const session = await auth();
+    const token = session?.accessToken
 
-    const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/upload/profile-image`, {
+    const response = await fetch(`${USER_ENDPOINT}/upload/profile-image`, {
         method: "PUT",
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
         body: formData,
     });
+
+    const res = await response.json()
+
+    console.log("uploadProfileImageService",res)
 
     if (res.payload && res.payload.profileImage)
 
@@ -38,6 +49,8 @@ export async function getUserProfileService(): Promise<{
     const res = await fetchAPI<UserProfileType>(`${USER_ENDPOINT}/profile-info`, {
         method: "GET",
     });
+
+
 
     if (!res.payload) {
         throw new Error("User profile response payload is undefined");

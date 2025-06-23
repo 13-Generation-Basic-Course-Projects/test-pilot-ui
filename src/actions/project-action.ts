@@ -69,4 +69,9 @@ export const updateProjectByIdAction = async(
   };
 };
 
+export const getProjectAction = async() => {
+  const response = await getAllProjectService();
+  return response;
+}
+
 
