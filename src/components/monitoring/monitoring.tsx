@@ -483,7 +483,7 @@ export default function Monitoring() {
 														<p className="font-medium text-sm shrink-0">
 															Method:
 														</p>
-														<div className="border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 text-[#F59E0B]">
+														<div className="border border-[#E2E8F0] rounded-md px-2 py-1 text-sm shrink-0 text-[#17C964]">
 															{selectedTest.method}
 														</div>
 													</div>

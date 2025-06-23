@@ -176,11 +176,11 @@ export function MonitoringData({
 											<div
 												className={`inline-block border border-[#E2E8F0] rounded-md px-2 py-1 text-sm truncate max-w-full ${
 													test.method === "GET"
-														? "text-[#17c964]"
-														: test.method === "POST"
-														? "text-[#f5a524]"
-														: test.method === "PUT"
 														? "text-[#006FEE]"
+														: test.method === "POST"
+														? "text-[#17c964]"
+														: test.method === "PUT"
+														? "text-[#f5a524]"
 														: test.method === "DELETE"
 														? "text-[#EF4444]"
 														: "text-[#8B5CF6]"

@@ -8,11 +8,11 @@ export function cn(...inputs: ClassValue[]) {
 export const getMethodColor = (method: string) => {
 	switch (method.toUpperCase()) {
 		case "GET":
-			return "text-[#17c964]";
-		case "POST":
-			return "text-[#f5a524]";
-		case "PUT":
 			return "text-[#006fee]";
+		case "POST":
+			return "text-[#17c964]";
+		case "PUT":
+			return "text-[#f5a524]";
 		case "DELETE":
 			return "text-[#f31260]";
 		case "PATCH":
