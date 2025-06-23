@@ -1,5 +1,7 @@
 import { fetchAPI } from "@/lib/api";
 import { VARIABLE_ENDPOINT } from "@/lib/static";
+import { ProjectVariableItem } from "@/types";
+import { VariableResponseTypes } from "@/types/project-variable-type";
 export type CreateVariablePayload = {
   keyName: string;
   keyValue: string;
@@ -7,48 +9,11 @@ export type CreateVariablePayload = {
   projectId: string;
 };
 
-export type VariableItem = {
-  variableId: string;
-  keyName: string;
-  keyValue: string;
-  enabled: boolean;
-  project: {
-    projectId: string;
-    projectName: string;
-    projectDescription: string;
-    projectOwner: {
-      userId: string;
-      name: string;
-      email: string;
-      password: string;
-      isVerified: boolean;
-      profileImage: string | null;
-      username: string;
-      authorities: string[] | null;
-      enabled: boolean;
-      accountNonExpired: boolean;
-      accountNonLocked: boolean;
-      credentialsNonExpired: boolean;
-    };
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string | null;
-  };
-};
-
-export type VariableResponseTypes = {
-  success: boolean;
-  message: string;
-  status: string;
-  timestamps?: string;
-  payload: VariableItem[];
-};
-
 // API Functions
 // Get all variables for a project
 export const getAllProjectVariable = async (
   projectId: string
-): Promise<VariableItem[]> => {
+): Promise<ProjectVariableItem[]> => {
   try {
     const response = await fetchAPI<VariableResponseTypes>(
       `${VARIABLE_ENDPOINT}/project/${projectId}`
@@ -106,3 +71,36 @@ export const deleteVariableById = async (variableId: string) => {
 //     throw new Error("Create failed: " + (error as Error).message);
 //   }
 // };
+
+
+// update project variable
+export const updateProjectVariable = async (
+  variableId: string,
+  payload: Partial<CreateVariablePayload>
+): Promise<ProjectVariableItem[]> => {
+  const response = await fetchAPI<VariableResponseTypes>(
+    `${VARIABLE_ENDPOINT}/${variableId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  // console.log("Update API response:", response);
+
+  if ("success" in response && response.success) {
+    const payloadData = Array.isArray(response.payload) ? response.payload : [response.payload];
+    return payloadData.map((item: { variableId: any; keyName: any; keyValue: any; enabled: any; }) => ({
+      id: item.variableId, 
+      variableId: item.variableId,
+      keyName: item.keyName,
+      keyValue: item.keyValue,
+      enabled: item.enabled,
+    }));
+  }
+
+  return [];
+};
