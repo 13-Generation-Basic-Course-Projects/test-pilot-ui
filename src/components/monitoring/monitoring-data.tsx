@@ -131,21 +131,21 @@ export function MonitoringData({
 									{/* <TableHead className="truncate text-[16px] w-[20%]">
 										Date
 									</TableHead> */}
-									<TableHead className="min-w-[60px] truncate text-[16px] w-[10%]">
+									<TableHead className="min-w-[50px] truncate text-[16px] w-[10%]">
 										Method
 									</TableHead>
-									<TableHead className="min-w-[120px] truncate text-[16px] w-[30%]">
+									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
 										Endpoint
 									</TableHead>
-									<TableHead className="min-w-[120px] truncate text-[16px] w-[30%]">
+									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
 										Test Case
 									</TableHead>
 									<TableHead className="truncate text-[16px] w-[10%]">
 										Status
 									</TableHead>
-									<TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
+									{/* <TableHead className="min-w-[100px] truncate text-[16px] w-[20%]">
 										API Code
-									</TableHead>
+									</TableHead> */}
 								</TableRow>
 							</TableHeader>
 							<TableBody className="w-full">
@@ -192,25 +192,27 @@ export function MonitoringData({
 										</TableCell>
 										<TableCell className="py-3 min-w-[120px]">
 											<div
-												className="font-mono text-sm text-[#475569] truncate w-[10rem]"
+												className="font-mono text-sm text-[#475569] truncate w-[15rem]"
 												title={test.endpoint}
 											>
 												{test.endpoint}
 											</div>
 										</TableCell>
 										<TableCell className="py-3 min-w-[120px]">
-											<Badge title={test.testName}>{test.testName}</Badge>
+											<Badge title={test.testName} className="text-[13px]">
+												{test.testName}
+											</Badge>
 										</TableCell>
 										<TableCell className="py-3 w-[100px] min-w-[100px]">
 											<div className="min-w-0 overflow-hidden">
 												{getStatusBadge(test)}
 											</div>
 										</TableCell>
-										<TableCell className="py-3 w-[100px] min-w-[100px]">
+										{/* <TableCell className="py-3 w-[100px] min-w-[100px]">
 											<div className="min-w-0 overflow-hidden">
 												{getStatusCode(test)}
 											</div>
-										</TableCell>
+										</TableCell> */}
 									</TableRow>
 								))}
 							</TableBody>
