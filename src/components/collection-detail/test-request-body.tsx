@@ -13,9 +13,10 @@ import { useRequestStore } from "@/store/request-url-slice";
 import { toast } from "sonner";
 import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
 
-// ✨ 1. Import both predefined and custom test case actions
+// Import both predefined and custom test case actions
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+import { useTestRunStore } from "@/store/test-run-slice";
 
 interface TestCase {
 	id: string;
@@ -40,16 +41,14 @@ export const TestRequestBody = ({
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
+	const { setTestRunResult } = useTestRunStore(); // Get the setter from the store
 
-	// ✨ 2. This useEffect is now updated to fetch ALL test cases
 	useEffect(() => {
 		const fetchTestCases = async () => {
 			setIsLoading(true);
 			try {
-				// Fetch both in parallel for better performance
 				const [predefinedData, customData] = await Promise.all([
 					getAllPredefinedAction(),
-					// Use the projectId prop to get the correct custom cases
 					getCustomTestCaseAction(projectId),
 				]);
 
@@ -63,12 +62,9 @@ export const TestRequestBody = ({
 				const transformedPredefined = Array.isArray(predefinedData)
 					? predefinedData.map(transformToTestCase)
 					: [];
-
 				const transformedCustom = Array.isArray(customData)
 					? customData.map(transformToTestCase)
 					: [];
-
-				// Combine into a single, complete list
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 			} catch (error) {
@@ -79,28 +75,21 @@ export const TestRequestBody = ({
 			}
 		};
 
-		// Only fetch if a projectId is available
 		if (projectId) {
 			fetchTestCases();
 		}
-	}, [projectId]); // ✨ Depend on projectId to refetch if it changes
+	}, [projectId]);
 
-	// The rest of your component logic is already correct and will now work as expected.
-	// ...
-
-	// This logic now generates the final payloads for each test case
 	const testCasePayloads = apiBodyRows.flatMap((row) => {
-		// Create a base payload with the default values for all fields
 		const basePayload = apiBodyRows.reduce((acc, r) => {
 			acc[r.id] = r.value;
 			return acc;
 		}, {} as Record<string, any>);
 
-		// For each selected test case on this row, create a scenario
 		return row.testCases
 			.map((testCaseName) => {
 				const fullTestCase = testCases.find((tc) => tc.case === testCaseName);
-				if (!fullTestCase) return null; // This will no longer fail for custom cases
+				if (!fullTestCase) return null;
 
 				const modifiedPayload = { ...basePayload };
 				modifiedPayload[row.id] = fullTestCase.value;
@@ -108,11 +97,11 @@ export const TestRequestBody = ({
 				return {
 					field: row.id,
 					testCase: testCaseName,
-					testCaseId: fullTestCase.id, // Include the test case ID
+					testCaseId: fullTestCase.id,
 					payload: modifiedPayload,
 				};
 			})
-			.filter(Boolean); // Filter out any nulls
+			.filter(Boolean);
 	});
 
 	const handleRun = () => {
@@ -120,7 +109,7 @@ export const TestRequestBody = ({
 			url: url,
 			method: method || "GET",
 			headers: {
-				// You would get the final merged headers from your header store/state here
+				// Merge headers from various sources here if necessary
 			},
 			body: testCase!.payload,
 			requestId: requestId,
@@ -138,15 +127,31 @@ export const TestRequestBody = ({
 			toast.promise(runTestCasesAction(finalPayload), {
 				loading: "Starting test run...",
 				success: (result) => {
-					router.push(`${pathname}/monitoring`);
-					return "Test run started successfully!";
+					if (result && result.data) {
+						// ✨ 1. Set state in the store for the current context
+						setTestRunResult(result.data);
+
+						// ✨ 2. Save result to sessionStorage as a bridge
+						sessionStorage.setItem(
+							"testRunResult",
+							JSON.stringify(result.data)
+						);
+
+						// ✨ 3. Navigate to the monitoring page
+						router.replace(`${pathname}/monitoring`);
+
+						return "Test run started successfully!";
+					}
+					return "Test run initiated, but no data returned.";
 				},
-				error: "Failed to start test run.",
+				error: (err) => {
+					console.error("Failed to start test run:", err);
+					return "Failed to start test run.";
+				},
 			});
 		});
 	};
 
-	// --- The rest of the component's JSX remains the same ---
 	const CardSkeleton = () => (
 		<Card className="w-full">
 			<CardHeader className="flex flex-row justify-between items-start">

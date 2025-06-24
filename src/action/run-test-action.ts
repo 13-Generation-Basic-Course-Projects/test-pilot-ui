@@ -22,7 +22,6 @@ export interface TestRunPayload {
  */
 export const runTestCasesAction = async (payload: TestRunPayload) => {
 	try {
-		console.log(payload);
 		const result = await runTestCasesService(payload);
 		return { success: true, data: result };
 	} catch (error) {

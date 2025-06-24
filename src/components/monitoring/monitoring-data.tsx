@@ -10,30 +10,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-
-type TestStatus = "pending" | "loading" | "passed" | "failed";
-
-interface TestResult {
-	id: number;
-	testName: string;
-	status: TestStatus;
-	date: string;
-	method: string;
-	endpoint: string;
-	httpStatus: number;
-	statusText: string;
-	metadata: any;
-	logs: Array<{
-		level: "INFO" | "WARNING" | "ERROR" | "DEBUG";
-		message: string;
-		source?: string;
-	}>;
-}
+import type { TestResult } from "@/types/monitoring-type";
 
 interface MonitoringDataProps {
 	testResults: TestResult[];
-	onSelectTest: (id: number) => void;
-	selectedTestId: number | null;
+	onSelectTest: (id: string) => void;
+	selectedTestId: string | null;
 }
 
 export function MonitoringData({
@@ -49,24 +31,28 @@ export function MonitoringData({
 				return (
 					<div className="flex items-center gap-2">
 						<h1 className="text-[#17C964]">passed</h1>
-						<Badge
-							variant="outline"
-							className="text-[#17C964] text-xs font-medium"
-						>
-							{httpStatus}
-						</Badge>
+						{httpStatus && (
+							<Badge
+								variant="outline"
+								className="text-[#17C964] text-xs font-medium"
+							>
+								{httpStatus}
+							</Badge>
+						)}
 					</div>
 				);
 			case "failed":
 				return (
 					<div className="flex items-center gap-2">
 						<h1 className="text-[#EF4444]">failed</h1>
-						<Badge
-							variant="outline"
-							className="text-[#EF4444] text-xs font-medium"
-						>
-							{httpStatus}
-						</Badge>
+						{httpStatus && (
+							<Badge
+								variant="outline"
+								className="text-[#EF4444] text-xs font-medium"
+							>
+								{httpStatus}
+							</Badge>
+						)}
 					</div>
 				);
 			case "loading":
@@ -83,7 +69,7 @@ export function MonitoringData({
 		}
 	};
 
-	const isClickable = (status: TestStatus) => {
+	const isClickable = (status: string) => {
 		return status === "passed" || status === "failed";
 	};
 
@@ -102,6 +88,7 @@ export function MonitoringData({
 						<TableHead>Method</TableHead>
 						<TableHead>Endpoint</TableHead>
 						<TableHead>Status</TableHead>
+						<TableHead>Duration</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody className="space-y-4">
@@ -131,6 +118,8 @@ export function MonitoringData({
 											? "text-[#006FEE]"
 											: test.method === "DELETE"
 											? "text-[#EF4444]"
+											: test.method === "PATCH"
+											? "text-[#8B5CF6]"
 											: "text-[#8B5CF6]"
 									}`}
 								>
@@ -141,6 +130,9 @@ export function MonitoringData({
 								{test.endpoint}
 							</TableCell>
 							<TableCell className="py-4">{getStatusBadge(test)}</TableCell>
+							<TableCell className="py-4 text-sm text-[#94A3B8]">
+								{test.durationMs ? `${test.durationMs}ms` : "-"}
+							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
