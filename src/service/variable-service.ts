@@ -7,6 +7,17 @@ export type CreateVariablePayload = {
   projectId: string;
 };
 
+export type VariableResponseSingle = {
+  variableId: any;
+  keyName: string;
+  keyValue: string;
+  success: boolean;
+  message: string;
+  status: string;
+  timestamps?: string;
+  payload: VariableItem;
+};
+
 export type VariableItem = {
   variableId: string;
   keyName: string;
@@ -79,18 +90,6 @@ export const deleteVariableById = async (variableId: string) => {
   } catch (error) {
     throw new Error("Delete failed: " + (error as Error).message);
   }
-};
-
-
-export type VariableResponseSingle = {
-  variableId: any;
-  keyName: string;
-  keyValue: string;
-  success: boolean;
-  message: string;
-  status: string;
-  timestamps?: string;
-  payload: VariableItem;
 };
 
 export const createProjectVariableService = async (data: {

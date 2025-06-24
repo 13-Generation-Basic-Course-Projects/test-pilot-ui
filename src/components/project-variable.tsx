@@ -49,7 +49,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
         setError(null);
       })
       .catch((error) => {
-        setError(`Failed to load project variables: ${error.message}`);
+        // setError(`Failed to load project variables: ${error.message}`);
       });
   }, [projectId]);
 
@@ -67,31 +67,6 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     setRows(updatedRows);
   };
 
-  // const handleSaveNewRow = async (index: number) => {
-  // 	const newRow = rows[index];
-
-  // 	// Only create if both fields are filled and no variableId exists
-  // 	if (newRow.variable && newRow.value && !newRow.variableId) {
-  // 		try {
-  // 			// const result = await createVariableAction({
-  // 			//   keyName: newRow.variable,
-  // 			//   keyValue: newRow.value,
-  // 			//   enabled: true,
-  // 			//   projectId,
-  // 			// });
-
-  // 			const updatedRows = [...rows];
-  // 			// updatedRows[index] = {
-  // 			//   ...newRow,
-  // 			//   variableId: result.variableId, // set returned ID
-  // 			// };
-  // 			setRows(updatedRows);
-  // 		} catch (err) {
-  // 			console.error("Create variable failed", err);
-  // 			setError("Failed to create variable.");
-  // 		}
-  // 	}
-  // };
   const handleSaveNewRow = async (index: number) => {
     const newRow = rows[index];
 
@@ -109,7 +84,6 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
           ...newRow,
           variableId: result.variableId,
         };
-
         setRows(updatedRows);
         setError(null);
       } catch (err) {
