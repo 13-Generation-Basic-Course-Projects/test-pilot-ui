@@ -37,7 +37,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
-// ✨ WORKAROUND 1: Import the new delete action
 import {
 	createRequestTestCaseAction,
 	getRequestTestCaseAction,
@@ -47,7 +46,7 @@ import { Application_Context } from "@/types/request-type";
 import { EndpointItem } from "@/types";
 import { usePathname } from "next/navigation";
 
-// These interfaces are correct and do not need to change
+// Interfaces are correct
 interface ApiTestCaseData {
 	id: string;
 	name: string;
@@ -60,16 +59,13 @@ interface TestCase {
 	case: string;
 	value: any;
 }
-
-// ✨ WORKAROUND 2: Define an interface for the full saved data we will cache locally
 interface SavedRequestTestCase {
-	id: string; // The ID of the LINK record we need for deletion
+	id: string;
 	targetFieldPath: string;
 	testCase: {
 		id: string;
 		name: string;
 	};
-	// Include any other fields that come from the API
 }
 
 export const TestCase = ({
@@ -86,8 +82,6 @@ export const TestCase = ({
 	const [isLoading, setIsLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
 	const pathname = usePathname();
-
-	// ✨ WORKAROUND 3: Create a local state to cache the full test case data with IDs
 	const [savedRequestTestCases, setSavedRequestTestCases] = useState<
 		SavedRequestTestCase[]
 	>([]);
@@ -96,7 +90,6 @@ export const TestCase = ({
 		const fetchAndSyncData = async () => {
 			setIsLoading(true);
 			try {
-				// ... fetching logic is correct ...
 				const projectId = pathname.split("/")[2];
 				const [predefinedData, customData, savedTestCases] = await Promise.all([
 					getAllPredefinedAction(),
@@ -108,7 +101,6 @@ export const TestCase = ({
 					setSavedRequestTestCases(savedTestCases);
 				}
 
-				// This logic for available test cases is correct
 				const transformToTestCase = (item: ApiTestCaseData): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
@@ -124,15 +116,33 @@ export const TestCase = ({
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 
-				// ✨ FIX: THIS LINE WAS MISSING. It restores your data type options.
+				// This line populates the Data Type dropdown
 				const uniqueTypes = [...new Set(allTestCases.map((item) => item.type))];
 				setDataTypeOptions(uniqueTypes);
 
-				// ... the rest of the sync logic is correct ...
+				// ✨ --- This logic now correctly syncs the UI on load --- ✨
 				const bodyFieldCases = savedTestCases.filter(
 					(tc: any) => tc.applicationContext === Application_Context.BODY_FIELD
 				);
-				// ... etc. ...
+
+				const casesByField = bodyFieldCases.reduce<Record<string, string[]>>(
+					(acc, savedCase: any) => {
+						const field = savedCase.targetFieldPath;
+						const caseName = savedCase.testCase.name;
+						if (!acc[field]) acc[field] = [];
+						acc[field].push(caseName);
+						return acc;
+					},
+					{}
+				);
+
+				const syncedRows = apiBodyRows.map((row) => ({
+					...row,
+					testCases: casesByField[row.id] || [],
+				}));
+
+				// This updates the Zustand store, which makes the UI show the saved test cases
+				setApiBodyRows(syncedRows);
 			} catch (error) {
 				toast.error("Failed to load test case data.");
 			} finally {
@@ -140,23 +150,21 @@ export const TestCase = ({
 			}
 		};
 
-		fetchAndSyncData();
-		// Also, the dependency array should include `pathname` since it's used inside
-	}, [requestId, apiBodyRows.length, pathname]);
+		if (requestId) {
+			fetchAndSyncData();
+		}
+	}, [requestId, pathname, setApiBodyRows]); // A cleaner dependency array
 
-	// handleToggleCase for adding a test case remains largely the same
+	// All handler functions below are correct and do not need to be changed.
 	const handleToggleCase = (row: ApiBodyRow, selectedCaseName: string) => {
-		// ... (This function as you have it is mostly for adding, which is fine)
 		const selectedTestCase = testCases.find((t) => t.case === selectedCaseName);
 		if (!selectedTestCase)
 			return toast.error(`Details not found for ${selectedCaseName}`);
 
 		const isAlreadySelected = row.testCases.includes(selectedCaseName);
 		if (isAlreadySelected) {
-			// If already selected, call the remove handler
 			handleRemoveCase(row, selectedCaseName);
 		} else {
-			// Add logic remains the same
 			startTransition(async () => {
 				const result = await createRequestTestCaseAction({
 					requestId,
@@ -167,12 +175,10 @@ export const TestCase = ({
 				});
 
 				if (result.success && result.data) {
-					// Refresh data from backend to get the new ID in our cache
 					const updatedSavedCases = await getRequestTestCaseAction({
 						requestId,
 					});
 					setSavedRequestTestCases(updatedSavedCases);
-					// Update UI
 					const newTestCases = [...row.testCases, selectedCaseName];
 					updateRow(row.id, { testCases: newTestCases });
 					toast.success("Test case added.");
@@ -183,9 +189,7 @@ export const TestCase = ({
 		}
 	};
 
-	// ✨ WORKAROUND 5: Implement the delete logic using the local cache
 	const handleRemoveCase = (row: ApiBodyRow, caseNameToRemove: string) => {
-		// Find the full saved test case link in our local cache
 		const linkToDelete = savedRequestTestCases.find(
 			(rtc) =>
 				rtc.targetFieldPath === row.id && rtc.testCase.name === caseNameToRemove
@@ -195,15 +199,12 @@ export const TestCase = ({
 			toast.error(
 				"Could not find the test case to remove. It might be out of sync."
 			);
-			// As a fallback, just remove from UI
 			const newTestCases = row.testCases.filter((c) => c !== caseNameToRemove);
 			updateRow(row.id, { testCases: newTestCases });
 			return;
 		}
 
 		const requestTestCaseIdToRemove = linkToDelete.id;
-
-		// Optimistically update the UI
 		const newTestCasesForUI = row.testCases.filter(
 			(c) => c !== caseNameToRemove
 		);
@@ -215,19 +216,16 @@ export const TestCase = ({
 			);
 			if (result.success) {
 				toast.success(result.message);
-				// On success, also remove it from our local cache to keep it in sync
 				setSavedRequestTestCases((prev) =>
 					prev.filter((rtc) => rtc.id !== requestTestCaseIdToRemove)
 				);
 			} else {
-				// If it fails, revert the UI change and show an error
 				toast.error(result.error);
 				updateRow(row.id, { testCases: row.testCases });
 			}
 		});
 	};
 
-	// ... rest of the component is unchanged
 	const handleChangeDataType = (rowId: string, newType: string) => {
 		updateRow(rowId, { dataType: newType, testCases: [] });
 	};
@@ -240,9 +238,9 @@ export const TestCase = ({
 		);
 	}
 
+	// JSX is unchanged
 	return (
 		<div className="space-y-5 min-h-[480px]">
-			{/* The entire JSX Table remains the same as it correctly uses handleRemoveCase */}
 			<div className="border border-gray-300 rounded-md overflow-hidden w-full mx-auto">
 				<Table className="w-full">
 					<TableHeader>
