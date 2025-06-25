@@ -20,13 +20,22 @@ import Collaborate from "../../public/collborate-img.png";
 
 import { getInviteCollaboratorService } from "@/service/project-collaborator-service";
 import { toast } from "sonner";
+
+import { getUserProfileService } from "@/service/user-service";
 import {deleteInviteProjectAction, inviteCollaboratorAction} from "@/actions/ inviteCollaboratorAction";
 
 interface Member {
   id: string;
   name: string;
-  role: string;
-  image: StaticImageData;
+  role: "Collaborator";
+  image: StaticImageData | string;
+}
+
+interface Owner {
+  id: string;
+  name: string;
+  role: "Owner";
+  image: StaticImageData | string;
 }
 
 interface InviteToProjectProps {
@@ -35,6 +44,7 @@ interface InviteToProjectProps {
 
 export function InviteToProject({ urlProject }: InviteToProjectProps) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [owner, setOwner] = useState<Owner | null>(null);
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -48,6 +58,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     if (!email || !projectId) return;
 
     setError(null);
+
     startTransition(async () => {
       try {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,17 +67,28 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
           return;
         }
 
+        //Check if email already exists in members list
+        const isAlreadyInvited = members.some(
+            (member) => member.name.toLowerCase() === email.toLowerCase()
+        );
+
+        if (isAlreadyInvited) {
+          setError("This email has already been invited.");
+          return;
+        }
+
         await inviteCollaboratorAction(projectId, email);
 
         setMembers((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(), // Temporary unique ID
+            id: crypto.randomUUID(),
             name: email,
             role: "Collaborator",
             image: Collaborate,
           },
         ]);
+
         setEmail("");
       } catch (err) {
         setError("Failed to invite collaborator. Please try again.");
@@ -75,11 +97,11 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     });
   };
 
+
   const handleDelete = async (id: string) => {
     try {
       setMembers((prev) => prev.filter((member) => member.id !== id));
       const message = await deleteInviteProjectAction(id);
-      console.log("delete", message);
       toast.success(message);
     } catch (error: any) {
       toast.error(error.message || "Failed to delete collaborator.");
@@ -90,39 +112,36 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     const fetchCollaborators = async () => {
       try {
         const data = await getInviteCollaboratorService(projectId);
-        console.log("data", data);
+        const userData = await getUserProfileService();
 
-        if (!data || !Array.isArray(data)) {
-          console.warn("No valid collaborators found or invalid response.");
-          return;
-        }
+        const fetchedMembers: Member[] = Array.isArray(data)
+            ? data.map((collab) => ({
+              id: collab.projectCollaboratorId,
+              name: collab.user?.email ?? "Unknown",
+              role: "Collaborator",
+              image: collab.user?.profileImage ?? Profile,
+            }))
+            : [];
 
-        const fetchedMembers: Member[] = data.map((collab) => ({
-          id: collab.projectCollaboratorId,
-          name: collab.user?.email ?? "Unknown",
-          role: collab.role || "Collaborator",
-          image: Collaborate,
-        }));
+        setOwner({
+          id: "owner-id",
+          name: userData.email,
+          role: "Owner",
+          image: userData.profileImage ?? Profile,
+        });
 
-        setMembers([
-          {
-            id: "owner-id",
-            name: "You",
-            role: "Owner",
-            image: Profile,
-          },
-          ...fetchedMembers,
-        ]);
+        setMembers(fetchedMembers);
       } catch (err) {
         console.error("Error fetching collaborators:", err);
       }
     };
+
     fetchCollaborators();
   }, [projectId]);
 
   return (
       <>
-        {/* Invite to project dialog */}
+        {/* Invite Collaborator Dialog */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline">
@@ -133,6 +152,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Invite to project</AlertDialogTitle>
             </AlertDialogHeader>
+
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Input
@@ -141,21 +161,39 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter an email..."
-                    className="flex-1 mt-1"
+                    className="flex-1"
                 />
                 <Button
                     onClick={handleInvite}
                     disabled={isPending}
-                    className="mt-1 px-4 py-2 bg-black text-white hover:bg-gray-700"
+                    className="bg-black text-white"
                 >
                   {isPending ? "Inviting..." : "Invite"}
                 </Button>
               </div>
-
               {error && <p className="text-sm text-red-500">{error}</p>}
 
+
+              {owner && (
+                  <div className="mt-4">
+                    <div className="flex items-center space-x-3 mt-2">
+                      <Image
+                          src={owner.image}
+                          alt={owner.name}
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{owner.name}</p>
+                        <p className="text-xs text-gray-500">{owner.role}</p>
+                      </div>
+                    </div>
+                  </div>
+              )}
+
+              {/* Collaborators */}
               <div className="mt-4">
-                <h3 className="text-sm font-bold mb-2">Manage members</h3>
                 {members.map((member) => (
                     <div
                         key={member.id}
@@ -172,36 +210,37 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
                         <p className="text-sm font-medium">{member.name}</p>
                         <p className="text-xs text-gray-500">{member.role}</p>
                       </div>
-                      {member.role !== "Owner" && (
-                          <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedId(member.id);
-                                setConfirmOpen(true);
-                              }}
-                              className="ml-auto text-red-500 hover:text-red-700"
-                              aria-label={`Remove ${member.name}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                      )}
+                      <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedId(member.id);
+                            setConfirmOpen(true);
+                          }}
+                          className="ml-auto text-red-500 hover:text-red-700"
+                          aria-label={`Remove ${member.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                 ))}
               </div>
             </div>
+
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Confirm delete dialog */}
+        {/* Confirm Delete Dialog */}
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
             </AlertDialogHeader>
-            <p className="mb-4">Are you sure you want to remove this collaborator?</p>
+            <p className="mb-4">
+              Are you sure you want to remove this collaborator?
+            </p>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setConfirmOpen(false)}>
                 No

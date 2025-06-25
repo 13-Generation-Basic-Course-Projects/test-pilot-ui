@@ -24,7 +24,7 @@ import { LogOut, Settings } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/action/auth-action";
 import { getUserProfileService } from "@/service/user-service";
-import { InviteToProject } from "./invite-to-projecct";
+import { InviteToProject } from "./invite-to-project";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);

@@ -82,7 +82,6 @@ export const deleteRequestAction = async (
 	try {
 		await deleteRequestByIdService(endpointId);
 		const endpoints = await getRequestByCollectionId({ collectionId });
-		// console.log(`deleteRequestAction: Refetched endpoints for collection ${collectionId}:`, endpoints);
 		return endpoints;
 	} catch (error) {
 		console.error("deleteRequestAction error:", error);

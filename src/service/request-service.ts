@@ -18,8 +18,6 @@ export const getRequestByCollectionId = async ({
 			`${REQUEST_ENDPOINT}/by-collection/${collectionId}`
 		);
 
-		console.log("getRequestByCollectionId response:", response);
-
 		if (!response.success || !response.payload) {
 			console.warn(
 				`getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
