@@ -26,7 +26,6 @@ export const runTestCasesAction = async (payload: TestRunPayload) => {
 		return { success: true, data: result };
 	} catch (error) {
 		console.error("runTestCasesAction failed:", error);
-		// In a real app, you might want to return a more specific error
 		return { success: false, error: "Failed to start test run." };
 	}
 };

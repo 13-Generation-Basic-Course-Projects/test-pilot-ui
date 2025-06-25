@@ -37,6 +37,7 @@ export const TestRequestBody = ({
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
+	const { clearTestRunResult } = useTestRunStore();
 
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -105,6 +106,8 @@ export const TestRequestBody = ({
 	});
 
 	const handleRun = () => {
+		clearTestRunResult();
+		sessionStorage.removeItem("testRunResult");
 		const requestExecution = testCasePayloads.map((testCase) => ({
 			url: url,
 			method: method || "GET",
@@ -128,17 +131,14 @@ export const TestRequestBody = ({
 				loading: "Starting test run...",
 				success: (result) => {
 					if (result && result.data) {
-						// ✨ 1. Set state in the store for the current context
 						setTestRunResult(result.data);
 
-						// ✨ 2. Save result to sessionStorage as a bridge
 						sessionStorage.setItem(
 							"testRunResult",
 							JSON.stringify(result.data)
 						);
 
-						// ✨ 3. Navigate to the monitoring page
-						router.replace(`${pathname}/monitoring`);
+						router.push(`${pathname}/monitoring`);
 
 						return "Test run started successfully!";
 					}

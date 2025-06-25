@@ -5,7 +5,6 @@ import { useTestRunStore } from "@/store/test-run-slice";
 import { transformBackendData } from "./data-transformer";
 import type { TestResult } from "@/types/monitoring-type";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 import { ProgressMonitoring } from "./progress";
 import { RequestMetadataWithLogs } from "./request-metadata-with-logs";
 import { MonitoringData } from "./monitoring-data";
