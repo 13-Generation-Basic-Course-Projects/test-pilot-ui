@@ -23,7 +23,7 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/action/auth-action";
-import { InviteToProject } from "@/components/invite-to-projecct";
+import { InviteToProject } from "@/components/invite-to-project";
 import { getUserProfileService } from "@/service/user-service";
 
 export const DropdownProfile = () => {

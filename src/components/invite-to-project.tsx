@@ -174,23 +174,23 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
               {error && <p className="text-sm text-red-500">{error}</p>}
 
 
-              {owner && (
-                  <div className="mt-4">
-                    <div className="flex items-center space-x-3 mt-2">
-                      <Image
-                          src={owner.image}
-                          alt={owner.name}
-                          width={40}
-                          height={40}
-                          className="rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{owner.name}</p>
-                        <p className="text-xs text-gray-500">{owner.role}</p>
-                      </div>
-                    </div>
-                  </div>
-              )}
+              {/*{owner && (*/}
+              {/*    <div className="mt-4">*/}
+              {/*      <div className="flex items-center space-x-3 mt-2">*/}
+              {/*        <Image*/}
+              {/*            src={owner.image}*/}
+              {/*            alt={owner.name}*/}
+              {/*            width={40}*/}
+              {/*            height={40}*/}
+              {/*            className="rounded-full object-cover"*/}
+              {/*        />*/}
+              {/*        <div>*/}
+              {/*          <p className="text-sm font-medium">{owner.name}</p>*/}
+              {/*          <p className="text-xs text-gray-500">{owner.role}</p>*/}
+              {/*        </div>*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*)}*/}
 
               {/* Collaborators */}
               <div className="mt-4">

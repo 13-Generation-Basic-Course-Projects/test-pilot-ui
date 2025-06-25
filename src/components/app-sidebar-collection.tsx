@@ -248,8 +248,12 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 	};
 
 	const handleCreateCollection = async (title: string) => {
+
+		const res: any = await createCollectionAction(title, projectId);
+
+		console.log("1234567890" + res.id);
 		const newCollection: CollectionItem = {
-			id: `collection-${Date.now()}`,
+			id: res.id as any,
 			title,
 			endpoints: [],
 		};
@@ -266,7 +270,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 				return project;
 			});
 		});
-		await createCollectionAction(title, projectId);
 	};
 
 	const handleRename = (
