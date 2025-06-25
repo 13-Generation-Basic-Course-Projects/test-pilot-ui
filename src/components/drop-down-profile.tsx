@@ -23,8 +23,8 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/action/auth-action";
-import { InviteToProject } from "@/components/invite-to-projecct";
 import { getUserProfileService } from "@/service/user-service";
+import { InviteToProject } from "./invite-to-projecct";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
