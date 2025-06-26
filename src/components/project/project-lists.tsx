@@ -168,7 +168,8 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 					{filteredProjects.map((project) => (
-						<Card key={project.id}>
+						<Link href={`/project/${project.id}`} key={project.id}>
+						<Card >
 							<CardHeader>
 								<div className="flex justify-between items-start">
 									<Image
@@ -223,30 +224,34 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 									<h1 className="text-lg">{project.title}</h1>
 								</CardTitle>
 							</CardHeader>
-							<Link href={`/project/${project.id}`}>
-								<CardContent>
-									<p className="text-clip line-clamp-2 h-12">
-										{project.description}
-									</p>
-								</CardContent>
-								<CardFooter className="flex justify-between items-center mt-4">
-									<div className="flex items-center gap-2">
-										<CalendarPlus className="text-slate-400 size-4" />
-										<p className="text-sm text-slate-400">
-											{project.creationDate || "N/A"}
-										</p>
-									</div>
-									<Image
-										src={userProfile?.profileImage || "/profile.png"}
-										alt="user profile"
-										width={35}
-										height={35}
-										className="rounded-full"
-									/>
+							<div>
 
-								</CardFooter>
-							</Link>
+									<CardContent>
+										<p className="text-clip line-clamp-2 h-12">
+											{project.description}
+										</p>
+									</CardContent>
+									<CardFooter className="flex justify-between items-center mt-4">
+										<div className="flex items-center gap-2">
+											<CalendarPlus className="text-slate-400 size-4" />
+											<p className="text-sm text-slate-400">
+												{project.creationDate || "N/A"}
+											</p>
+										</div>
+										<Image
+											src={userProfile?.profileImage || "/profile.png"}
+											alt="user profile"
+											width={35}
+											height={35}
+											className="rounded-full"
+										/>
+
+									</CardFooter>
+
+							</div>
+
 						</Card>
+						</Link>
 					))}
 				</div>
 			)}
