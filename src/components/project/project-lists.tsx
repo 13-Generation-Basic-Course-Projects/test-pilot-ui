@@ -168,7 +168,11 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 					{filteredProjects.map((project) => (
-						<Link href={`/project/${project.id}`} key={project.id}>
+						<Link
+							href={`/project/${project.id}`}
+							key={project.id}
+							className="block hover:shadow-lg transition-shadow duration-200 rounded-lg">
+
 						<Card >
 							<CardHeader>
 								<div className="flex justify-between items-start">
@@ -178,12 +182,15 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 										width={50}
 										height={50}
 									/>
-									<div>
+									<div 	onClick={(e) => {
+										e.stopPropagation();
+										e.preventDefault();
+									}}>
 										<DropdownMenu modal={false}>
-											<DropdownMenuTrigger>
-												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer" />
+											<DropdownMenuTrigger >
+												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer " />
 											</DropdownMenuTrigger>
-											<DropdownMenuContent>
+											<DropdownMenuContent >
 												<DropdownMenuItem
 													onSelect={(e) => {
 														e.preventDefault();
