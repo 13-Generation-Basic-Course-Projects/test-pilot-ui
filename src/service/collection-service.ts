@@ -7,10 +7,10 @@ import {
 } from "@/types/collection-type";
 import { getSession } from "next-auth/react";
 export interface VerifyResponse {
-  success: boolean;
-  message: string;
-  payload?: any[];
-  [key: string]: any;
+	success: boolean;
+	message: string;
+	payload?: any[];
+	[key: string]: any;
 }
 //Get ll
 export const getAllCollection = async (
@@ -84,80 +84,78 @@ export const duplicateCollectionService = async (data: {
 
 // rename collection
 export const renameCollectionService = async (
-  collectionId: string,
-  data: { name: string; projectId: string }
+	collectionId: string,
+	data: { name: string; projectId: string }
 ): Promise<CollectionResponseType> => {
-  const response = await fetchAPI<CollectionResponseType>(
-    `${COLLECTION_ENDPOINT}/${collectionId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
-  return response.payload;
+	const response = await fetchAPI<CollectionResponseType>(
+		`${COLLECTION_ENDPOINT}/${collectionId}`,
+		{
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		}
+	);
+	return response.payload;
 };
-
 
 // Share Collection By CollectionId
 export async function fetchShareLink(
-  collectionId: string
+	collectionId: string
 ): Promise<string | null> {
-  try {
-    // Get the current user session
-    const session = await getSession();
-    const authToken = session?.accessToken;
-    if (!authToken) {
-      console.warn("No access token in session");
-      return null;
-    }
-    const response = await fetch(
-      `https://testpilot.yamu.me/api/v1/public-share-link/by-collection/${collectionId}`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "*/*",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: "",
-      }
-    );
-    const result = await response.json();
-    return result.payload || null;
-  } catch (error) {
-    console.error("Failed to fetch share link:", error);
-    return null;
-  }
+	try {
+		// Get the current user session
+		const session = await getSession();
+		const authToken = session?.accessToken;
+		if (!authToken) {
+			console.warn("No access token in session");
+			return null;
+		}
+		const response = await fetch(
+			`https://testpilot.yamu.me/api/v1/public-share-link/by-collection/${collectionId}`,
+			{
+				method: "POST",
+				headers: {
+					Accept: "*/*",
+					Authorization: `Bearer ${authToken}`,
+				},
+				body: "",
+			}
+		);
+		const result = await response.json();
+		return result.payload || null;
+	} catch (error) {
+		console.error("Failed to fetch share link:", error);
+		return null;
+	}
 }
 // Verify Token For Share link
 export async function verifyShareToken(token: string): Promise<VerifyResponse> {
-  try {
-    const session = await getSession();
-    const authToken = session?.accessToken;
-    // const authToken = localStorage.getItem("token");
-    if (!authToken) throw new Error("Missing authentication token");
+	try {
+		const session = await getSession();
+		const authToken = session?.accessToken;
+		// const authToken = localStorage.getItem("token");
+		if (!authToken) throw new Error("Missing authentication token");
 
-    const response = await fetch(
-      `https://testpilot.yamu.me/api/v1/public-share-link/verify-token/${token}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      }
-    );
+		const response = await fetch(
+			`https://testpilot.yamu.me/api/v1/public-share-link/verify-token/${token}`,
+			{
+				method: "GET",
+				headers: {
+					Accept: "application/json",
+					Authorization: `Bearer ${authToken}`,
+				},
+			}
+		);
 
-    if (!response.ok) {
-      throw new Error("Invalid or expired token.");
-    }
-    const data = await response.json();
-    console.log("My Data : ", data.payload);
-    return data as VerifyResponse;
-  } catch (error) {
-    console.error("verifyShareToken error:", error);
-    throw error;
-  }
+		if (!response.ok) {
+			throw new Error("Invalid or expired token.");
+		}
+		const data = await response.json();
+		return data as VerifyResponse;
+	} catch (error) {
+		console.error("verifyShareToken error:", error);
+		throw error;
+	}
 }

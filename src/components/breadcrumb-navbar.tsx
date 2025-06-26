@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -7,29 +7,24 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { HomeIcon } from "lucide-react";
-import {getProjectAction} from "@/actions/project-action";
-import {useEffect, useState} from "react";
-import {ProjectItem} from "@/types";
-
+import { getProjectAction } from "@/actions/project-action";
+import { useEffect, useState } from "react";
+import { ProjectItem } from "@/types";
 
 const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
 	const [project, setProject] = useState<ProjectItem[]>([]);
 
 	useEffect(() => {
-		const fetchProjects= async ()=>{
+		const fetchProjects = async () => {
 			const projects = await getProjectAction();
 			setProject(projects);
-		}
+		};
 		fetchProjects();
 	}, []);
 
+	if (!project) return null;
 
-	if(!project) return null;
-
-	const filterProjects = project.find(project => project.id === params[0])
-
-	console.log(filterProjects);
-
+	const filterProjects = project.find((project) => project.id === params[0]);
 
 	return (
 		<Breadcrumb>
