@@ -251,7 +251,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 
 		const res: any = await createCollectionAction(title, projectId);
 
-		console.log("1234567890" + res.id);
 		const newCollection: CollectionItem = {
 			id: res.id as any,
 			title,

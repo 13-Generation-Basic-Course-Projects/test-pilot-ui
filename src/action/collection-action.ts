@@ -26,7 +26,6 @@ export const createCollectionAction = async (
 	projectId: string
 ) => {
 	const res = await createCollectionService(title, projectId);
-	console.log("000000000000000000000000"  + JSON.stringify(res));
 	revalidateTag("collection");
 	return res.payload;
 };
