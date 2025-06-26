@@ -9,7 +9,7 @@ import { NewProjectPayload, ProjectItem } from "@/types";
 export const getAllProjectService = async (): Promise<ProjectItem[]> => {
 	const response = await fetchAPI<ProjectResponseTypes>(`${PROJECT_ENDPOINT}`);
 
-	if (!response?.payload.payload) return [];
+	if (!response?.payload?.payload) return [];
 
 	return response.payload.payload.map((project) => ({
 		id: project.projectId,
@@ -18,7 +18,9 @@ export const getAllProjectService = async (): Promise<ProjectItem[]> => {
 		creationDate: (() => {
 			const date = new Date(project.createdAt);
 			const day = date.getDate();
-			const month = date.toLocaleString("en-US", { month: "long" }).toLowerCase();
+			const month = date
+				.toLocaleString("en-US", { month: "long" })
+				.toLowerCase();
 			const year = date.getFullYear();
 			return `${day}-${month}-${year}`;
 		})(),
