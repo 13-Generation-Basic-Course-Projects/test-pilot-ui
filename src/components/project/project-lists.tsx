@@ -1,6 +1,6 @@
 // components/project-lists.tsx
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { ProjectProps, ProjectItem } from "@/types";
 import {
 	DropdownMenu,
@@ -31,6 +31,7 @@ import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { deleteProjectAction } from "@/action/project-action";
 import { toast } from "sonner";
+import {getUserProfileService} from "@/service/user-service";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
@@ -127,6 +128,18 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const filteredProjects = projects.filter((project) =>
 		project.title.toLowerCase().includes(searchQuery)
 	);
+	const [userProfile, setUserProfile] = useState<{ profileImage: string } | null>(null);
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			try {
+				const user = await getUserProfileService();
+				setUserProfile(user);
+			} catch (err) {
+				console.error("Failed to fetch user profile", err);
+			}
+		};
+		fetchUserProfile();
+	}, []);
 
 	return (
 		<>
@@ -224,12 +237,13 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 										</p>
 									</div>
 									<Image
-										src={"/profile.png"} // not yet to fetch
+										src={userProfile?.profileImage || "/profile.png"}
 										alt="user profile"
 										width={35}
 										height={35}
 										className="rounded-full"
 									/>
+
 								</CardFooter>
 							</Link>
 						</Card>
