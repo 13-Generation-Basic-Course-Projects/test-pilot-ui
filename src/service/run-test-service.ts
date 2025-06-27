@@ -10,7 +10,6 @@ export const runTestCasesService = async (
 	payload: TestRunPayload
 ): Promise<any> => {
 	try {
-		// This sends the entire payload as the body of a POST request
 		const response = await fetchAPI<HistoryType>(TEST_EXECUTION_ENDPOINT, {
 			method: "POST",
 			headers: {
@@ -18,10 +17,10 @@ export const runTestCasesService = async (
 			},
 			body: JSON.stringify(payload),
 		});
+		console.log("RESPONSE", response);
 		return response.payload;
 	} catch (error) {
 		console.error("runTestCasesService error:", error);
-		// Re-throw the error to be caught by the action
 		throw error;
 	}
 };

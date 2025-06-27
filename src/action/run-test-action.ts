@@ -22,12 +22,10 @@ export interface TestRunPayload {
  */
 export const runTestCasesAction = async (payload: TestRunPayload) => {
 	try {
-		console.log(payload);
 		const result = await runTestCasesService(payload);
 		return { success: true, data: result };
 	} catch (error) {
 		console.error("runTestCasesAction failed:", error);
-		// In a real app, you might want to return a more specific error
 		return { success: false, error: "Failed to start test run." };
 	}
 };

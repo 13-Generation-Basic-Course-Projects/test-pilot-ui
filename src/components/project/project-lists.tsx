@@ -1,6 +1,6 @@
 // components/project-lists.tsx
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { ProjectProps, ProjectItem } from "@/types";
 import {
 	DropdownMenu,
@@ -31,6 +31,7 @@ import { ShareProject } from "../share/share-project";
 import { SearchForm } from "../search-form";
 import { deleteProjectAction } from "@/action/project-action";
 import { toast } from "sonner";
+import {getUserProfileService} from "@/service/user-service";
 
 const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
@@ -127,6 +128,18 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 	const filteredProjects = projects.filter((project) =>
 		project.title.toLowerCase().includes(searchQuery)
 	);
+	const [userProfile, setUserProfile] = useState<{ profileImage: string } | null>(null);
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			try {
+				const user = await getUserProfileService();
+				setUserProfile(user);
+			} catch (err) {
+				console.error("Failed to fetch user profile", err);
+			}
+		};
+		fetchUserProfile();
+	}, []);
 
 	return (
 		<>
@@ -155,7 +168,12 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 					{filteredProjects.map((project) => (
-						<Card key={project.id}>
+						<Link
+							href={`/project/${project.id}`}
+							key={project.id}
+							className="block hover:shadow-lg transition-shadow duration-200 rounded-lg">
+
+						<Card >
 							<CardHeader>
 								<div className="flex justify-between items-start">
 									<Image
@@ -164,12 +182,15 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 										width={50}
 										height={50}
 									/>
-									<div>
+									<div 	onClick={(e) => {
+										e.stopPropagation();
+										e.preventDefault();
+									}}>
 										<DropdownMenu modal={false}>
-											<DropdownMenuTrigger>
-												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer" />
+											<DropdownMenuTrigger >
+												<MoreHorizontal className="hover:bg-slate-400/10 rounded-md cursor-pointer " />
 											</DropdownMenuTrigger>
-											<DropdownMenuContent>
+											<DropdownMenuContent >
 												<DropdownMenuItem
 													onSelect={(e) => {
 														e.preventDefault();
@@ -210,29 +231,34 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 									<h1 className="text-lg">{project.title}</h1>
 								</CardTitle>
 							</CardHeader>
-							<Link href={`/project/${project.id}`}>
-								<CardContent>
-									<p className="text-clip line-clamp-2 h-12">
-										{project.description}
-									</p>
-								</CardContent>
-								<CardFooter className="flex justify-between items-center mt-4">
-									<div className="flex items-center gap-2">
-										<CalendarPlus className="text-slate-400 size-4" />
-										<p className="text-sm text-slate-400">
-											{project.creationDate || "N/A"}
+							<div>
+
+									<CardContent>
+										<p className="text-clip line-clamp-2 h-12">
+											{project.description}
 										</p>
-									</div>
-									<Image
-										src={"/profile.png"} // not yet to fetch
-										alt="user profile"
-										width={35}
-										height={35}
-										className="rounded-full"
-									/>
-								</CardFooter>
-							</Link>
+									</CardContent>
+									<CardFooter className="flex justify-between items-center mt-4">
+										<div className="flex items-center gap-2">
+											<CalendarPlus className="text-slate-400 size-4" />
+											<p className="text-sm text-slate-400">
+												{project.creationDate || "N/A"}
+											</p>
+										</div>
+										<Image
+											src={userProfile?.profileImage || "/profile.png"}
+											alt="user profile"
+											width={35}
+											height={35}
+											className="rounded-full"
+										/>
+
+									</CardFooter>
+
+							</div>
+
 						</Card>
+						</Link>
 					))}
 				</div>
 			)}
