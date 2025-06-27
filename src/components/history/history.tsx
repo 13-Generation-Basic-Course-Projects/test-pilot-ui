@@ -96,7 +96,6 @@ export default function History() {
 			setLoadingHistory(true); // Start loading
 			try {
 				const data = await getHistoryAction(projectId);
-				console.log(data);
 				setBackendData(data);
 			} catch (error) {
 				console.error("Failed to fetch history:", error);

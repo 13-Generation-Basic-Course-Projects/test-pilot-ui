@@ -7,6 +7,17 @@ export type CreateVariablePayload = {
   projectId: string;
 };
 
+export type VariableResponseSingle = {
+  variableId: any;
+  keyName: string;
+  keyValue: string;
+  success: boolean;
+  message: string;
+  status: string;
+  timestamps?: string;
+  payload: VariableItem;
+};
+
 export type VariableItem = {
   variableId: string;
   keyName: string;
@@ -81,28 +92,40 @@ export const deleteVariableById = async (variableId: string) => {
   }
 };
 
-// //  Create a new variable (returns array of created variable(s))
-// export const createProjectVariable = async (
-//   payload: CreateVariablePayload
-// ): Promise<VariableItem[]> => {
-//   try {
-//     const response = await fetchAPI<VariableResponseTypes>(
-//       `${VARIABLE_ENDPOINT}/create`, // Make sure this is the correct endpoint
-//       {
-//         method: "POST",
-//         body: JSON.stringify(payload),
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
+export const createProjectVariableService = async (data: {
+  name?: string;
+  value?: string;
+  projectId?: string;
+}): Promise<{
+  variableId: string;
+  variable: string;
+  value: string;
+}> => {
+  const response = await fetchAPI<VariableResponseSingle>(
+    `${VARIABLE_ENDPOINT}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        keyName: data.name,
+        keyValue: data.value,
+        enabled: true,
+        projectId: data.projectId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
-//     if (response.success && Array.isArray(response.payload)) {
-//       return response.payload;
-//     } else {
-//       throw new Error(response.message || "Variable creation failed.");
-//     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
-//   }
-// };
+  const variable = response.payload;
+
+  if (!response.success || !variable?.variableId) {
+    throw new Error("API did not return expected variable");
+  }
+
+  return {
+    variableId: variable.variableId,
+    variable: variable.keyName,
+    value: variable.keyValue,
+  };
+};

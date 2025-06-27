@@ -6,6 +6,7 @@ import EditProfile from "../profile/edit-profile-setting";
 import { handleUploadProfileImage, handleUserUpdate } from "@/action/user-action";
 import { getUserProfileService } from "@/service/user-service";
 
+
 export default function ProfileSetting() {
 	const [profile, setProfile] = useState({
 		username: "",
