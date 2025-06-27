@@ -115,9 +115,9 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
       <TableV2>
         <TableHeader>
           <TableRowV2>
-            <TableHeadV2 className="border-r text-sm">Variable</TableHeadV2>
-            <TableHeadV2 className="border-r text-sm">Value</TableHeadV2>
-            <TableHeadV2 className="text-sm">Action</TableHeadV2>
+            <TableHeadV2 className="border-r text-md">Variable</TableHeadV2>
+            <TableHeadV2 className="border-r text-md">Value</TableHeadV2>
+            <TableHeadV2 className="text-md">Action</TableHeadV2>
           </TableRowV2>
         </TableHeader>
         <TableBody>
@@ -141,7 +141,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                   onChange={(e) =>
                     handleChange(index, "variable", e.target.value)
                   }
-                  className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300"
+                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter variable"
                 />
               </TableCell>
@@ -158,10 +158,10 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                     if (originalValue && row.value !== originalValue) {
                       setShowConfirmDialog(true);
                     }
-                    handleSaveNewRow(index); // <-- create if new
+                    handleSaveNewRow(index); 
                   }}
                   onChange={(e) => handleChange(index, "value", e.target.value)}
-                  className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300"
+                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter value"
                 />
               </TableCell>
@@ -169,7 +169,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Trash2
-                      className="text-[#E2001A] cursor-pointer"
+                      className="text-[#E2001A] cursor-pointer mx-2"
                       width={20}
                       onClick={() => {
                         setDeleteIndex(index);
