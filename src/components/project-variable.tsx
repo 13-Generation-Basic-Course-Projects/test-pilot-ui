@@ -26,7 +26,6 @@ import {
 	getAllProjectVariableAction,
 	dele,
 } from "@/action/project-variable-action";
-// import { createVariableAction } from "@/action/project-variable-action";
 
 interface ProjectVariableProps {
 	projectId: string;

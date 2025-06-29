@@ -1,3 +1,4 @@
+
 "use server";
 import {
 	createProjectService,
@@ -7,14 +8,14 @@ import {
 } from "@/service/project-service";
 import { ProjectItem } from "@/types";
 
-//Delete rpoject
+// Delete project
 export const deleteProjectAction = async (
 	projectId: string
 ): Promise<ProjectItem[]> => {
 	await deleteProjectByIdService(projectId);
 
 	const projects = await getAllProjectService();
-	return projects.map((project) => ({
+	return projects.projects.map((project) => ({
 		id: project.id,
 		title: project.title,
 		description: project.description,
@@ -23,7 +24,7 @@ export const deleteProjectAction = async (
 	}));
 };
 
-//Create Project
+// Create Project
 export const createProjectAction = async (payload: {
 	projectName: string;
 	projectDescription: string;
@@ -42,19 +43,18 @@ export const createProjectAction = async (payload: {
 		title: project.payload.projectName,
 		description: project.payload.projectDescription,
 		creationDate: new Date(project.payload.createdAt).toLocaleDateString(),
-		// userAvatarUrl: project.projectOwner?.profileImage || "/defaultAvatar.png",
+		userAvatarUrl: project.payload.projectOwner?.profileImage || "/defaultAvatar.png",
 	};
 };
 
-//Update project
+// Update project
 export const updateProjectByIdAction = async (
 	projectId: string,
 	payload: { projectName: string; projectDescription: string }
 ): Promise<ProjectItem | null> => {
-	// Fix: Use payload.projectDescription for description
 	const response = await updateProjectByIdService(projectId, {
 		title: payload.projectName,
-		description: payload.projectDescription, // Corrected from payload.projectName
+		description: payload.projectDescription,
 	});
 
 	const project = response;
@@ -77,4 +77,20 @@ export const updateProjectByIdAction = async (
 		userAvatarUrl:
 			project.payload.projectOwner?.profileImage || "/defaultAvatar.png",
 	};
+};
+
+// Get all projects
+export const getProjectAction = async (): Promise<ProjectItem[]> => {
+	const response = await getAllProjectService();
+	if (!response || !Array.isArray(response.projects)) {
+		console.error("getAllProjectService did not return a valid projects array", response);
+		return [];
+	}
+	return response.projects.map((project) => ({
+		id: project.id,
+		title: project.title,
+		description: project.description,
+		creationDate: new Date(project.creationDate).toLocaleDateString(),
+		userAvatarUrl: project.userAvatarUrl || "/defaultAvatar.png",
+	}));
 };

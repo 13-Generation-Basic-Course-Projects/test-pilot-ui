@@ -3,31 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { materialLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import type { TestResult } from "@/types/monitoring-type";
 
 type LogLevel = "INFO" | "WARNING" | "ERROR" | "DEBUG";
 
-interface LogEntry {
+interface LogEntryWithTimestamp {
 	level: LogLevel;
 	message: string;
 	source?: string;
-}
-
-interface LogEntryWithTimestamp extends LogEntry {
 	timestamp: string;
-}
-
-interface TestResult {
-	id: number;
-	testName: string;
-	status: "pending" | "loading" | "passed" | "failed";
-	date: string;
-	method: string;
-	endpoint: string;
-	httpStatus: number;
-	statusText: string;
-	metadata: any;
-	logs: LogEntry[];
 }
 
 interface RequestMetadataWithLogsProps {
