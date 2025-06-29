@@ -1,50 +1,56 @@
 "use client";
+
 import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { HomeIcon } from "lucide-react";
-import { getProjectAction } from "@/actions/project-action";
 import { useEffect, useState } from "react";
 import { ProjectItem } from "@/types";
+import { getProjectAction } from "@/action/project-action";
 
 const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
-	const [project, setProject] = useState<ProjectItem[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
 
-	useEffect(() => {
-		const fetchProjects = async () => {
-			const projects = await getProjectAction();
-			setProject(projects);
-		};
-		fetchProjects();
-	}, []);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const data = await getProjectAction();
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        console.error("getProjectAction did not return an array", data);
+        setProjects([]);
+      }
+    };
+    fetchProjects();
+  }, []);
 
-	if (!project) return null;
+  if (!Array.isArray(projects) || projects.length === 0) return null;
 
-	const filterProjects = project.find((project) => project.id === params[0]);
+  const projectFound = projects.find((project) => project.id === params[0]);
 
-	return (
-		<Breadcrumb>
-			<BreadcrumbList className="">
-				<BreadcrumbItem>
-					<BreadcrumbLink href="/project">
-						<HomeIcon size={18} />
-					</BreadcrumbLink>
-				</BreadcrumbItem>
-				<BreadcrumbSeparator className="" />
-				<BreadcrumbItem>
-					<BreadcrumbLink href={params.length > 1 ? params[1] : params[0]}>
-						<h1 className="mb-[3px]">
-							{filterProjects?.title ? filterProjects?.title : ""}
-						</h1>
-					</BreadcrumbLink>
-				</BreadcrumbItem>
-			</BreadcrumbList>
-		</Breadcrumb>
-	);
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/project">
+            <HomeIcon size={18} />
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+
+        <BreadcrumbSeparator />
+
+        <BreadcrumbItem>
+          <BreadcrumbLink href={`/project/${params[0]}`}>
+            <h1 className="mb-[3px]">{projectFound?.title ?? "Project"}</h1>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
 };
 
 export default BreadcrumbNavbar;
