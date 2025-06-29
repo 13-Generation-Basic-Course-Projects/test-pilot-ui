@@ -1,4 +1,3 @@
-
 "use server";
 import {
 	createProjectService,
@@ -16,10 +15,10 @@ export const deleteProjectAction = async (
 
 	const projects = await getAllProjectService();
 	return projects.projects.map((project) => ({
-		id: project.id,
-		title: project.title,
-		description: project.description,
-		creationDate: new Date(project.creationDate).toLocaleDateString(),
+		id: project.id || "unknown-id",
+		title: project.title || "Untitled Project",
+		description: project.description || "",
+		creationDate: new Date(project.creationDate || Date.now()).toLocaleDateString(),
 		userAvatarUrl: "/defaultAvatar.png",
 	}));
 };
@@ -39,10 +38,10 @@ export const createProjectAction = async (payload: {
 	if (!project) return null;
 
 	return {
-		id: project.payload.projectId,
-		title: project.payload.projectName,
-		description: project.payload.projectDescription,
-		creationDate: new Date(project.payload.createdAt).toLocaleDateString(),
+		id: project.payload.projectId || "unknown-id",
+		title: project.payload.projectName || "Untitled Project",
+		description: project.payload.projectDescription || "",
+		creationDate: new Date(project.payload.createdAt || Date.now()).toLocaleDateString(),
 		userAvatarUrl: project.payload.projectOwner?.profileImage || "/defaultAvatar.png",
 	};
 };
@@ -62,18 +61,18 @@ export const updateProjectByIdAction = async (
 	if (!project) {
 		return {
 			id: projectId,
-			title: payload.projectName,
-			description: payload.projectDescription,
+			title: payload.projectName || "Untitled Project",
+			description: payload.projectDescription || "",
 			creationDate: new Date().toLocaleDateString(),
 			userAvatarUrl: "/defaultAvatar.png",
 		};
 	}
 
 	return {
-		id: project.payload.projectId,
-		title: project.payload.projectName,
-		description: project.payload.projectDescription,
-		creationDate: new Date(project.payload.createdAt).toLocaleDateString(),
+		id: project.payload.projectId || "unknown-id",
+		title: project.payload.projectName || "Untitled Project",
+		description: project.payload.projectDescription || "",
+		creationDate: new Date(project.payload.createdAt || Date.now()).toLocaleDateString(),
 		userAvatarUrl:
 			project.payload.projectOwner?.profileImage || "/defaultAvatar.png",
 	};
@@ -81,16 +80,25 @@ export const updateProjectByIdAction = async (
 
 // Get all projects
 export const getProjectAction = async (): Promise<ProjectItem[]> => {
-	const response = await getAllProjectService();
-	if (!response || !Array.isArray(response.projects)) {
-		console.error("getAllProjectService did not return a valid projects array", response);
-		return [];
-	}
-	return response.projects.map((project) => ({
-		id: project.id,
-		title: project.title,
-		description: project.description,
-		creationDate: new Date(project.creationDate).toLocaleDateString(),
-		userAvatarUrl: project.userAvatarUrl || "/defaultAvatar.png",
-	}));
+	let allProjects: ProjectItem[] = [];
+	let nextCursor: string | null = null;
+
+	do {
+		const response = await getAllProjectService(nextCursor);
+		if (!response || !Array.isArray(response.projects)) {
+			console.error("getAllProjectService did not return a valid projects array", response);
+			break;
+		}
+		const mappedProjects = response.projects.map((project) => ({
+			id: project.id || "unknown-id",
+			title: project.title || "Untitled Project",
+			description: project.description || "",
+			creationDate: new Date(project.creationDate || Date.now()).toLocaleDateString(),
+			userAvatarUrl: project.userAvatarUrl || "/defaultAvatar.png",
+		}));
+		allProjects = [...allProjects, ...mappedProjects];
+		nextCursor = response.nextCursor;
+	} while (nextCursor);
+
+	return allProjects;
 };

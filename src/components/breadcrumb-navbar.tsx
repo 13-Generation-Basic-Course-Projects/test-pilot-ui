@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -28,9 +29,18 @@ const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
     fetchProjects();
   }, []);
 
-  if (!Array.isArray(projects) || projects.length === 0) return null;
+  if (!Array.isArray(projects) || projects.length === 0) {
+    console.warn("No projects available to display in breadcrumb", { params });
+    return null;
+  }
 
   const projectFound = projects.find((project) => project.id === params[0]);
+
+  if (!projectFound) {
+    console.warn(`No project found for ID: ${params[0]}`, { params, projects });
+  } else if (!projectFound.title || projectFound.title === "Untitled Project") {
+    console.warn(`Project with ID ${params[0]} has invalid title`, projectFound);
+  }
 
   return (
     <Breadcrumb>
