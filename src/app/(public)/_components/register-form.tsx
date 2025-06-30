@@ -78,13 +78,13 @@ export function RegisterForm({
 			<div className="grid gap-6">
 				<div className="grid gap-2">
 					<Label htmlFor="name" className="text-[#34302B]">
-						name
+						Name
 					</Label>
 					<Input
 						id="name"
 						type="text"
 						name="name"
-						placeholder="channarith"
+						placeholder="name"
 						required
 						className="text-[#94A3B8]"
 					/>
@@ -98,7 +98,7 @@ export function RegisterForm({
 						id="email"
 						type="email"
 						name="email"
-						placeholder="channarith@gmail.com"
+						placeholder="example@gmail.com"
 						required
 						className="text-[#94A3B8]"
 						value={emailInputValue}
@@ -120,7 +120,7 @@ export function RegisterForm({
 						onClick={() => setShowPassword((prev) => !prev)}
 						className="absolute right-3 top-[30px] text-muted-foreground"
 					>
-						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+						{showPassword ?<Eye size={18} />: <EyeOff size={18} /> }
 					</button>
 				</div>
 

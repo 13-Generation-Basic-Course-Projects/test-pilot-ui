@@ -1,7 +1,7 @@
 // DeleteProject.tsx
 import {
   AlertDialog,
-  AlertDialogAction,
+  AlertDialogActionV2,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -37,9 +37,9 @@ export function DeleteProject({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => onDeleteConfirm(project.id)} className="cursor-pointer">
+          <AlertDialogActionV2 onClick={() => onDeleteConfirm(project.id)} className="cursor-pointer">
             Delete
-          </AlertDialogAction>
+          </AlertDialogActionV2>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
