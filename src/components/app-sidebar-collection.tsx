@@ -249,28 +249,29 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }));
   };
 
-  const handleCreateCollection = async (title: string) => {
-    const res: any = await createCollectionAction(title, projectId);
+	const handleCreateCollection = async (title: string) => {
 
-    const newCollection: CollectionItem = {
-      id: res.id as any,
-      title,
-      endpoints: [],
-    };
+		const res: any = await createCollectionAction(title, projectId);
 
-    setCollectionsData((prev) => {
-      const lastProjectIndex = prev.length - 1;
-      return prev.map((project, index) => {
-        if (index === lastProjectIndex) {
-          return {
-            ...project,
-            collections: [...project.collections, newCollection],
-          };
-        }
-        return project;
-      });
-    });
-  };
+		const newCollection: CollectionItem = {
+			id: res.id as any,
+			title,
+			endpoints: [],
+		};
+
+		setCollectionsData((prev) => {
+			const lastProjectIndex = prev.length - 1;
+			return prev.map((project, index) => {
+				if (index === lastProjectIndex) {
+					return {
+						...project,
+						collections: [...project.collections, newCollection],
+					};
+				}
+				return project;
+			});
+		});
+	};
 
   const handleRename = (
     projectId: string,
@@ -305,6 +306,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       projectId,
       existingCollections
     );
+
     if (!duplicated) return;
 
     setCollectionsData((prev) =>
@@ -432,7 +434,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         e.stopPropagation();
         setSelectedCollection(collection);
         setIsShareCollectionOpen(true);
-        toast.success("Collection shared successfully");
+		toast.success("Collection shared successfully");
       },
       className: "cursor-pointer",
     },
@@ -684,9 +686,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                         className="h-6 px-2 py-1 font-medium max-w-[200px] truncate overflow-hidden text-ellipsis"
                       />
                     ) : (
-                      <span className="font-medium  max-w-[220px] truncate overflow-hidden text-ellipsis">
-                        {collection.title}
-                      </span>
+                      <span className="font-medium  max-w-[220px] truncate overflow-hidden text-ellipsis">{collection.title}</span>
                     )}
                   </div>
                   <ItemActionsDropdown

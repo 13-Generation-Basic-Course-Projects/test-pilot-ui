@@ -117,18 +117,10 @@ export const googleLoinService = async ({
 }: {
 	accessToken: string;
 }) => {
-	console.log("Sending Google ID Token to backend:", accessToken);
-
-	const endpointUrl = new URL(`${AUTH_ENDPOINT}/google-login`);
-
-	endpointUrl.searchParams.append("googleToken", accessToken);
-
-	const res = await fetch(endpointUrl.toString(), {
+	const res = await fetch(`${AUTH_ENDPOINT}/google-login`, {
 		method: "POST",
 	});
 
 	const data = await res.json();
-	console.log("Data from backend:", data);
-
-	return data.payload;
+	return data;
 };
