@@ -2,7 +2,11 @@ import NextAuth, { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "@auth/core/providers/google";
 import GitHub from "@auth/core/providers/github";
-import { googleLoinService, signInService } from "./service/auth-service";
+import {
+	githubLoginService,
+	googleLoinService,
+	signInService,
+} from "./service/auth-service";
 
 class CustomError extends CredentialsSignin {
 	constructor(code: string) {
@@ -19,12 +23,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			credentials: {
 				email: {},
 				password: {},
+				githubCode: {},
 			},
 			// The authorize function for email/password is correct.
 			// It returns an object with a `.token` property.
 			authorize: async (credentials) => {
 				try {
-					const userToken: { token: string } = await signInService({
+					const { githubCode } = credentials;
+					let userToken: { token: string } = { token: "" };
+					console.log("codeeeee");
+					if (githubCode) {
+						userToken = await githubLoginService({
+							githubCode: githubCode as string,
+						});
+						console.log("tokennenenenenen " + userToken);
+						return {
+							id: "some-id",
+							token: userToken.token,
+						};
+					}
+
+					userToken = await signInService({
 						credentials,
 					} as any);
 					if (!userToken || !userToken.token) {
