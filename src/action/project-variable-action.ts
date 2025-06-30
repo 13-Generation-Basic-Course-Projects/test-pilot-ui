@@ -1,9 +1,10 @@
 "use server";
 
 import {
-	// createProjectVariable,
-	deleteVariableById,
-	getAllProjectVariable,
+  // createProjectVariable,
+  deleteVariableById,
+  getAllProjectVariable,
+  updateProjectVariable,
 } from "@/service/variable-service";
 
 // Define the correct shape for simplified variables
@@ -66,3 +67,40 @@ export async function dele(variableId: string) {
 //     throw new Error("Create failed: " + (error as Error).message);
 //   }
 // }
+
+// update project variable
+export async function updateProjectVariableAction(
+  variableId: string,
+  payload: {
+    keyName: string;
+    keyValue: string;
+    enabled: boolean;
+    projectId: string; 
+  }
+): Promise<SimplifiedVariable> {
+  try {
+    if (!variableId) {
+      throw new Error("variableId is required");
+    }
+    if (!payload.keyName || !payload.keyValue || !payload.projectId) {
+      throw new Error("keyName, keyValue, and projectId are required");
+    }
+
+    const result = await updateProjectVariable(variableId, payload);
+
+    // console.log("Update action result:", result);
+
+    if (!result[0]) {
+      throw new Error("Unexpected response format: empty payload");
+    }
+
+    return {
+      variableId: result[0].variableId,
+      variable: result[0].keyName,
+      value: result[0].keyValue,
+    };
+  } catch (error) {
+    console.error("Update action error:", error);
+    throw new Error("Update failed: " + (error as Error).message);
+  }
+}
