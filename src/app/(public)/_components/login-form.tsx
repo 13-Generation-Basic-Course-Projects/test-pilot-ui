@@ -14,9 +14,9 @@ import { signInAction } from "@/action/auth-action";
 import { signIn } from "next-auth/react";
 
 export function LoginForm({
-	className,
-	...props
-}: React.ComponentPropsWithoutRef<"form">) {
+							  className,
+							  ...props
+						  }: React.ComponentPropsWithoutRef<"form">) {
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
@@ -27,6 +27,7 @@ export function LoginForm({
 			});
 		}
 	}, [searchParams]);
+
 	const [showPassword, setShowPassword] = useState(false);
 
 	return (
@@ -42,14 +43,20 @@ export function LoginForm({
 					Click the button below to login via
 				</p>
 			</div>
+
 			{/* Social Buttons */}
 			<div className="flex justify-between items-center gap-8">
 				<Button
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
 				>
-					<GithubIcon />
-					GitHub
+					<Link
+						href="https://github.com/login/oauth/authorize?client_id=Ov23li6h1WXlLjfhqrLS&redirect_uri=http://localhost:3000/login&scope=read:user%20user:email"
+						className="flex items-center justify-center w-full gap-2"
+					>
+						<GithubIcon />
+						GitHub
+					</Link>
 				</Button>
 				<Button
 					variant="outline"
@@ -78,7 +85,7 @@ export function LoginForm({
 						id="email"
 						type="email"
 						name="email"
-						placeholder="channarith@gmail.com"
+						placeholder="example@gmail.com"
 						required
 						className="text-[#94A3B8]"
 					/>
@@ -101,16 +108,18 @@ export function LoginForm({
 						onClick={() => setShowPassword((prev) => !prev)}
 						className="absolute right-3 top-[30px] text-muted-foreground"
 					>
-						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+						{showPassword ?<Eye size={18} />: <EyeOff size={18} />  }
 					</button>
 					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
 						<Link href={"/forgot-password"}>Forgot your password ?</Link>
 					</button>
 				</div>
+
 				<Button type="submit" className="w-full cursor-pointer">
 					Login
 				</Button>
 			</div>
+
 			{/* Sign up */}
 			<div className="text-center text-sm text-[#737373]">
 				Don&apos;t have an account?{" "}
