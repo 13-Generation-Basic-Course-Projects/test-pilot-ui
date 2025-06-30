@@ -51,15 +51,16 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     loadVariables();
   }, [projectId]);
 
-  const loadVariables = async () => {
-    try {
-      const variables = await getAllProjectVariableAction(projectId);
-      setRows(variables);
-      setError(null);
-    } catch (error) {
-      setError(`Failed to load project variables: ${(error as Error).message}`);
-    }
-  };
+const loadVariables = async () => {
+  try {
+    const variables = await getAllProjectVariableAction(projectId);
+    setRows(variables);
+    setError(null); 
+  } catch {
+
+  }
+};
+
 
   const handleAddRow = () => {
     setRows([...rows, { variable: "", value: "" }]);
@@ -273,10 +274,10 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelChanges}>
-              Discard
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleSaveChanges}>
-              Save
+              Save change
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

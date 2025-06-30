@@ -150,7 +150,7 @@ function AlertDialogAction({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), "bg-[#EF4444] text-white hover:bg-[#dc2626]", className)}
+      className={cn(buttonVariants(), "bg-[#34302B] text-white hover:bg-[#393631]", className)}
       {...props}
     />
   )
