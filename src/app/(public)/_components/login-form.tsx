@@ -78,7 +78,7 @@ export function LoginForm({
 						id="email"
 						type="email"
 						name="email"
-						placeholder="channarith@gmail.com"
+						placeholder="example@gmail.com"
 						required
 						className="text-[#94A3B8]"
 					/>
@@ -101,7 +101,7 @@ export function LoginForm({
 						onClick={() => setShowPassword((prev) => !prev)}
 						className="absolute right-3 top-[30px] text-muted-foreground"
 					>
-						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+						{showPassword ? <Eye size={18} />  : <EyeOff size={18} />}
 					</button>
 					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
 						<Link href={"/forgot-password"}>Forgot your password ?</Link>
