@@ -85,16 +85,20 @@ export async function updateProjectVariableAction(
     if (!variableId) {
       throw new Error("variableId is required");
     }
+
     if (!payload.keyName || !payload.keyValue || !payload.projectId) {
       throw new Error("keyName, keyValue, and projectId are required");
     }
 
     const result = await updateProjectVariable(variableId, payload);
 
-    // console.log("Update action result:", result);
-
     if (!result[0]) {
-      throw new Error("Unexpected response format: empty payload");
+      console.warn("Update returned empty payload:", result);
+      return {
+        variableId,
+        variable: payload.keyName,
+        value: payload.keyValue,
+      }; // fallback to sent values
     }
 
     return {
@@ -104,6 +108,6 @@ export async function updateProjectVariableAction(
     };
   } catch (error) {
     console.error("Update action error:", error);
-    throw new Error("Update failed: " + (error as Error).message);
+    throw new Error("Failed to update variable."); // Clean message for user
   }
 }

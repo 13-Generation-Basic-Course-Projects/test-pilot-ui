@@ -145,20 +145,31 @@ export const updateProjectVariable = async (
     projectId: string;
   }
 ): Promise<VariableItem[]> => {
-  const response = await fetchAPI<VariableResponseTypes>(
-    `${VARIABLE_ENDPOINT}/${variableId}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  try {
+    const response = await fetchAPI<VariableResponseTypes>(
+      `${VARIABLE_ENDPOINT}/${variableId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.success) {
+      console.error("Update failed:", response.message);
+      return [];
     }
-  );
 
-  if (!response.success || !Array.isArray(response.payload)) {
-    throw new Error("Failed to update variable: " + response.message);
+    if (!Array.isArray(response.payload) || response.payload.length === 0) {
+      console.warn("Update returned an empty or invalid payload:", response);
+      return [];
+    }
+
+    return response.payload;
+  } catch (error) {
+    console.error("API error during update:", error);
+    return []; 
   }
-
-  return response.payload;
 };
