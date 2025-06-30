@@ -1,7 +1,7 @@
 "use server";
 
 import {
-  // createProjectVariable,
+  createProjectVariableService,
   deleteVariableById,
   getAllProjectVariable,
   updateProjectVariable,
@@ -48,25 +48,28 @@ export async function dele(variableId: string) {
 	}
 }
 
-// //  Add variable
-// export async function createVariableAction(payload: {
-//   keyName: string;
-//   keyValue: string;
-//   enabled: boolean;
-//   projectId: string;
-// }) {
-//   try {
-//     const result = await createProjectVariable(payload);
+// Create new project variable with auto save
+export async function createVariableAction(data: {
+  name?: string;
+  value?: string;
+  enabled?: boolean;
+  projectId?: string;
+}) {
+  console.log("createVariableAction called with data:", data);
 
-//     if (result[0].variableId) {
-//       return { variableId: result[0].variableId };
-//     } else {
-//       throw new Error("Failed to get variableId from response array.");
-//     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
-//   }
-// }
+  try {
+    if (!data.name || !data.value || !data.projectId) {
+      throw new Error("Missing required fields");
+    }
+
+    const result = await createProjectVariableService(data); // ✅ correct call
+
+    return result;
+  } catch (err) {
+    console.error("Error in createVariableAction:", err);
+    throw new Error("Unable to create variable: " + (err as Error).message);
+  }
+}
 
 // update project variable
 export async function updateProjectVariableAction(

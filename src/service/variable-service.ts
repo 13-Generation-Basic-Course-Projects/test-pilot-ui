@@ -1,7 +1,8 @@
 import { fetchAPI } from "@/lib/api";
 import { VARIABLE_ENDPOINT } from "@/lib/static";
 import { ProjectVariableItem } from "@/types";
-import { VariableResponseTypes } from "@/types/project-variable-type";
+
+// --- Types ---
 export type CreateVariablePayload = {
   keyName: string;
   keyValue: string;
@@ -9,7 +10,56 @@ export type CreateVariablePayload = {
   projectId: string;
 };
 
-// API Functions
+export type VariableItem = {
+  variableId: string;
+  keyName: string;
+  keyValue: string;
+  enabled: boolean;
+  project: {
+    projectId: string;
+    projectName: string;
+    projectDescription: string;
+    projectOwner: {
+      userId: string;
+      name: string;
+      email: string;
+      password: string;
+      isVerified: boolean;
+      profileImage: string | null;
+      username: string;
+      authorities: string[] | null;
+      enabled: boolean;
+      accountNonExpired: boolean;
+      accountNonLocked: boolean;
+      credentialsNonExpired: boolean;
+    };
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+  };
+};
+
+export type VariableResponseSingle = {
+  keyValue: string;
+  keyName: string;
+  variableId: string;
+  success: boolean;
+  message: string;
+  status: string;
+  timestamps?: string;
+  payload: VariableItem;
+};
+
+export type VariableResponseTypes = {
+  success: boolean;
+  message: string;
+  status: string;
+  timestamps?: string;
+  payload: VariableItem[];
+};
+
+// --- API functions ---
+
 // Get all variables for a project
 export const getAllProjectVariable = async (
   projectId: string
@@ -28,7 +78,7 @@ export const getAllProjectVariable = async (
   }
 };
 
-//  Delete a variable by ID
+// Delete a variable by ID
 export const deleteVariableById = async (variableId: string) => {
   try {
     const response = await fetchAPI<VariableResponseTypes>(
@@ -46,61 +96,69 @@ export const deleteVariableById = async (variableId: string) => {
   }
 };
 
-// //  Create a new variable (returns array of created variable(s))
-// export const createProjectVariable = async (
-//   payload: CreateVariablePayload
-// ): Promise<VariableItem[]> => {
-//   try {
-//     const response = await fetchAPI<VariableResponseTypes>(
-//       `${VARIABLE_ENDPOINT}/create`, // Make sure this is the correct endpoint
-//       {
-//         method: "POST",
-//         body: JSON.stringify(payload),
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     if (response.success && Array.isArray(response.payload)) {
-//       return response.payload;
-//     } else {
-//       throw new Error(response.message || "Variable creation failed.");
-//     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
-//   }
-// };
-
-
-// update project variable
-export const updateProjectVariable = async (
-  variableId: string,
-  payload: Partial<CreateVariablePayload>
-): Promise<ProjectVariableItem[]> => {
-  const response = await fetchAPI<VariableResponseTypes>(
-    `${VARIABLE_ENDPOINT}/${variableId}`,
+// Create a new project variable
+export const createProjectVariableService = async (data: {
+  name?: string;
+  value?: string;
+  projectId?: string;
+}): Promise<{
+  variableId: string;
+  variable: string;
+  value: string;
+}> => {
+  const response = await fetchAPI<VariableResponseSingle>(
+    `${VARIABLE_ENDPOINT}`,
     {
-      method: "PUT",
-      body: JSON.stringify(payload),
+      method: "POST",
+      body: JSON.stringify({
+        keyName: data.name,
+        keyValue: data.value,
+        enabled: true,
+        projectId: data.projectId,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
     }
   );
 
-  // console.log("Update API response:", response);
+  const variable = response.payload;
 
-  if ("success" in response && response.success) {
-    const payloadData = Array.isArray(response.payload) ? response.payload : [response.payload];
-    return payloadData.map((item: { variableId: any; keyName: any; keyValue: any; enabled: any; }) => ({
-      id: item.variableId, 
-      variableId: item.variableId,
-      keyName: item.keyName,
-      keyValue: item.keyValue,
-      enabled: item.enabled,
-    }));
+  if (!response.success || !variable?.variableId) {
+    throw new Error("API did not return expected variable");
   }
 
-  return [];
+  return {
+    variableId: variable.variableId,
+    variable: variable.keyName,
+    value: variable.keyValue,
+  };
+};
+
+// Update an existing variable
+export const updateProjectVariable = async (
+  variableId: string,
+  data: {
+    keyName: string;
+    keyValue: string;
+    enabled: boolean;
+    projectId: string;
+  }
+): Promise<VariableItem[]> => {
+  const response = await fetchAPI<VariableResponseTypes>(
+    `${VARIABLE_ENDPOINT}/${variableId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.success || !Array.isArray(response.payload)) {
+    throw new Error("Failed to update variable: " + response.message);
+  }
+
+  return response.payload;
 };

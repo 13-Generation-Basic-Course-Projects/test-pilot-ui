@@ -25,13 +25,11 @@ import { Trash2 } from "lucide-react";
 import {
   getAllProjectVariableAction,
   dele,
-  updateProjectVariableAction,
+  createVariableAction,
 } from "@/action/project-variable-action";
-
 interface ProjectVariableProps {
   projectId: string;
 }
-
 export default function ProjectVariable({ projectId }: ProjectVariableProps) {
   const [rows, setRows] = useState<
     { variableId?: string; variable: string; value: string }[]
@@ -51,7 +49,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
         setError(null);
       })
       .catch((error) => {
-        setError(`Failed to load project variables: ${error.message}`);
+        // setError(`Failed to load project variables: ${error.message}`);
       });
   }, [projectId]);
 
@@ -72,39 +70,28 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
   const handleSaveNewRow = async (index: number) => {
     const newRow = rows[index];
 
-    // Only create if both fields are filled and no variableId exists
     if (newRow.variable && newRow.value && !newRow.variableId) {
-      // Note: createVariableAction is commented out in the provided code
-      setError("Create functionality is currently disabled");
-    }
-  };
-
-  const handleUpdateRow = async (index: number) => {
-    const row = rows[index];
-    if (row.variableId && (row.variable !== originalVariable || row.value !== originalValue)) {
       try {
-        const updatedVariable = await updateProjectVariableAction(row.variableId, {
-          keyName: row.variable,
-          keyValue: row.value,
+        const result = await createVariableAction({
+          name: newRow.variable,
+          value: newRow.value,
           enabled: true,
-          projectId, // Add projectId
+          projectId,
         });
-
+        // ✅ Update row with returned variableId from API
         const updatedRows = [...rows];
         updatedRows[index] = {
-          variableId: updatedVariable.variableId,
-          variable: updatedVariable.variable,
-          value: updatedVariable.value,
+          ...newRow,
+          variableId: result.variableId,
         };
         setRows(updatedRows);
         setError(null);
       } catch (err) {
-        console.error("Update variable failed:", err);
-        setError("Failed to update variable: " + (err as Error).message);
+        console.error("Create variable failed", err);
+        setError("Failed to create variable.");
       }
     }
   };
-
   const handleDeleteRow = async () => {
     if (deleteIndex !== null) {
       const targetRow = rows[deleteIndex];
@@ -112,13 +99,12 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
         try {
           await dele(targetRow.variableId);
         } catch (err) {
-          setError("Failed to delete variable: " + (err as Error).message);
+          alert("Failed to delete variable. Try again.");
           return;
         }
       }
       setRows(rows.filter((_, i) => i !== deleteIndex));
       setDeleteIndex(null);
-      setError(null);
     }
   };
 
@@ -128,9 +114,9 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
       <TableV2>
         <TableHeader>
           <TableRowV2>
-            <TableHeadV2 className="border-r text-sm">Variable</TableHeadV2>
-            <TableHeadV2 className="border-r text-sm">Value</TableHeadV2>
-            <TableHeadV2 className="text-sm">Action</TableHeadV2>
+            <TableHeadV2 className="border-r text-md">Variable</TableHeadV2>
+            <TableHeadV2 className="border-r text-md">Value</TableHeadV2>
+            <TableHeadV2 className="text-md">Action</TableHeadV2>
           </TableRowV2>
         </TableHeader>
         <TableBody>
@@ -149,14 +135,12 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                     if (originalVariable && row.variable !== originalVariable) {
                       setShowConfirmDialog(true);
                     }
-                    if (!row.variableId) {
-                      handleSaveNewRow(index);
-                    }
+                    handleSaveNewRow(index); // <-- create if new
                   }}
                   onChange={(e) =>
                     handleChange(index, "variable", e.target.value)
                   }
-                  className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300"
+                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter variable"
                 />
               </TableCell>
@@ -173,12 +157,10 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                     if (originalValue && row.value !== originalValue) {
                       setShowConfirmDialog(true);
                     }
-                    if (!row.variableId) {
-                      handleSaveNewRow(index);
-                    }
+                    handleSaveNewRow(index); 
                   }}
                   onChange={(e) => handleChange(index, "value", e.target.value)}
-                  className="w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300"
+                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter value"
                 />
               </TableCell>
@@ -186,7 +168,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Trash2
-                      className="text-[#E2001A] cursor-pointer"
+                      className="text-[#E2001A] cursor-pointer mx-2"
                       width={20}
                       onClick={() => {
                         setDeleteIndex(index);
@@ -246,7 +228,8 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Do you want to change the {editField === "value" ? "value" : "variable name"}?
+              Do you want to change the{" "}
+              {editField === "value" ? "value" : "variable name"}?
             </AlertDialogTitle>
             <AlertDialogDescription>
               {editField === "value"
@@ -266,16 +249,12 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                 }
                 setShowConfirmDialog(false);
               }}
-              className="cursor-pointer"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-black hover:bg-gray-800 cursor-pointer"
+              className="bg-black hover:bg-gray-800"
               onClick={() => {
-                if (editIndex !== null) {
-                  handleUpdateRow(editIndex);
-                }
                 setShowConfirmDialog(false);
               }}
             >
