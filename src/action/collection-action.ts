@@ -7,8 +7,9 @@ import {
   getAllCollection,
   renameCollectionService,
 } from "@/service/collection-service";
+import { createRequestByCollectionId, getRequestByCollectionId } from "@/service/request-service";
 import { CollectionItem } from "@/types";
-import {revalidateTag} from "next/cache";
+import { revalidateTag } from "next/cache";
 
 export const fetchCollectionsForProject = async (
   projectId: string
@@ -25,31 +26,10 @@ export const createCollectionAction = async (
   title: string,
   projectId: string
 ) => {
-	const res = await createCollectionService(title, projectId);
-	revalidateTag("collection");
-	return res.payload;
+  const res = await createCollectionService(title, projectId);
+  revalidateTag("collection");
+  return res.payload;
 };
-
-// export const duplicateCollectionAction = async (
-// 	collection: CollectionItem,
-// 	projectId: string
-// ): Promise<CollectionItem | null> => {
-// 	try {
-// 		const duplicatedName = `${collection.title} Copy`;
-// 		const newCollection = await duplicateCollectionService({
-// 			name: duplicatedName,
-// 			projectId,
-// 		});
-// 		return {
-// 			id: newCollection.id,
-// 			title: newCollection.name,
-// 			endpoints: [],
-// 		};
-// 	} catch (error) {
-// 		console.error("Duplicate Collection Failed:", error);
-// 		return null;
-// 	}
-// };
 
 export const renameCollectionAction = async (
   projectId: string,
@@ -100,6 +80,7 @@ function generateCopyName(name: string, existingTitles: string[]): string {
     ? `${baseName} Copy`
     : `${baseName} Copy${nextCopyNumber}`;
 }
+
 export const duplicateCollectionAction = async (
   collection: CollectionItem,
   projectId: string,
@@ -108,15 +89,53 @@ export const duplicateCollectionAction = async (
   try {
     const existingTitles = existingCollections.map((c) => c.title);
     const duplicatedName = generateCopyName(collection.title, existingTitles);
+    // Create new collection
     const newCollection = await duplicateCollectionService({
       name: duplicatedName,
       projectId,
     });
-
+    // Get original requests
+    const originalRequests = await getRequestByCollectionId({
+      collectionId: collection.id,
+    });
+    const normalizeDetails = (details: any) => ({
+      url: details?.url ?? "",
+      pathVariables:
+        typeof details?.pathVariables === "object" ? details.pathVariables : {},
+      queryParams:
+        typeof details?.queryParams === "object" ? details.queryParams : {},
+      headers:
+        typeof details?.headers === "object"
+          ? details.headers
+          : typeof details?.header === "object"
+          ? details.header
+          : {},
+      body: details?.body ?? null,
+      description: details?.description ?? "",
+    });
+    // Duplicate each request with normalized data
+    await Promise.all(
+      originalRequests.map((req) =>
+        createRequestByCollectionId({
+          collectionId: newCollection.id,
+          name: req.name || "Untitled",
+          method: req.method ?? "GET",
+          details: normalizeDetails(req.details),
+        })
+      )
+    );
+    const duplicatedRequests = await getRequestByCollectionId({
+      collectionId: newCollection.id,
+    });
     return {
       id: newCollection.id,
       title: newCollection.name,
-      endpoints: [],
+      endpoints: duplicatedRequests.map((req) => ({
+        ...req,
+        method: req.method ?? "GET",
+        path: req.path ?? "",
+        details: normalizeDetails(req.details),
+      })),
     };
   } catch (error) {
     console.error("Duplicate Collection Failed:", error);
