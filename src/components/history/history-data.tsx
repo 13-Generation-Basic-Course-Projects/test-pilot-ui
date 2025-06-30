@@ -2,14 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-	ChevronDown,
-	ChevronUp,
-	Folder,
-	Play,
-	Trash2,
-	SquarePen,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Folder, Play, Trash2 } from "lucide-react";
 
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -32,122 +25,55 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MethodBadge } from "@/components/method-badge";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-type BackendResponse = {
-	message: string;
-	status: string;
-	success: boolean;
-	timestamps: any;
-	payload: Array<{
-		batchId: string;
-		projectId: string;
-		userId: string;
-		triggerType: string;
-		triggerSourceId: string | null;
+type HistoryBatch = {
+	batchId: string;
+	startTimestamp: string;
+	overallStatus: string;
+	results: Array<{
+		resultId: string;
+		requestSentDetails: {
+			url: string;
+			method: string;
+		};
+		responseStatusCode: number;
+		status: string;
 		startTimestamp: string;
-		endTimestamp: string;
-		overallStatus: string;
-		results: Array<{
-			resultId: string;
-			batchId: string;
-			requestId: string;
-			testCaseId: string;
-			isExpectedSuccess: boolean;
-			requestDefinitionSnapshot: any;
-			executionOrder: number;
-			startTimestamp: string;
-			endTimestamp: string;
-			status: string;
-			requestSentDetails: {
-				url: string;
-				body: any;
-				method: string;
-				headers: any;
-			};
-			responseStatusCode: number;
-			responseHeaders: any;
-			responseBody: string;
-			responseSizeBytes: number;
-			durationMs: number;
-			assertionResults: any;
-			createdAt: string;
-		}>;
-		createdAt: string;
-		updatedAt: string;
 	}>;
 };
 
-type HistoryDataType = {
-	backendData: BackendResponse;
+type HistoryDataProps = {
+	batchData: HistoryBatch;
 	onRowClick?: (resultData: any) => void;
 };
 
-export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
-	const [isOpen, setIsOpen] = React.useState(true);
-	const [activeRow, setActiveRow] = React.useState<string | null>(null);
-	const [deleteIndex, setDeleteIndex] = React.useState<string | null>(null); // Rename history
+export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const [activeRow, setActiveRow] = useState<string | null>(null);
+	const [deleteIndex, setDeleteIndex] = useState<string | null>(null);
 
-	const [isRenaming, setIsRenaming] = React.useState(false);
-	const [historyTitle, setHistoryTitle] = React.useState("Request History");
-	const [renameInput, setRenameInput] = React.useState(historyTitle);
-	const [showRenameDialog, setShowRenameDialog] = React.useState(false);
-
-	const inputRef = React.useRef<HTMLInputElement>(null);
-	const wrapperRef = React.useRef<HTMLDivElement>(null);
-
-	// Transform backend data into table rows
 	const transformedData = React.useMemo(() => {
-		// Guard against backendData or its payload being missing
-		if (!backendData || !Array.isArray(backendData.payload)) {
+		if (!batchData || !Array.isArray(batchData.results)) {
 			return [];
 		}
+		return batchData.results.map((result) => ({
+			id: result.resultId,
+			date: new Date(result.startTimestamp).toLocaleString("en-US", {
+				day: "numeric",
+				month: "short",
+				hour: "2-digit",
+				minute: "2-digit",
+				hour12: true,
+			}),
+			method: result.requestSentDetails?.method || "N/A",
+			endpoint: result.requestSentDetails?.url || "No Endpoint",
+			status: result.status,
+			statusCode: result.responseStatusCode || 0,
+			resultData: result,
+		}));
+	}, [batchData]);
 
-		const rows: Array<{
-			id: string;
-			date: string;
-			method: string;
-			endpoint: string;
-			status: string;
-			statusCode: number;
-			resultData: any;
-		}> = [];
-
-		backendData.payload.forEach((batch) => {
-			if (batch.results && Array.isArray(batch.results)) {
-				batch.results.forEach((result) => {
-					const date = new Date(result.startTimestamp).toLocaleString("en-US", {
-						day: "numeric",
-						month: "short",
-						hour: "2-digit",
-						minute: "2-digit",
-						hour12: true,
-					});
-
-					// ---  THE FIX IS HERE ---
-					// Use optional chaining (?.) to safely access nested properties.
-					// Provide a fallback value (e.g., 'N/A') if the data is null or undefined.
-					const method = result.requestSentDetails?.method || "N/A";
-					const endpoint = result.requestSentDetails?.url || "No Endpoint";
-
-					rows.push({
-						id: result.resultId,
-						date,
-						method, // Use the safe variable
-						endpoint, // Use the safe variable
-						status: result.status,
-						// Provide a fallback for statusCode as well, just in case
-						statusCode: result.responseStatusCode || 0,
-						resultData: result,
-					});
-				});
-			}
-		});
-
-		return rows;
-	}, [backendData]);
-
-	// ... all your other functions and useEffects (setData, handleClickOutside, etc.) remain the same
 	const [data, setData] = React.useState(transformedData);
 
 	React.useEffect(() => {
@@ -161,23 +87,18 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 		}
 	};
 
-	const getStatusColor = (status: string, statusCode: number) => {
-		if (status === "PASSED") {
-			return "text-[#17C964]";
-		} else {
-			return "text-[#EF4444]";
-		}
+	const getStatusColor = (status: string) =>
+		status === "PASSED" ? "text-[#17C964]" : "text-[#EF4444]";
+	const getStatusCodeColor = (statusCode: number) => {
+		if (statusCode >= 200 && statusCode < 300) return "text-[#17C964]";
+		if (statusCode >= 400) return "text-[#EF4444]";
+		return "text-[#006FEE]";
 	};
 
-	const getStatusCodeColor = (statusCode: number) => {
-		if (statusCode >= 200 && statusCode < 300) {
-			return "text-[#17C964]";
-		} else if (statusCode >= 400) {
-			return "text-[#EF4444]";
-		} else {
-			return "text-[#006FEE]";
-		}
-	};
+	const batchTitle = `Test Run: ${new Date(
+		batchData.startTimestamp
+	).toLocaleString()}`;
+	const testsCount = batchData.results.length;
 
 	return (
 		<Collapsible
@@ -186,91 +107,24 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 			className="w-full space-y-2"
 		>
 			<CollapsibleTrigger asChild>
-				<div
-					className="flex items-center justify-between space-x-4 px-4 border py-3 rounded-md cursor-pointer select-none"
-					ref={wrapperRef}
-					onClick={(e) => {
-						if (isRenaming) {
-							e.stopPropagation();
-						}
-					}}
-				>
-					<div className="flex items-center gap-2">
+				<div className="flex items-center justify-between space-x-4 px-4 border py-3 rounded-md cursor-pointer select-none">
+					<div className="flex items-center gap-3">
 						<Folder />
-						{isRenaming ? (
-							<input
-								ref={inputRef}
-								type="text"
-								className="border px-2 py-1 rounded text-sm"
-								value={renameInput}
-								onChange={(e) => setRenameInput(e.target.value)}
-								autoFocus
-								onClick={(e) => e.stopPropagation()}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") {
-										const newTitle = renameInput.trim() || "Request History";
-										setHistoryTitle(newTitle);
-										setIsRenaming(false);
-									}
-								}}
-							/>
-						) : (
-							<>
-								<h4 className="text-lg font-semibold flex items-center gap-1">
-									{historyTitle}
-								</h4>
-
-								<AlertDialog
-									open={showRenameDialog}
-									onOpenChange={setShowRenameDialog}
+						<div className="flex flex-col text-left">
+							<h4 className="text-lg font-semibold">{batchTitle}</h4>
+							{/* <p className="text-sm text-muted-foreground">
+								{testsCount} test{testsCount !== 1 ? "s" : ""} ran - Status:
+								<span
+									className={`font-medium ${getStatusColor(
+										batchData.overallStatus
+									)}`}
 								>
-									<AlertDialogTrigger asChild>
-										<button
-											onClick={(e) => {
-												e.stopPropagation();
-												setShowRenameDialog(true);
-											}}
-											aria-label="Rename Folder"
-											className="pt-1"
-										>
-											<SquarePen className="cursor-pointer w-4 h-4 text-gray-500 hover:text-gray-700" />
-										</button>
-									</AlertDialogTrigger>
-
-									<AlertDialogContent onClick={(e) => e.stopPropagation()}>
-										<AlertDialogHeader>
-											<AlertDialogTitle>Rename Folder</AlertDialogTitle>
-											<AlertDialogDescription>
-												Do you want to rename this folder?
-											</AlertDialogDescription>
-										</AlertDialogHeader>
-										<AlertDialogFooter>
-											<AlertDialogCancel
-												onClick={() => setShowRenameDialog(false)}
-												onPointerDown={(e) => e.stopPropagation()}
-											>
-												Cancel
-											</AlertDialogCancel>
-											<Button
-												onClick={() => {
-													setRenameInput(historyTitle);
-													setIsRenaming(true);
-													setShowRenameDialog(false);
-													setTimeout(() => {
-														inputRef.current?.focus();
-													}, 0);
-												}}
-												onPointerDown={(e) => e.stopPropagation()}
-											>
-												Rename
-											</Button>
-										</AlertDialogFooter>
-									</AlertDialogContent>
-								</AlertDialog>
-							</>
-						)}
+									{" "}
+									{batchData.overallStatus}
+								</span>
+							</p> */}
+						</div>
 					</div>
-
 					{isOpen ? (
 						<ChevronUp className="h-5 w-5 text-muted-foreground" />
 					) : (
@@ -278,7 +132,6 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 					)}
 				</div>
 			</CollapsibleTrigger>
-
 			<AnimatePresence initial={false}>
 				{isOpen && (
 					<motion.div
@@ -317,12 +170,6 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 										onClick={() => {
 											setActiveRow(item.id);
 											onRowClick?.(item.resultData);
-											document
-												.getElementById(`request-${item.id}`)
-												?.scrollIntoView({
-													behavior: "smooth",
-													block: "center",
-												});
 										}}
 										className={`py-5 cursor-pointer ${
 											activeRow === item.id ? "bg-[#F1F5F9]" : ""
@@ -337,12 +184,7 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 										</TableCell>
 										<TableCell className="py-5">
 											<div className="flex justify-between max-w-[120px]">
-												<p
-													className={getStatusColor(
-														item.status,
-														item.statusCode
-													)}
-												>
+												<p className={getStatusColor(item.status)}>
 													{item.status === "PASSED" ? "Passed" : "Failed"}
 												</p>
 												<div
@@ -375,7 +217,7 @@ export function HistoryData({ backendData, onRowClick }: HistoryDataType) {
 															</AlertDialogTitle>
 															<AlertDialogDescription>
 																This action cannot be undone. This will
-																permanently delete your endpoint.
+																permanently delete this entry.
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>
