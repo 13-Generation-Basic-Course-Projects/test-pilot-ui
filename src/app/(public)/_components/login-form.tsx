@@ -14,116 +14,121 @@ import { signInAction } from "@/action/auth-action";
 import { signIn } from "next-auth/react";
 
 export function LoginForm({
-	className,
-	...props
+  className,
+  ...props
 }: React.ComponentPropsWithoutRef<"form">) {
-	const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
 
-	useEffect(() => {
-		const error = searchParams.get("error");
-		if (error) {
-			toast.error("Invalid credentials", {
-				id: "login-credentials-id",
-			});
-		}
-	}, [searchParams]);
-	const [showPassword, setShowPassword] = useState(false);
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      toast.error("Invalid credentials", {
+        id: "login-credentials-id",
+      });
+    }
+  }, [searchParams]);
 
-	return (
-		<div className="flex flex-col gap-8 mb-10">
-			{/* Header */}
-			<div className="flex flex-col items-center gap-2 text-center">
-				<h1 className="text-2xl font-bold">Login to your account</h1>
-				<p className="text-balance text-sm text-[#94A3B8]">
-					Click the button below to login via
-				</p>
-			</div>
-			{/* Social Buttons */}
-			<div className="flex justify-between items-center gap-8">
-				<Button
-					variant="outline"
-					className="flex items-center justify-center w-full flex-1 cursor-pointer"
-				>
-					<Link
-						href="https://github.com/login/oauth/authorize?client_id=Ov23li6h1WXlLjfhqrLS&redirect_uri=http://localhost:3000/login&scope=read:user%20user:email"
-						className="flex items-center justify-center w-full gap-2"
-					>
-						<GithubIcon />
-						GitHub
-					</Link>
-				</Button>
-				<Button
-					variant="outline"
-					className="flex items-center justify-center w-full flex-1 cursor-pointer"
-					onClick={() => signIn("google")}
-				>
-					<GoogleIcon />
-					Google
-				</Button>
-			</div>
-			{/* Divider */}
-			<div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-				<span className="relative z-10 bg-background px-6 text-muted-foreground uppercase">
-					Or continue with
-				</span>
-			</div>
+  const [showPassword, setShowPassword] = useState(false);
 
-			<form
-				className={cn("flex flex-col gap-8 mb-10", className)}
-				action={signInAction}
-				{...props}
-			>
-				{/* Email & Password */}
-				<div className="grid gap-6">
-					<div className="grid gap-2">
-						<Label htmlFor="email" className="text-[#34302B]">
-							Email
-						</Label>
-						<Input
-							id="email"
-							type="email"
-							name="email"
-							placeholder="channarith@gmail.com"
-							required
-							className="text-[#94A3B8]"
-						/>
-					</div>
+  return (
+    <form
+      className={cn("flex flex-col gap-8 mb-10", className)}
+      action={signInAction}
+      {...props}
+    >
+      {/* Header */}
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <p className="text-balance text-sm text-[#94A3B8]">
+          Click the button below to login via
+        </p>
+      </div>
 
-					{/* Password Field with Eye Icon */}
-					<div className="grid gap-2 relative">
-						<Label htmlFor="password" className="text-[#34302B]">
-							Password
-						</Label>
-						<Input
-							id="password"
-							name="password"
-							type={showPassword ? "text" : "password"}
-							required
-							className="pr-10"
-						/>
-						<button
-							type="button"
-							onClick={() => setShowPassword((prev) => !prev)}
-							className="absolute right-3 top-[30px] text-muted-foreground"
-						>
-							{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-						</button>
-						<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
-							<Link href={"/forgot-password"}>Forgot your password ?</Link>
-						</button>
-					</div>
-					<Button type="submit" className="w-full cursor-pointer">
-						Login
-					</Button>
-				</div>
-				{/* Sign up */}
-				<div className="text-center text-sm text-[#737373]">
-					Don&apos;t have an account?{" "}
-					<Link href="/register" className="text-[#0973DC]">
-						Sign up
-					</Link>
-				</div>
-			</form>
-		</div>
-	);
+      {/* Social Buttons */}
+      <div className="flex justify-between items-center gap-8">
+        <Button
+          variant="outline"
+          className="flex items-center justify-center w-full flex-1 cursor-pointer"
+        >
+          <Link
+            href={`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI}&scope=read:user%20user:email`}
+            className="flex items-center justify-center w-full gap-2"
+          >
+            <GithubIcon />
+            GitHub
+          </Link>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex items-center justify-center w-full flex-1 cursor-pointer"
+          onClick={() => signIn("google")}
+        >
+          <GoogleIcon />
+          Google
+        </Button>
+      </div>
+
+      {/* Divider */}
+      <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+        <span className="relative z-10 bg-background px-6 text-muted-foreground uppercase">
+          Or continue with
+        </span>
+      </div>
+
+      {/* Email & Password */}
+      <div className="grid gap-6">
+        <div className="grid gap-2">
+          <Label htmlFor="email" className="text-[#34302B]">
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="example@gmail.com"
+            required
+            className="text-[#94A3B8]"
+          />
+        </div>
+
+        {/* Password Field with Eye Icon */}
+        <div className="grid gap-2 relative">
+          <Label htmlFor="password" className="text-[#34302B]">
+            Password
+          </Label>
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            required
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-[30px] text-muted-foreground"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+          >
+            {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
+          <button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
+            <Link href="/forgot-password">Forgot your password?</Link>
+          </button>
+        </div>
+
+        <Button type="submit" className="w-full cursor-pointer">
+          Login
+        </Button>
+      </div>
+
+      {/* Sign up */}
+      <div className="text-center text-sm text-[#737373]">
+        Don't have an account?{" "}
+        <Link href="/register" className="text-[#0973DC]">
+          Sign up
+        </Link>
+      </div>
+    </form>
+  );
 }
