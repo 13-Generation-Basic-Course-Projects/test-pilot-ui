@@ -30,11 +30,7 @@ export function LoginForm({
 	const [showPassword, setShowPassword] = useState(false);
 
 	return (
-		<form
-			className={cn("flex flex-col gap-8 mb-10", className)}
-			action={signInAction}
-			{...props}
-		>
+		<div className="flex flex-col gap-8 mb-10">
 			{/* Header */}
 			<div className="flex flex-col items-center gap-2 text-center">
 				<h1 className="text-2xl font-bold">Login to your account</h1>
@@ -48,8 +44,13 @@ export function LoginForm({
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
 				>
-					<GithubIcon />
-					GitHub
+					<Link
+						href="https://github.com/login/oauth/authorize?client_id=Ov23li6h1WXlLjfhqrLS&redirect_uri=http://localhost:3000/login&scope=read:user%20user:email"
+						className="flex items-center justify-center w-full gap-2"
+					>
+						<GithubIcon />
+						GitHub
+					</Link>
 				</Button>
 				<Button
 					variant="outline"
@@ -60,7 +61,6 @@ export function LoginForm({
 					Google
 				</Button>
 			</div>
-
 			{/* Divider */}
 			<div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
 				<span className="relative z-10 bg-background px-6 text-muted-foreground uppercase">
@@ -68,56 +68,62 @@ export function LoginForm({
 				</span>
 			</div>
 
-			{/* Email & Password */}
-			<div className="grid gap-6">
-				<div className="grid gap-2">
-					<Label htmlFor="email" className="text-[#34302B]">
-						Email
-					</Label>
-					<Input
-						id="email"
-						type="email"
-						name="email"
-						placeholder="channarith@gmail.com"
-						required
-						className="text-[#94A3B8]"
-					/>
-				</div>
+			<form
+				className={cn("flex flex-col gap-8 mb-10", className)}
+				action={signInAction}
+				{...props}
+			>
+				{/* Email & Password */}
+				<div className="grid gap-6">
+					<div className="grid gap-2">
+						<Label htmlFor="email" className="text-[#34302B]">
+							Email
+						</Label>
+						<Input
+							id="email"
+							type="email"
+							name="email"
+							placeholder="channarith@gmail.com"
+							required
+							className="text-[#94A3B8]"
+						/>
+					</div>
 
-				{/* Password Field with Eye Icon */}
-				<div className="grid gap-2 relative">
-					<Label htmlFor="password" className="text-[#34302B]">
-						Password
-					</Label>
-					<Input
-						id="password"
-						name="password"
-						type={showPassword ? "text" : "password"}
-						required
-						className="pr-10"
-					/>
-					<button
-						type="button"
-						onClick={() => setShowPassword((prev) => !prev)}
-						className="absolute right-3 top-[30px] text-muted-foreground"
-					>
-						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-					</button>
-					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
-						<Link href={"/forgot-password"}>Forgot your password ?</Link>
-					</button>
+					{/* Password Field with Eye Icon */}
+					<div className="grid gap-2 relative">
+						<Label htmlFor="password" className="text-[#34302B]">
+							Password
+						</Label>
+						<Input
+							id="password"
+							name="password"
+							type={showPassword ? "text" : "password"}
+							required
+							className="pr-10"
+						/>
+						<button
+							type="button"
+							onClick={() => setShowPassword((prev) => !prev)}
+							className="absolute right-3 top-[30px] text-muted-foreground"
+						>
+							{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+						</button>
+						<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
+							<Link href={"/forgot-password"}>Forgot your password ?</Link>
+						</button>
+					</div>
+					<Button type="submit" className="w-full cursor-pointer">
+						Login
+					</Button>
 				</div>
-				<Button type="submit" className="w-full cursor-pointer">
-					Login
-				</Button>
-			</div>
-			{/* Sign up */}
-			<div className="text-center text-sm text-[#737373]">
-				Don&apos;t have an account?{" "}
-				<Link href="/register" className="text-[#0973DC]">
-					Sign up
-				</Link>
-			</div>
-		</form>
+				{/* Sign up */}
+				<div className="text-center text-sm text-[#737373]">
+					Don&apos;t have an account?{" "}
+					<Link href="/register" className="text-[#0973DC]">
+						Sign up
+					</Link>
+				</div>
+			</form>
+		</div>
 	);
 }
