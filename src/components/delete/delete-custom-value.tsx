@@ -2,7 +2,7 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
+  AlertDialogActionV2,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -35,15 +35,15 @@ export function DeleteCustomValue({
           <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 cursor-pointer">
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogActionV2
             onClick={() => {
               onConfirm();
               onOpenChange(false);
             }}
-            className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+            className="cursor-pointer"
           >
             Delete
-          </AlertDialogAction>
+          </AlertDialogActionV2>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

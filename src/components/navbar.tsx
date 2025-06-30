@@ -17,9 +17,9 @@ export const NavbarComponent = async ({
 			<div className="flex justify-between gap-2 items-center">
 				<SubpathSegments />
 				{session?.user ? (
-					<>
-						<DropdownProfile />
-					</>
+					<div className="cursor-pointer">
+						<DropdownProfile/>
+					</div>
 				) : (
 					<div className="flex gap-4">
 						<Button>
