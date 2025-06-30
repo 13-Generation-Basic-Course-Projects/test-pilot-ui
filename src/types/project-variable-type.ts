@@ -4,7 +4,7 @@ export interface VariableResponseTypes {
     message: string;
     status: string;
     timestamps: string;
-    payload: Array<{
+    payload: {
         variableId: string;
         keyName: string;
         keyValue: string;
@@ -31,5 +31,5 @@ export interface VariableResponseTypes {
             updatedAt: string;
             deletedAt: string | null; 
         };
-    }>;
+    };
 }

@@ -22,7 +22,6 @@ export const getAllCollection = async (
                 next: {tags: ["collection"]}
             }
 		);
-        console.log("Response :", response.payload);
 		if (response.success && response.payload) {
 			return response.payload.map((item: any) => ({
 				id: item.id,
