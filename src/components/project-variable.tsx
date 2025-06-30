@@ -64,6 +64,7 @@ const loadVariables = async () => {
 
   const handleAddRow = () => {
     setRows([...rows, { variable: "", value: "" }]);
+
   };
 
   const handleChange = (
@@ -86,7 +87,6 @@ const loadVariables = async () => {
     setIsSaving(true);
     try {
       if (row.variableId) {
-        // Update existing variable
         await updateProjectVariableAction(row.variableId, {
           keyName: row.variable,
           keyValue: row.value,
@@ -94,7 +94,7 @@ const loadVariables = async () => {
           projectId,
         });
       } else {
-        // Create new variable
+
         const result = await createVariableAction({
           name: row.variable,
           value: row.value,
