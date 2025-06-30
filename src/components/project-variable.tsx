@@ -43,8 +43,9 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [originalRow, setOriginalRow] = useState<VariableRow | null>(null);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadVariables();
@@ -81,6 +82,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
       return;
     }
 
+    setIsSaving(true);
     try {
       if (row.variableId) {
         // Update existing variable
@@ -112,6 +114,8 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     } catch (err) {
       console.error("Operation failed", err);
       setError(`Failed to ${row.variableId ? "update" : "create"} variable.`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -135,6 +139,37 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     }
   };
 
+  const handleCellFocus = (index: number) => {
+    setOriginalRow({ ...rows[index] });
+    setEditIndex(index);
+  };
+
+  const handleCellBlur = (index: number) => {
+    const row = rows[index];
+    
+    // For new rows (no variableId), save automatically
+    if (!row.variableId) {
+      handleSaveRow(index);
+      return;
+    }
+
+    // For existing rows, check if changes were made
+    if (originalRow && 
+        (row.variable !== originalRow.variable || 
+         row.value !== originalRow.value)) {
+      setShowEditDialog(true);
+    } else {
+      setEditIndex(null);
+      setOriginalRow(null);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (editIndex === null) return;
+    await handleSaveRow(editIndex);
+    setShowEditDialog(false);
+  };
+
   const handleCancelChanges = () => {
     if (editIndex === null || !originalRow) return;
     
@@ -143,27 +178,13 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
     setRows(updatedRows);
     setEditIndex(null);
     setOriginalRow(null);
-    setShowConfirmDialog(false);
-  };
-
-  const handleCellFocus = (index: number) => {
-    setOriginalRow({ ...rows[index] });
-    setEditIndex(index);
-  };
-
-  const handleCellBlur = () => {
-    if (editIndex === null || !originalRow) return;
-    
-    const currentRow = rows[editIndex];
-    if (currentRow.variable !== originalRow.variable || 
-        currentRow.value !== originalRow.value) {
-      setShowConfirmDialog(true);
-    }
+    setShowEditDialog(false);
   };
 
   return (
     <div className="space-y-5">
       {error && <p className="text-red-500">{error}</p>}
+      {isSaving && <p className="text-blue-500">Saving...</p>}
       <TableV2>
         <TableHeader>
           <TableRowV2>
@@ -180,7 +201,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                   type="text"
                   value={row.variable}
                   onFocus={() => handleCellFocus(index)}
-                  onBlur={handleCellBlur}
+                  onBlur={() => handleCellBlur(index)}
                   onChange={(e) => handleChange(index, "variable", e.target.value)}
                   className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter variable"
@@ -191,7 +212,7 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
                   type="text"
                   value={row.value}
                   onFocus={() => handleCellFocus(index)}
-                  onBlur={handleCellBlur}
+                  onBlur={() => handleCellBlur(index)}
                   onChange={(e) => handleChange(index, "value", e.target.value)}
                   className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
                   placeholder="Enter value"
@@ -239,21 +260,22 @@ export default function ProjectVariable({ projectId }: ProjectVariableProps) {
         </TableBody>
       </TableV2>
 
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      {/* Edit Confirmation Dialog */}
+      <AlertDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
               Save changes to this variable?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              The variable details have been changed. Would you like to save them?
+              You've made changes to this variable. Would you like to save them?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelChanges}>
               Discard
             </AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleSaveRow(editIndex!)}>
+            <AlertDialogAction onClick={handleSaveChanges}>
               Save
             </AlertDialogAction>
           </AlertDialogFooter>
