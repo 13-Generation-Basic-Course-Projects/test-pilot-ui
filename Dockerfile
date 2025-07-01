@@ -4,7 +4,7 @@ FROM node:18-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci --only=production --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -31,6 +31,8 @@ ENV NEXT_PUBLIC_AUTH_GITHUB_SECRET=$NEXT_PUBLIC_AUTH_GITHUB_SECRET
 ENV AUTH_GOOGLE_ID=$AUTH_GOOGLE_ID
 ENV AUTH_GOOGLE_SECRET=$AUTH_GOOGLE_SECRET
 ENV AUTH_SECRET=$AUTH_SECRET
+
+ENV HUSKY=0
 
 RUN npm run build
 
