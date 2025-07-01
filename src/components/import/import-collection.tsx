@@ -10,6 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface ImportedCollection {
@@ -30,7 +37,7 @@ interface ImportedCollection {
 interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (data: ImportedCollection) => void;
+  onImport: (data: ImportedCollection | ImportedCollection[]) => void;
 }
 
 export function ImportCollection({
@@ -39,41 +46,46 @@ export function ImportCollection({
   onImport,
 }: ImportDialogProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [collections, setCollections] = useState<ImportedCollection[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && selectedFile.type === "application/json") {
       setFile(selectedFile);
+      await parseJsonFile(selectedFile);
     } else {
       toast.error("Please select a valid JSON file.");
       setFile(null);
+      setCollections([]);
+      setSelectedCollection(null);
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile && droppedFile.type === "application/json") {
       setFile(droppedFile);
+      await parseJsonFile(droppedFile);
     } else {
       toast.error("Please drop a valid JSON file.");
       setFile(null);
+      setCollections([]);
+      setSelectedCollection(null);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleUpload = useCallback(async () => {
-    if (!file) return;
-
+  const parseJsonFile = async (file: File) => {
     try {
       const text = await file.text();
-      const jsonData: unknown = JSON.parse(text);
+      const jsonData = JSON.parse(text);
+      console.log("Parsed JSON:", jsonData); // Debug log
 
-      // Validate the custom JSON structure
+      let parsedCollections: ImportedCollection[] = [];
+
+      // Check for single collection structure
       if (
         jsonData &&
         typeof jsonData === "object" &&
@@ -82,19 +94,96 @@ export function ImportCollection({
         "endpoints" in jsonData &&
         Array.isArray(jsonData.endpoints)
       ) {
-        onImport(jsonData as ImportedCollection);
-        setFile(null);
-        onOpenChange(false);
+        parsedCollections = [
+          {
+            title: jsonData.title || "Unnamed Collection",
+            endpoints: jsonData.endpoints.map((endpoint: any) => ({
+              name: endpoint.name || endpoint.path || "New Request",
+              path: endpoint.path || endpoint.name || "/new-request",
+              method: endpoint.method || "GET",
+              url: endpoint.url || endpoint.path || "",
+              pathVariables: endpoint.pathVariables || {},
+              queryParams: endpoint.queryParams || {},
+              headers: endpoint.headers || {},
+              body: endpoint.body || null,
+              description: endpoint.description || "",
+            })),
+          },
+        ];
+      }
+      // Check for Postman-like structure (multiple collections)
+      else if (
+        jsonData &&
+        typeof jsonData === "object" &&
+        "item" in jsonData &&
+        Array.isArray(jsonData.item)
+      ) {
+        parsedCollections = jsonData.item.map((collection: any) => ({
+          title: collection.name || "Unnamed Collection",
+          endpoints: (collection.item || []).map((endpoint: any) => ({
+            name: endpoint.name || endpoint.request?.url?.raw || "New Request",
+            path: endpoint.request?.url?.raw || endpoint.name || "/new-request",
+            method: endpoint.request?.method || "GET",
+            url: endpoint.request?.url?.raw || "",
+            pathVariables: {}, // Postman may not include these directly
+            queryParams: endpoint.request?.url?.query
+              ? Object.fromEntries(
+                  endpoint.request.url.query.map((q: any) => [q.key, q.value])
+                )
+              : {},
+            headers: endpoint.request?.header
+              ? Object.fromEntries(
+                  endpoint.request.header.map((h: any) => [h.key, h.value])
+                )
+              : {},
+            body: endpoint.request?.body || null,
+            description: endpoint.request?.description || "",
+          })),
+        }));
       } else {
-        toast.error(
-          "Invalid collection format. Expected a structure with 'title' and 'endpoints'."
+        throw new Error(
+          "Invalid JSON structure. Expected either a single collection with 'title' and 'endpoints' or a Postman-like structure with 'item' array."
         );
       }
+
+      setCollections(parsedCollections);
+      setSelectedCollection(parsedCollections.length === 1 ? parsedCollections[0].title : null);
     } catch (error) {
-      toast.error("Failed to parse JSON file. Please ensure it's a valid JSON.");
       console.error("JSON parsing error:", error);
+      toast.error("Failed to parse JSON file. Please ensure it's a valid JSON.");
+      setCollections([]);
+      setSelectedCollection(null);
     }
-  }, [file, onImport, onOpenChange]);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleUpload = useCallback(async () => {
+    if (!file || !collections.length) return;
+
+    try {
+      if (collections.length > 1 && selectedCollection === "all") {
+        onImport(collections);
+      } else {
+        const collectionToImport = collections.find(
+          (col) => col.title === selectedCollection
+        );
+        if (!collectionToImport) {
+          throw new Error("Selected collection not found.");
+        }
+        onImport(collectionToImport);
+      }
+      setFile(null);
+      setCollections([]);
+      setSelectedCollection(null);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error(`Failed to import collection: ${(error as Error).message || "Unknown error"}`);
+    }
+  }, [file, collections, selectedCollection, onImport, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,10 +197,6 @@ export function ImportCollection({
           </DialogHeader>
         </div>
         <div className="pl-4 pr-4 pb-4 space-y-4">
-          <Input
-            placeholder="Paste cURL, Raw text or URL..."
-            className="w-full px-4 py-2 text-sm rounded"
-          />
           <div
             className="border-2 border-dashed border-gray-300 rounded-lg h-64 flex flex-col items-center justify-center text-center transition hover:bg-muted/20"
             onDrop={handleDrop}
@@ -145,6 +230,26 @@ export function ImportCollection({
               className="hidden"
             />
           </div>
+          {file && collections.length > 1 && (
+            <div className="mt-4">
+              <Select
+                value={selectedCollection || ""}
+                onValueChange={setSelectedCollection}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a collection" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Import All Collections</SelectItem>
+                  {collections.map((collection) => (
+                    <SelectItem key={collection.title} value={collection.title}>
+                      {collection.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {file && (
             <div className="flex items-center justify-between mt-4 px-2">
               <div className="flex items-center gap-2 text-sm text-foreground">
@@ -156,7 +261,11 @@ export function ImportCollection({
                   variant="outline"
                   className="cursor-pointer"
                   size="sm"
-                  onClick={() => setFile(null)}
+                  onClick={() => {
+                    setFile(null);
+                    setCollections([]);
+                    setSelectedCollection(null);
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -164,6 +273,7 @@ export function ImportCollection({
                   size="sm"
                   onClick={handleUpload}
                   className="cursor-pointer"
+                  disabled={!selectedCollection && collections.length > 1}
                 >
                   Upload File
                 </Button>
