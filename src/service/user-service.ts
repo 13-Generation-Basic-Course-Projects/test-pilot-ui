@@ -44,11 +44,7 @@ export async function getUserProfileService(): Promise<{
 	});
 
 	if (!res.payload) {
-		return {
-			username: "NoUser",
-			email: "nouser@gmail.com",
-			profileImage: "/profile-img.png",
-		};
+		throw new Error("User profile response payload is undefined");
 	}
 
 	return {

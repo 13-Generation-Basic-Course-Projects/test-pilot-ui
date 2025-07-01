@@ -7,13 +7,9 @@ import {
   getAllCollection,
   renameCollectionService,
 } from "@/service/collection-service";
+import { createRequestByCollectionId, getRequestByCollectionId } from "@/service/request-service";
 import { CollectionItem } from "@/types";
 import { revalidateTag } from "next/cache";
-import { createRequestByCollectionIdAction } from "./request-action";
-import {
-  createRequestByCollectionId,
-  getRequestByCollectionId,
-} from "@/service/request-service";
 import { CollectionResponseType } from "@/types/collection-type";
 
 export const fetchCollectionsForProject = async (
