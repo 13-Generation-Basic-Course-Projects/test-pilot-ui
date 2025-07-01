@@ -98,8 +98,8 @@ export interface ProjectItem {
 export interface ProjectVariableItem {
 	id: string;
 	variableId: string;
-  	keyName: string;
-  	keyValue: string;
+	keyName: string;
+	keyValue: string;
 	enabled: boolean;
 }
 

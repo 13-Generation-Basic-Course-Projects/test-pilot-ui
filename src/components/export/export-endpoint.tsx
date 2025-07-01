@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Endpoint } from "@/types";
+import { toast } from "sonner";
 
 type ExportProps = {
   open: boolean;
@@ -52,6 +53,9 @@ export function ExportEndpoint({ open, onOpenChange, endpoint }: ExportProps) {
     // Clean up
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+
+    // Notify user of successful export
+    toast.success(`Endpoint "${endpoint.name}" exported as JSON successfully!`);
 
     onOpenChange(false);
   };
