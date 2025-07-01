@@ -107,7 +107,7 @@ export function LoginForm({
 						required
 						className="pr-10"
 					/>
-					<button
+					<Button
 						type="button"
 						onClick={() => setShowPassword((prev) => !prev)}
 						className="absolute right-3 top-[30px] text-muted-foreground"
@@ -115,7 +115,7 @@ export function LoginForm({
 						aria-pressed={showPassword}
 					>
 						{showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-					</button>
+					</Button>
 					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
 						<Link href="/forgot-password">Forgot your password?</Link>
 					</button>
