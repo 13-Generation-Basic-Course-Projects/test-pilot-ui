@@ -1,6 +1,12 @@
 import { Project } from "@/types";
 import { FileIcon, HistoryIcon, HomeIcon, InboxIcon } from "lucide-react";
 
+const BASE_URL = "http://localhost:3000";
+const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_AUTH_GITHUB_ID;
+const GITHUB_API = process.env.NEXT_PUBLIC_AUTH_GITHUB_API;
+
+export const GITHUB_LOGIN = `${GITHUB_API}?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${BASE_URL}/login&scope=read:user%20user:email`;
+
 export const projectsData: Project[] = [
 	{
 		id: "project-1",

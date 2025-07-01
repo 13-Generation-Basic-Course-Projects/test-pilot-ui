@@ -1,8 +1,12 @@
 import NextAuth, { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { googleLoinService, signInService } from "./service/auth-service";
 import Google from "@auth/core/providers/google";
 import GitHub from "@auth/core/providers/github";
+import {
+	githubLoginService,
+	googleLoinService,
+	signInService,
+} from "./service/auth-service";
 
 class CustomError extends CredentialsSignin {
 	constructor(code: string) {
@@ -19,35 +23,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			credentials: {
 				email: {},
 				password: {},
+				githubCode: {},
 			},
+			// The authorize function for email/password is correct.
+			// It returns an object with a `.token` property.
 			authorize: async (credentials) => {
 				try {
-					// Implement Login with jwt and session
-					const userToken: { token: string } = await signInService({
-						credentials,
-					} as {
-						credentials: { email: string; password: string };
-					});
-
-					if (!userToken) {
-						throw new CustomError("Invalid Credential");
+					const { githubCode } = credentials;
+					let userToken: { token: string } = { token: "" };
+					console.log("codeeeee");
+					if (githubCode) {
+						userToken = await githubLoginService({
+							githubCode: githubCode as string,
+						});
+						console.log("tokennenenenenen " + userToken);
+						return {
+							id: "some-id",
+							token: userToken.token,
+						};
 					}
 
+					userToken = await signInService({
+						credentials,
+					} as any);
+					if (!userToken || !userToken.token) {
+						throw new CustomError("Invalid Credential");
+					}
 					return {
-						id: "some-id",
+						id: "some-id", // Or a real ID if you have one
 						token: userToken.token,
 					};
 				} catch (error: any) {
-					if (error instanceof AuthError) {
-						throw new CustomError("invalid_schema");
-					}
-					throw new CustomError(error.message);
+					throw new CustomError(error.message || "Sign-in failed");
 				}
 			},
 		}),
 		Google({
-			clientId: process.env.GOOGLE_ID,
-			clientSecret: process.env.GOOGLE_SECRET,
+			clientId: process.env.AUTH_GOOGLE_ID,
+			clientSecret: process.env.AUTH_GOOGLE_SECRET,
 		}),
 		GitHub({
 			clientId: process.env.GITHUB_ID,
@@ -62,28 +75,73 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		signIn: "/login",
 	},
 	debug: process.env.NODE_ENV === "development",
+
 	callbacks: {
-		async signIn({ account }) {
-			if (account?.provider === "google") {
-				const accessToken = account.id_token as string;
-				await googleLoinService({ accessToken });
-			}
-			if (account?.provider === "github") {
-				const accessToken = account.access_token;
-				// Handle GitHub accessToken (send to backend, etc.)
-			}
-			return true;
-		},
-		async jwt({ token, user }) {
-			if (user) {
-				token.accessToken = (user as { id: string; token: string }).token;
+		async jwt({ token, user, account }) {
+			// `account` and `user` are only passed on the very first sign-in.
+			if (account && user) {
+				// If the user signed in with Google...
+				if (account.provider === "google") {
+					try {
+						const googleIdToken = account.id_token as string;
+
+						const backendPayload = await googleLoinService({
+							accessToken: googleIdToken,
+						});
+
+						token.accessToken = backendPayload.token;
+
+						token.name = user.name;
+						token.email = user.email;
+						token.picture = user.image;
+					} catch (error) {
+						console.error("Error during Google token exchange:", error);
+						return null;
+					}
+				}
+				if (account.provider === "github") {
+					try {
+						const githubIdToken = account.id_token as string;
+
+						const backendPayload = await googleLoinService({
+							accessToken: githubIdToken,
+						});
+
+						token.accessToken = backendPayload.token;
+
+						token.name = user.name;
+						token.email = user.email;
+						token.picture = user.image;
+					} catch (error) {
+						console.error("Error during Google token exchange:", error);
+						return null;
+					}
+				}
+
+				// If the user signed in with email/password...
+				if (account.provider === "credentials") {
+					// The `user` object comes from your `authorize` function.
+					// It already has the `.token` property.
+					token.accessToken = (user as { token: string }).token;
+				}
 			}
 
+			// On subsequent requests, return the token we have built.
 			return token;
 		},
+
 		async session({ session, token }) {
+			// The `token` object is what we built in the `jwt` callback.
+			// Now, we pass the `accessToken` to the client-side session.
 			if (token) {
-				return { ...session, accessToken: token.accessToken };
+				session.accessToken = token.accessToken as string;
+				// Also pass other user details to the client session if needed
+				if (session.user) {
+					session.user.name = token.name;
+					if (token.email) {
+						session.user.email = token.email;
+					}
+				}
 			}
 			return session;
 		},

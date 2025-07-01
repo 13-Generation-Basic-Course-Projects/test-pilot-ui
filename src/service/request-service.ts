@@ -18,8 +18,6 @@ export const getRequestByCollectionId = async ({
 			`${REQUEST_ENDPOINT}/by-collection/${collectionId}`
 		);
 
-		console.log("getRequestByCollectionId response:", response);
-
 		if (!response.success || !response.payload) {
 			console.warn(
 				`getRequestByCollectionId: No valid payload for collectionId ${collectionId}, response:`,
@@ -283,8 +281,40 @@ export const duplicateRequest = async ({
 			throw new Error("Request not found");
 		}
 
+		// Fetch all requests in the collection to check existing names
+		const collectionRequests = await getRequestByCollectionId({ collectionId });
+
+		// Extract the base name and check if it's a copy
+		const baseName = existingRequest.payload.name.replace(/\s\(Copy\)(?:\s\d+)?$/, '');
+		const isCopy = existingRequest.payload.name.includes("(Copy)");
+		let newName = baseName;
+
+		// Define the pattern to match copies (e.g., "New Request (Copy)" or "New Request (Copy) 1")
+		const namePattern = new RegExp(`^${baseName}\\s\\(Copy\\)(?:\\s(\\d+))?$`);
+		let maxNumber = 0;
+
+		// Find the highest number among existing copies
+		collectionRequests.forEach((request) => {
+			const match = request.name.match(namePattern);
+			if (match && match[1]) {
+				const num = parseInt(match[1], 10);
+				if (num > maxNumber) {
+					maxNumber = num;
+				}
+			}
+		});
+
+		// Generate new name
+		if (!isCopy && !collectionRequests.some((req) => req.name === `${baseName} (Copy)`)) {
+			// If not a copy and "Base (Copy)" doesn't exist, use "Base (Copy)"
+			newName = `${baseName} (Copy)`;
+		} else {
+			// If it's a copy or "Base (Copy)" exists, use the next number
+			newName = `${baseName} (Copy) ${maxNumber + 1}`;
+		}
+
 		const newRequest = {
-			name: `${existingRequest.payload.name} (Copy)`,
+			name: newName,
 			collectionId,
 			method: existingRequest.payload.method || "GET",
 			details: existingRequest.payload.details || {

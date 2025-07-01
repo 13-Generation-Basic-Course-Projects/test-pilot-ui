@@ -1,69 +1,107 @@
-"use server";
+"use server"
 
 import {
-  // createProjectVariable,
+  createProjectVariableService,
   deleteVariableById,
   getAllProjectVariable,
-} from "@/service/variable-service";
+  updateProjectVariable,
+  toggleAllVariablesForProject,
+} from "@/service/variable-service"
 
-// Define the correct shape for simplified variables
-type SimplifiedVariable = {
-  variableId: string;
-  variable: string;
-  value: string;
-};
+interface SimplifiedVariable {
+  variableId: string
+  variable: string
+  value: string
+  enabled: boolean
+}
 
-// Fetch project variables
-export async function getAllProjectVariableAction(
-  projectId: string
-): Promise<SimplifiedVariable[]> {
+export async function getAllProjectVariableAction(projectId: string, token?: string): Promise<SimplifiedVariable[]> {
   try {
-    const payload = await getAllProjectVariable(projectId);
-
-    if (!Array.isArray(payload)) {
-      throw new Error("Unexpected response format: payload is not an array");
-    }
-
-    const mappedVariables = payload.map((item) => ({
+    const payload = await getAllProjectVariable(projectId, token)
+    return payload.map(item => ({
       variableId: item.variableId,
       variable: item.keyName,
       value: item.keyValue,
-    }));
-
-    return mappedVariables;
+      enabled: item.enabled
+    }))
   } catch (error) {
-    throw new Error(
-      "Failed to fetch project variables: " + (error as Error).message
-    );
+    console.error("Failed to fetch variables:", error)
+    return [];
   }
 }
 
-// Delete variable action
-export async function dele(variableId: string) {
+export async function deleteVariableByIdAction(variableId: string, token?: string): Promise<void> {
   try {
-    return await deleteVariableById(variableId);
+    await deleteVariableById(variableId, token)
   } catch (error) {
-    throw new Error("Delete failed: " + (error as Error).message);
+    console.error("Failed to delete variable:", error)
+    throw new Error("Failed to delete variable")
   }
 }
 
-// //  Add variable
-// export async function createVariableAction(payload: {
-//   keyName: string;
-//   keyValue: string;
-//   enabled: boolean;
-//   projectId: string;
-// }) {
-//   try {
-//     const result = await createProjectVariable(payload);
+export async function createVariableAction(
+  data: {
+    name: string
+    value: string
+    enabled?: boolean
+    projectId: string
+  },
+  token?: string
+): Promise<SimplifiedVariable> {
+  try {
+    const result = await createProjectVariableService({
+      name: data.name,
+      value: data.value,
+      projectId: data.projectId,
+      enabled: data.enabled ?? true
+    }, token)
 
-//     if (result[0].variableId) {
-//       console.log("API response", result);
-//       return { variableId: result[0].variableId };
-//     } else {
-//       throw new Error("Failed to get variableId from response array.");
-//     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
-//   }
-// }
+    return {
+      variableId: result.variableId,
+      variable: result.keyName,
+      value: result.keyValue,
+      enabled: result.enabled
+    }
+  } catch (error) {
+    console.error("Failed to create variable:", error)
+    throw new Error("Failed to create variable")
+  }
+}
+
+export async function updateProjectVariableAction(
+  variableId: string,
+  payload: {
+    keyName: string
+    keyValue: string
+    enabled: boolean
+    projectId: string
+  },
+  token?: string
+): Promise<SimplifiedVariable> {
+  try {
+    const result = await updateProjectVariable(variableId, payload, token)
+    const resultItem = Array.isArray(result) ? result[0] : result
+    return {
+      variableId: resultItem.variableId,
+      variable: resultItem.keyName,
+      value: resultItem.keyValue,
+      enabled: resultItem.enabled
+    }
+  } catch (error) {
+    console.error("Failed to update variable:", error)
+    throw new Error("Failed to update variable")
+  }
+}
+
+export async function toggleAllProjectVariablesAction(
+  projectId: string,
+  isEnabled: boolean,
+  token?: string
+): Promise<void> {
+  try {
+    await toggleAllVariablesForProject(projectId, isEnabled, token)
+  } catch (error) {
+    console.error("Failed to toggle variables:", error)
+    throw new Error("Failed to toggle variables")
+  }
+}

@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
+	DropdownMenuItemV2,
 } from "@/components/ui/dropdown-menu";
 import {
 	AlertDialog,
@@ -23,18 +24,22 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/action/auth-action";
-import { InviteToProject } from "@/components/invite-to-projecct";
 import { getUserProfileService } from "@/service/user-service";
+import { InviteToProject } from "./invite-to-project";
 
 export const DropdownProfile = () => {
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-	const [profile, setProfile] = useState({ username: "", email: "", profileImage: "" });
+	const [profile, setProfile] = useState({
+		username: "",
+		email: "",
+		profileImage: "",
+	});
 
 	const router = useRouter();
 	const pathname = usePathname();
 
-
-	const isProjectDetailPage = pathname.startsWith("/project/") && pathname.split("/").length === 3;
+	const isProjectDetailPage =
+		pathname.startsWith("/project/") && pathname.split("/").length === 3;
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -64,22 +69,21 @@ export const DropdownProfile = () => {
 					/>
 				</DropdownMenuTrigger>
 
-
 				<DropdownMenuContent className="w-48" align="end">
 					<DropdownMenuGroup>
-						<DropdownMenuItem onClick={() => router.push("/profile")}>
+						<DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
 							<Settings className="mr-2 h-4 w-4" />
 							Profile Setting
 						</DropdownMenuItem>
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem
+					<DropdownMenuItemV2
 						className="text-red-600 cursor-pointer"
 						onClick={() => setShowLogoutDialog(true)}
 					>
 						<LogOut className="text-red-600 mr-2 h-4 w-4" />
 						Log out
-					</DropdownMenuItem>
+					</DropdownMenuItemV2>
 				</DropdownMenuContent>
 			</DropdownMenu>
 

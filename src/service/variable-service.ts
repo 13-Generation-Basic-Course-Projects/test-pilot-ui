@@ -1,108 +1,234 @@
-import { fetchAPI } from "@/lib/api";
-import { VARIABLE_ENDPOINT } from "@/lib/static";
-export type CreateVariablePayload = {
-  keyName: string;
-  keyValue: string;
-  enabled: boolean;
-  projectId: string;
-};
+import { fetchAPI } from "@/lib/api"
+import { VARIABLE_ENDPOINT } from "@/lib/static"
 
-export type VariableItem = {
-  variableId: string;
-  keyName: string;
-  keyValue: string;
-  enabled: boolean;
-  project: {
-    projectId: string;
-    projectName: string;
-    projectDescription: string;
-    projectOwner: {
-      userId: string;
-      name: string;
-      email: string;
-      password: string;
-      isVerified: boolean;
-      profileImage: string | null;
-      username: string;
-      authorities: string[] | null;
-      enabled: boolean;
-      accountNonExpired: boolean;
-      accountNonLocked: boolean;
-      credentialsNonExpired: boolean;
-    };
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string | null;
-  };
-};
-
-export type VariableResponseTypes = {
-  success: boolean;
-  message: string;
-  status: string;
-  timestamps?: string;
-  payload: VariableItem[];
-};
-
-// API Functions
-// Get all variables for a project
-export const getAllProjectVariable = async (
+interface ProjectReference {
   projectId: string
-): Promise<VariableItem[]> => {
-  try {
-    const response = await fetchAPI<VariableResponseTypes>(
-      `${VARIABLE_ENDPOINT}/project/${projectId}`
-    );
-    if (response.success && Array.isArray(response.payload)) {
-      return response.payload;
-    } else {
-      throw new Error(response.message || "Unknown API error occurred");
-    }
-  } catch (error) {
-    throw new Error("Fetch failed: " + (error as Error).message);
-  }
-};
+}
 
-//  Delete a variable by ID
-export const deleteVariableById = async (variableId: string) => {
+interface VariableItem {
+  variableId: string
+  keyName: string
+  keyValue: string
+  enabled: boolean
+  project?: ProjectReference
+}
+
+interface BaseResponse {
+  success: boolean
+  message: string
+  status: string
+}
+
+interface SingleVariableResponse extends BaseResponse {
+  [x: string]: any
+  payload: VariableItem
+}
+
+interface MultiVariableResponse extends BaseResponse {
+  payload: VariableItem[]
+}
+
+interface EmptyResponse extends BaseResponse {
+  payload: null
+}
+
+export const getAllProjectVariable = async (
+  projectId: string, 
+  token?: string
+): Promise<VariableItem[]> => {
+  const headers: Record<string, string> = {}
+  if (token) headers.Authorization = `Bearer ${token}`
+
   try {
-    const response = await fetchAPI<VariableResponseTypes>(
+    const response = await fetchAPI<MultiVariableResponse>(
+      `${VARIABLE_ENDPOINT}/project/${projectId}`,
+      { headers }
+    )
+
+    if (!response.success) {
+      throw new Error(response.message || "Failed to fetch variables")
+    }
+
+    if (!Array.isArray(response.payload)) {
+      throw new Error("Invalid response format: expected array of variables")
+    }
+
+    return response.payload.map(item => ({
+      variableId: item.variableId,
+      keyName: item.keyName,
+      keyValue: item.keyValue,
+      enabled: item.enabled,
+      project: item.project
+    }))
+  } catch (error) {
+    console.error("Error in getAllProjectVariable:", error)
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : "Failed to fetch project variables"
+    )
+  }
+}
+
+export const deleteVariableById = async (
+  variableId: string, 
+  token?: string
+): Promise<void> => {
+  const headers: Record<string, string> = {}
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  try {
+    const response = await fetchAPI<EmptyResponse>(
       `${VARIABLE_ENDPOINT}/${variableId}`,
       {
         method: "DELETE",
+        headers
       }
-    );
+    )
+
     if (!response.success) {
-      throw new Error(response.message || "Failed to delete variable");
+      throw new Error(response.message || "Failed to delete variable")
     }
-    return response;
   } catch (error) {
-    throw new Error("Delete failed: " + (error as Error).message);
+    console.error("Error in deleteVariableById:", error)
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : "Failed to delete variable"
+    )
   }
-};
+}
 
-// //  Create a new variable (returns array of created variable(s))
-// export const createProjectVariable = async (
-//   payload: CreateVariablePayload
-// ): Promise<VariableItem[]> => {
-//   try {
-//     const response = await fetchAPI<VariableResponseTypes>(
-//       `${VARIABLE_ENDPOINT}/create`, // Make sure this is the correct endpoint
-//       {
-//         method: "POST",
-//         body: JSON.stringify(payload),
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
+export const createProjectVariableService = async (
+  data: {
+    name: string
+    value: string
+    projectId: string
+    enabled?: boolean
+  },
+  token?: string
+): Promise<VariableItem> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json"
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
 
-//     if (response.success && Array.isArray(response.payload)) {
-//       return response.payload;
-//     } else {
-//       throw new Error(response.message || "Variable creation failed.");
-//     }
-//   } catch (error) {
-//     throw new Error("Create failed: " + (error as Error).message);
-//   }
-// };
+  try {
+    const response = await fetchAPI<SingleVariableResponse>(
+      VARIABLE_ENDPOINT,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          keyName: data.name,
+          keyValue: data.value,
+          enabled: data.enabled ?? true,
+          projectId: data.projectId
+        }),
+        headers
+      }
+    )
+
+    if (!response.success) {
+      throw new Error(response.message || "Failed to create variable")
+    }
+
+    if (!response.payload?.variableId) {
+      throw new Error("Invalid variable data received from server")
+    }
+
+    return {
+      variableId: response.payload.variableId,
+      keyName: response.payload.keyName,
+      keyValue: response.payload.keyValue,
+      enabled: response.payload.enabled,
+      project: response.payload.project
+    }
+  } catch (error) {
+    console.error("Error in createProjectVariableService:", error)
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : "Failed to create variable"
+    )
+  }
+}
+
+export const updateProjectVariable = async (
+  variableId: string,
+  data: {
+    keyName: string
+    keyValue: string
+    enabled: boolean
+    projectId: string
+  },
+  token?: string
+): Promise<VariableItem> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json"
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  try {
+    const response = await fetchAPI<SingleVariableResponse>(
+      `${VARIABLE_ENDPOINT}/${variableId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers
+      }
+    )
+
+    if (!response.success) {
+      throw new Error(response.message || "Failed to update variable")
+    }
+
+    if (!response.payload?.variableId) {
+      throw new Error("Invalid variable data received from server")
+    }
+
+    return {
+      variableId: response.payload.variableId,
+      keyName: response.payload.keyName,
+      keyValue: response.payload.keyValue,
+      enabled: response.payload.enabled,
+      project: response.payload.project
+    }
+  } catch (error) {
+    console.error("Error in updateProjectVariable:", error)
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : "Failed to update variable"
+    )
+  }
+}
+
+export const toggleAllVariablesForProject = async (
+  projectId: string,
+  isEnabled: boolean,
+  token?: string
+): Promise<void> => {
+  const headers: Record<string, string> = {}
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  try {
+    const response = await fetchAPI<EmptyResponse>(
+      `${VARIABLE_ENDPOINT}/project/${projectId}/enable?isEnabled=${isEnabled}`,
+      {
+        method: "PATCH",
+        headers
+      }
+    )
+
+    if (!response.success) {
+      throw new Error(response.message || "Failed to toggle variables")
+    }
+  } catch (error) {
+    console.error("Error in toggleAllVariablesForProject:", error)
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : "Failed to toggle variables"
+    )
+  }
+}

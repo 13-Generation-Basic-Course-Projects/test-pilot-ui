@@ -1,5 +1,6 @@
 const nextConfig = {
 	images: {
+		domains: ["avatars.githubusercontent.com"],
 		remotePatterns: [
 			{
 				protocol: "https",
@@ -26,6 +27,10 @@ const nextConfig = {
 				protocol: "https", // <-- ALSO ADD https in case it's used later
 				hostname: "testpilot.yamu.me",
 				pathname: "/api/v1/users/preview-file/**",
+			},
+			{
+				protocol: "https",
+				hostname: "lh3.googleusercontent.com",
 			},
 		],
 	},

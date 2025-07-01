@@ -8,23 +8,33 @@ import GithubIcon from "@/components/icons/github";
 import GoogleIcon from "@/components/icons/google";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { signInAction } from "@/action/auth-action";
+import { signInAction, signInGithub } from "@/action/auth-action";
 import { signIn } from "next-auth/react";
+import { GITHUB_LOGIN } from "@/lib/constants";
+import { githubLoginService } from "@/service/auth-service";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentPropsWithoutRef<"form">) {
 	const searchParams = useSearchParams();
-
+	const router = useRouter();
 	useEffect(() => {
 		const error = searchParams.get("error");
+		const code = searchParams.get("code");
 		if (error) {
 			toast.error("Invalid credentials", {
 				id: "login-credentials-id",
 			});
+		}
+
+		if (code) {
+			toast.success("Successfully login with github");
+			(async () => {
+				await signInGithub(code);
+			})();
 		}
 	}, [searchParams]);
 	const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +55,7 @@ export function LoginForm({
 			{/* Social Buttons */}
 			<div className="flex justify-between items-center gap-8">
 				<Button
+					onClick={() => router.push(GITHUB_LOGIN)}
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
 				>
@@ -78,7 +89,7 @@ export function LoginForm({
 						id="email"
 						type="email"
 						name="email"
-						placeholder="channarith@gmail.com"
+						placeholder="example@gmail.com"
 						required
 						className="text-[#94A3B8]"
 					/>
@@ -100,20 +111,24 @@ export function LoginForm({
 						type="button"
 						onClick={() => setShowPassword((prev) => !prev)}
 						className="absolute right-3 top-[30px] text-muted-foreground"
+						aria-label={showPassword ? "Hide password" : "Show password"}
+						aria-pressed={showPassword}
 					>
-						{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+						{showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
 					</button>
 					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
-						<Link href={"/forgot-password"}>Forgot your password ?</Link>
+						<Link href="/forgot-password">Forgot your password?</Link>
 					</button>
 				</div>
+
 				<Button type="submit" className="w-full cursor-pointer">
 					Login
 				</Button>
 			</div>
+
 			{/* Sign up */}
 			<div className="text-center text-sm text-[#737373]">
-				Don&apos;t have an account?{" "}
+				Don't have an account?{" "}
 				<Link href="/register" className="text-[#0973DC]">
 					Sign up
 				</Link>
