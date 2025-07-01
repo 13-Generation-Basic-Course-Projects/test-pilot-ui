@@ -34,7 +34,7 @@ ENV AUTH_SECRET=$AUTH_SECRET
 
 ENV HUSKY=0
 
-RUN npm run build
+RUN npm run build --ignore-scripts
 
 # Production image
 FROM base AS runner
