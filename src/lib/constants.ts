@@ -1,7 +1,7 @@
 import { Project } from "@/types";
 import { FileIcon, HistoryIcon, HomeIcon, InboxIcon } from "lucide-react";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_AUTH_GITHUB_ID;
 const GITHUB_API = process.env.NEXT_PUBLIC_AUTH_GITHUB_API;
 
