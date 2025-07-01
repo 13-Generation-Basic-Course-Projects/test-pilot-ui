@@ -1,14 +1,7 @@
-"use client";
-import { useEffect, useState } from "react";
-import {
-  TableBody,
-  TableCell,
-  TableHeadV2,
-  TableHeader,
-  TableRow,
-  TableRowV2,
-  TableV2,
-} from "@/components/ui/table";
+"use client"
+
+import { useEffect, useState } from "react"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,269 +12,383 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Trash2 } from "lucide-react"
+import { CustomCheckbox } from "./custom-checkbox"
 import {
   getAllProjectVariableAction,
-  dele,
+  deleteVariableByIdAction,
   createVariableAction,
   updateProjectVariableAction,
-} from "@/action/project-variable-action";
+  toggleAllProjectVariablesAction,
+} from "@/action/project-variable-action"
 
 interface ProjectVariableProps {
-  projectId: string;
+  projectId: string
+  token: string
 }
 
 interface VariableRow {
-  variableId?: string;
-  variable: string;
-  value: string;
+  variableId?: string
+  variable: string
+  value: string
+  enabled: boolean
 }
 
-export default function ProjectVariable({ projectId }: ProjectVariableProps) {
-  const [rows, setRows] = useState<VariableRow[]>([]);
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [originalRow, setOriginalRow] = useState<VariableRow | null>(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+export default function ProjectVariable({ projectId, token }: ProjectVariableProps) {
+  const [rows, setRows] = useState<VariableRow[]>([])
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
+  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [originalRow, setOriginalRow] = useState<VariableRow | null>(null)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    loadVariables();
-  }, [projectId]);
+    loadVariables()
+  }, [projectId])
 
-const loadVariables = async () => {
-  try {
-    const variables = await getAllProjectVariableAction(projectId);
-    setRows(variables);
-    setError(null); 
-  } catch {
-
+  const loadVariables = async () => {
+    try {
+      const variables = await getAllProjectVariableAction(projectId, token)
+      setRows(variables)
+      setError(null)
+    } catch (err) {
+      setError("Failed to load variables. Please try again.")
+    }
   }
-};
-
 
   const handleAddRow = () => {
-    setRows([...rows, { variable: "", value: "" }]);
+    setRows([...rows, { variable: "", value: "", enabled: true }])
+  }
 
-  };
+  const handleChange = (index: number, field: keyof VariableRow, value: string | boolean) => {
+    const updatedRows = [...rows]
+    updatedRows[index][field] = value as never
+    setRows(updatedRows)
+  }
 
-  const handleChange = (
-    index: number,
-    field: "variable" | "value",
-    newValue: string
-  ) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = newValue;
-    setRows(updatedRows);
-  };
+  const handleToggleEnabled = async (index: number) => {
+    const row = rows[index]
+    const newEnabled = !row.enabled
 
-  const handleSaveRow = async (index: number) => {
-    const row = rows[index];
-    
-    if (!row.variable || !row.value) {
-      return;
+    if (!row.variableId) {
+      handleChange(index, "enabled", newEnabled)
+      return
     }
 
-    setIsSaving(true);
+    setIsSaving(true)
     try {
-      if (row.variableId) {
-        await updateProjectVariableAction(row.variableId, {
+      await updateProjectVariableAction(
+        row.variableId,
+        {
           keyName: row.variable,
           keyValue: row.value,
-          enabled: true,
-          projectId,
-        });
-      } else {
-
-        const result = await createVariableAction({
-          name: row.variable,
-          value: row.value,
-          enabled: true,
-          projectId,
-        });
-        // Update row with returned variableId from API
-        const updatedRows = [...rows];
-        updatedRows[index] = {
-          ...row,
-          variableId: result.variableId,
-        };
-        setRows(updatedRows);
-      }
-      setError(null);
-      setEditIndex(null);
-      setOriginalRow(null);
+          enabled: newEnabled,
+          projectId
+        },
+        token
+      )
+      handleChange(index, "enabled", newEnabled)
     } catch (err) {
-      console.error("Operation failed", err);
-      setError(`Failed to ${row.variableId ? "update" : "create"} variable.`);
+      setError("Failed to update variable status")
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
+
+  const handleSaveRow = async (index: number) => {
+    const row = rows[index]
+    
+    // Validate inputs
+    if (!row.variable?.trim()) {
+      setError("Variable name is required")
+      return false
+    }
+    if (!row.value?.trim()) {
+      setError("Variable value is required")
+      return false
+    }
+
+    setIsSaving(true)
+    try {
+      if (row.variableId) {
+        const updatedVariable = await updateProjectVariableAction(
+          row.variableId,
+          {
+            keyName: row.variable,
+            keyValue: row.value,
+            enabled: row.enabled,
+            projectId
+          },
+          token
+        )
+        
+        // Update the row with the returned data
+        const updatedRows = [...rows]
+        updatedRows[index] = {
+          variableId: updatedVariable.variableId,
+          variable: updatedVariable.variable,
+          value: updatedVariable.value,
+          enabled: updatedVariable.enabled
+        }
+        setRows(updatedRows)
+      } else {
+        const result = await createVariableAction(
+          {
+            name: row.variable,
+            value: row.value,
+            enabled: row.enabled,
+            projectId
+          },
+          token
+        )
+        
+        const updatedRows = [...rows]
+        updatedRows[index] = {
+          variableId: result.variableId,
+          variable: result.variable,
+          value: result.value,
+          enabled: result.enabled
+        }
+        setRows(updatedRows)
+      }
+      setError(null)
+      return true
+    } catch (err) {
+      console.error("Save operation failed:", err)
+      setError(`Failed to ${row.variableId ? "update" : "create"} variable: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      return false
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleDeleteRow = async () => {
-    if (deleteIndex === null) return;
-    
-    const targetRow = rows[deleteIndex];
-    if (!targetRow.variableId) {
-      // If it's a new row that wasn't saved yet, just remove it
-      setRows(rows.filter((_, i) => i !== deleteIndex));
-      setDeleteIndex(null);
-      return;
-    }
+    if (deleteIndex === null) return
+    const row = rows[deleteIndex]
 
+    setIsSaving(true)
     try {
-      await dele(targetRow.variableId);
-      setRows(rows.filter((_, i) => i !== deleteIndex));
-      setDeleteIndex(null);
+      if (row.variableId) {
+        await deleteVariableByIdAction(row.variableId, token)
+      }
+      setRows(rows.filter((_, i) => i !== deleteIndex))
+      setDeleteIndex(null)
     } catch (err) {
-      setError("Failed to delete variable. Please try again.");
+      setError("Failed to delete variable")
+    } finally {
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleCellFocus = (index: number) => {
-    setOriginalRow({ ...rows[index] });
-    setEditIndex(index);
-  };
+    setOriginalRow({ ...rows[index] })
+    setEditIndex(index)
+  }
 
-  const handleCellBlur = (index: number) => {
-    const row = rows[index];
+  const handleCellBlur = async (index: number) => {
+    const row = rows[index]
     
-    // For new rows (no variableId), save automatically
-    if (!row.variableId) {
-      handleSaveRow(index);
-      return;
+    // Don't save if the row is empty (newly added)
+    if (!row.variableId && !row.variable.trim() && !row.value.trim()) {
+      return
+    }
+
+    // For new rows with content, try to save immediately
+    if (!row.variableId && (row.variable.trim() || row.value.trim())) {
+      if (!row.variable.trim()) {
+        setError("Variable name is required")
+        return
+      }
+      if (!row.value.trim()) {
+        setError("Variable value is required")
+        return
+      }
+      await handleSaveRow(index)
+      return
     }
 
     // For existing rows, check if changes were made
-    if (originalRow && 
-        (row.variable !== originalRow.variable || 
-         row.value !== originalRow.value)) {
-      setShowEditDialog(true);
+    if (originalRow && (row.variable !== originalRow.variable || row.value !== originalRow.value)) {
+      setShowEditDialog(true)
     } else {
-      setEditIndex(null);
-      setOriginalRow(null);
+      setEditIndex(null)
+      setOriginalRow(null)
     }
-  };
+  }
 
   const handleSaveChanges = async () => {
-    if (editIndex === null) return;
-    await handleSaveRow(editIndex);
-    setShowEditDialog(false);
-  };
+    if (editIndex === null) {
+      setShowEditDialog(false)
+      return
+    }
+
+    try {
+      const success = await handleSaveRow(editIndex)
+      if (success) {
+        setEditIndex(null)
+        setOriginalRow(null)
+      }
+    } finally {
+      setShowEditDialog(false)
+    }
+  }
 
   const handleCancelChanges = () => {
-    if (editIndex === null || !originalRow) return;
-    
-    const updatedRows = [...rows];
-    updatedRows[editIndex] = { ...originalRow };
-    setRows(updatedRows);
-    setEditIndex(null);
-    setOriginalRow(null);
-    setShowEditDialog(false);
-  };
+    if (editIndex === null || !originalRow) {
+      setShowEditDialog(false)
+      return
+    }
+
+    const updatedRows = [...rows]
+    updatedRows[editIndex] = { ...originalRow }
+    setRows(updatedRows)
+    setEditIndex(null)
+    setOriginalRow(null)
+    setShowEditDialog(false)
+    setError(null)
+  }
+
+  const handleToggleAll = async (enabled: boolean) => {
+    setIsSaving(true)
+    try {
+      await toggleAllProjectVariablesAction(projectId, enabled, token)
+      setRows(rows.map(row => ({ ...row, enabled })))
+    } catch (err) {
+      setError("Failed to toggle all variables")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-5">
-      {error && <p className="text-red-500">{error}</p>}
-      {isSaving && <p className="text-blue-500">Saving...</p>}
-      <TableV2>
-        <TableHeader>
-          <TableRowV2>
-            <TableHeadV2 className="border-r text-md">Variable</TableHeadV2>
-            <TableHeadV2 className="border-r text-md">Value</TableHeadV2>
-            <TableHeadV2 className="text-md">Action</TableHeadV2>
-          </TableRowV2>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row, index) => (
-            <TableRow key={row.variableId || `new-${index}`}>
-              <TableCell className="border-r">
-                <input
-                  type="text"
-                  value={row.variable}
-                  onFocus={() => handleCellFocus(index)}
-                  onBlur={() => handleCellBlur(index)}
-                  onChange={(e) => handleChange(index, "variable", e.target.value)}
-                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
-                  placeholder="Enter variable"
-                />
-              </TableCell>
-              <TableCell className="border-r">
-                <input
-                  type="text"
-                  value={row.value}
-                  onFocus={() => handleCellFocus(index)}
-                  onBlur={() => handleCellBlur(index)}
-                  onChange={(e) => handleChange(index, "value", e.target.value)}
-                  className="w-full px-2 py-1 text-md border border-transparent focus:outline-none focus:border-gray-300"
-                  placeholder="Enter value"
-                />
-              </TableCell>
-              <TableCell>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button
-                      onClick={() => setDeleteIndex(index)}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <Trash2 className="text-[#E2001A]" width={20} />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Delete "{rows[deleteIndex || 0]?.variable}"?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. It will permanently delete
-                        this variable.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteRow}>
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
-            </TableRow>
-          ))}
-          <TableRow
-            onClick={handleAddRow}
-            className="cursor-pointer hover:bg-muted"
-          >
-            <TableCell colSpan={3} className="text-sm text-gray-500 py-3">
-              + Add Variable
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </TableV2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Project Variables</h2>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => handleToggleAll(true)} disabled={isSaving}>
+            Enable All
+          </Button>
+          <Button variant="outline" onClick={() => handleToggleAll(false)} disabled={isSaving}>
+            Disable All
+          </Button>
+          <Button onClick={handleAddRow} disabled={isSaving}>
+            Add Variable
+          </Button>
+        </div>
+      </div>
 
-      {/* Edit Confirmation Dialog */}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {isSaving && <p className="text-blue-500 text-sm">Saving...</p>}
+
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16 text-center">Enabled</TableHead>
+              <TableHead className="border-r">Variable</TableHead>
+              <TableHead className="border-r">Value</TableHead>
+              <TableHead className="w-20 text-center">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row, index) => (
+              <TableRow key={row.variableId || `new-${index}`}>
+                <TableCell className="text-center">
+                  <div className="flex justify-center">
+                    <CustomCheckbox
+                      checked={row.enabled}
+                      onCheckedChange={() => handleToggleEnabled(index)}
+                      disabled={isSaving}
+                    />
+                  </div>
+                </TableCell>
+                <TableCell className="border-r">
+                  <input
+                    type="text"
+                    value={row.variable}
+                    onFocus={() => handleCellFocus(index)}
+                    onBlur={() => handleCellBlur(index)}
+                    onChange={(e) => handleChange(index, "variable", e.target.value)}
+                    className={`w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 rounded ${
+                      !row.enabled ? "text-gray-400 bg-gray-50" : ""
+                    }`}
+                    placeholder="Variable name"
+                    disabled={isSaving}
+                  />
+                </TableCell>
+                <TableCell className="border-r">
+                  <input
+                    type="text"
+                    value={row.value}
+                    onFocus={() => handleCellFocus(index)}
+                    onBlur={() => handleCellBlur(index)}
+                    onChange={(e) => handleChange(index, "value", e.target.value)}
+                    className={`w-full px-2 py-1 text-sm border border-transparent focus:outline-none focus:border-gray-300 rounded ${
+                      !row.enabled ? "text-gray-400 bg-gray-50" : ""
+                    }`}
+                    placeholder="Variable value"
+                    disabled={isSaving}
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteIndex(index)}
+                        className="p-1 hover:bg-red-50"
+                        disabled={isSaving}
+                      >
+                        <Trash2 className="text-red-500 w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete variable?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the "{row.variable}" variable.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeleteRow}
+                          className="bg-red-500 hover:bg-red-600"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
       <AlertDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Save changes to this variable?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Save changes?</AlertDialogTitle>
             <AlertDialogDescription>
               You've made changes to this variable. Would you like to save them?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelChanges}>
-              Cancel
+              Discard
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleSaveChanges}>
-              Save change
+              Save
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }
