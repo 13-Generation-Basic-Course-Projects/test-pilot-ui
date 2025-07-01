@@ -263,7 +263,6 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }
     try {
       const res: any = await createCollectionAction(title, projectId);
-      // Optional: handle backend error
       if (res?.errors?.name) {
         toast.error(res.errors.name);
         return;
