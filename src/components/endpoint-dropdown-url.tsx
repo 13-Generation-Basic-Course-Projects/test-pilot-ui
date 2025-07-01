@@ -296,11 +296,11 @@ export function EndpointDropdownUrl({
     getAllProjectVariableAction(projectId)
       .then((vars) => {
         setVariables(vars);
-        console.log("Fetched variables:", vars); // Debug
+        console.log("Fetched variables:", vars); 
         if (!vars.some((v) => v.variable === "test-Pilots")) {
-          toast.warning(
-            "Variable 'test-Pilots' not found in project variables."
-          );
+          // toast.warning(
+          //   "Variable 'test-Pilots' not found in project variables."
+          // );
         }
       })
       .catch((error) => {

@@ -25,7 +25,7 @@ export async function getAllProjectVariableAction(projectId: string, token?: str
       enabled: item.enabled
     }))
   } catch (error) {
-    console.error("Failed to fetch variables:", error)
+    // console.error("Failed to fetch variables:", error)
     return [];
   }
 }
@@ -63,7 +63,7 @@ export async function createVariableAction(
       enabled: result.enabled
     }
   } catch (error) {
-    console.error("Failed to create variable:", error)
+    // console.error("Failed to create variable:", error)
     throw new Error("Failed to create variable")
   }
 }
@@ -88,7 +88,7 @@ export async function updateProjectVariableAction(
       enabled: resultItem.enabled
     }
   } catch (error) {
-    console.error("Failed to update variable:", error)
+    // console.error("Failed to update variable:", error)
     throw new Error("Failed to update variable")
   }
 }
@@ -101,7 +101,7 @@ export async function toggleAllProjectVariablesAction(
   try {
     await toggleAllVariablesForProject(projectId, isEnabled, token)
   } catch (error) {
-    console.error("Failed to toggle variables:", error)
+    // console.error("Failed to toggle variables:", error)
     throw new Error("Failed to toggle variables")
   }
 }

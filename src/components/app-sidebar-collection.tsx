@@ -340,7 +340,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       });
       toast.success("Collection created successfully");
     } catch (error: any) {
-      console.error("Failed to create collection:", error);
+      // console.error("Failed to create collection:", error);
       toast.error(
         error?.message || "Something went wrong while creating collection."
       );
