@@ -1,108 +1,107 @@
-"use server";
+"use server"
+
 import {
   createProjectVariableService,
   deleteVariableById,
   getAllProjectVariable,
   updateProjectVariable,
-} from "@/service/variable-service";
+  toggleAllVariablesForProject,
+} from "@/service/variable-service"
 
-// Define the correct shape for simplified variables
-type SimplifiedVariable = {
-	variableId: string;
-	variable: string;
-	value: string;
-};
-
-// Fetch project variables
-export async function getAllProjectVariableAction(
-	projectId: string
-): Promise<SimplifiedVariable[]> {
-	try {
-		const payload = await getAllProjectVariable(projectId);
-		if (!Array.isArray(payload)) {
-			throw new Error("Unexpected response format: payload is not an array");
-		}
-		const mappedVariables = payload.map((item) => ({
-			variableId: item.variableId,
-			variable: item.keyName,
-			value: item.keyValue,
-		}));
-		return mappedVariables;
-	} catch (error) {
-		throw new Error(
-			"Failed to fetch project variables: " + (error as Error).message
-		);
-	}
-}
-// Delete variable action
-export async function dele(variableId: string) {
-	try {
-		return await deleteVariableById(variableId);
-	} catch (error) {
-		throw new Error("Delete failed: " + (error as Error).message);
-	}
+interface SimplifiedVariable {
+  variableId: string
+  variable: string
+  value: string
+  enabled: boolean
 }
 
-// Create new project variable with auto save
-export async function createVariableAction(data: {
-  name?: string;
-  value?: string;
-  enabled?: boolean;
-  projectId?: string;
-}) {
-  console.log("createVariableAction called with data:", data);
-
+export async function getAllProjectVariableAction(projectId: string, token?: string): Promise<SimplifiedVariable[]> {
   try {
-    if (!data.name || !data.value || !data.projectId) {
-      throw new Error("Missing required fields");
-    }
-
-    const result = await createProjectVariableService(data); // ✅ correct call
-
-    return result;
-  } catch (err) {
-    console.error("Error in createVariableAction:", err);
-    throw new Error("Unable to create variable: " + (err as Error).message);
+    const payload = await getAllProjectVariable(projectId, token)
+    return payload.map(item => ({
+      variableId: item.variableId,
+      variable: item.keyName,
+      value: item.keyValue,
+      enabled: item.enabled
+    }))
+  } catch (error) {
+    console.error("Failed to fetch variables:", error)
+    throw new Error("Failed to load variables")
   }
 }
 
-// update project variable
+export async function deleteVariableByIdAction(variableId: string, token?: string): Promise<void> {
+  try {
+    await deleteVariableById(variableId, token)
+  } catch (error) {
+    console.error("Failed to delete variable:", error)
+    throw new Error("Failed to delete variable")
+  }
+}
+
+export async function createVariableAction(
+  data: {
+    name: string
+    value: string
+    enabled?: boolean
+    projectId: string
+  },
+  token?: string
+): Promise<SimplifiedVariable> {
+  try {
+    const result = await createProjectVariableService({
+      name: data.name,
+      value: data.value,
+      projectId: data.projectId,
+      enabled: data.enabled ?? true
+    }, token)
+
+    return {
+      variableId: result.variableId,
+      variable: result.keyName,
+      value: result.keyValue,
+      enabled: result.enabled
+    }
+  } catch (error) {
+    console.error("Failed to create variable:", error)
+    throw new Error("Failed to create variable")
+  }
+}
+
 export async function updateProjectVariableAction(
   variableId: string,
   payload: {
-    keyName: string;
-    keyValue: string;
-    enabled: boolean;
-    projectId: string; 
-  }
+    keyName: string
+    keyValue: string
+    enabled: boolean
+    projectId: string
+  },
+  token?: string
 ): Promise<SimplifiedVariable> {
   try {
-    if (!variableId) {
-      throw new Error("variableId is required");
-    }
-
-    if (!payload.keyName || !payload.keyValue || !payload.projectId) {
-      throw new Error("keyName, keyValue, and projectId are required");
-    }
-
-    const result = await updateProjectVariable(variableId, payload);
-
-    if (!result[0]) {
-      console.warn("Update returned empty payload:", result);
-      return {
-        variableId,
-        variable: payload.keyName,
-        value: payload.keyValue,
-      }; // fallback to sent values
-    }
-
+    const result = await updateProjectVariable(variableId, payload, token)
+    const resultItem = Array.isArray(result) ? result[0] : result
     return {
-      variableId: result[0].variableId,
-      variable: result[0].keyName,
-      value: result[0].keyValue,
-    };
+      variableId: resultItem.variableId,
+      variable: resultItem.keyName,
+      value: resultItem.keyValue,
+      enabled: resultItem.enabled
+    }
   } catch (error) {
-    console.error("Update action error:", error);
-    throw new Error("Failed to update variable."); // Clean message for user
+    console.error("Failed to update variable:", error)
+    throw new Error("Failed to update variable")
+  }
+}
+
+export async function toggleAllProjectVariablesAction(
+  projectId: string,
+  isEnabled: boolean,
+  token?: string
+): Promise<void> {
+  try {
+    await toggleAllVariablesForProject(projectId, isEnabled, token)
+  } catch (error) {
+    console.error("Failed to toggle variables:", error)
+    throw new Error("Failed to toggle variables")
   }
 }
