@@ -11,6 +11,7 @@ env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DEPLOY_PATH_ON_SERVER: /home/${{ secrets.SSH_USER }}/testpilot/frontend
   MAIN_COMPOSE_FILE: docker-compose.frontend.yml
+  ENV_COMPOSE_FILE: .env.frontend
 
 jobs:
   build-push-deploy:
@@ -65,13 +66,22 @@ jobs:
             cd ${{ env.DEPLOY_PATH_ON_SERVER }}
             echo "Deploying frontend container..."
 
+            echo "Checking for .env or .env.frontend..."
+            if [ ! -f .env ] && [ ! -f .env.frontend ]; then
+              echo "❌ ERROR: .env or .env.frontend file not found!"
+              exit 1
+            fi
+
+            echo "Validating docker-compose configuration..."
+            docker compose -f "${{ env.MAIN_COMPOSE_FILE }}" config
+
             echo "Logging into Docker Hub from server"
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ env.DOCKERHUB_USERNAME }}" --password-stdin
 
             echo "Pulling latest frontend image"
-            docker compose -f "${{ env.MAIN_COMPOSE_FILE }}" pull frontend
+            docker compose --env-file ${{env.ENV_COMPOSE_FILE}} -f "${{ env.MAIN_COMPOSE_FILE }}" pull frontend
 
             echo "Restarting frontend service"
-            docker compose -f "${{ env.MAIN_COMPOSE_FILE }}" up -d --force-recreate --remove-orphans frontend
+            docker compose --env-file ${{env.ENV_COMPOSE_FILE}} -f "${{ env.MAIN_COMPOSE_FILE }}" up -d --force-recreate --remove-orphans frontend
 
             echo "Frontend deployment complete."
