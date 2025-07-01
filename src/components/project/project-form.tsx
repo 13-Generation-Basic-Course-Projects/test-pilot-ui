@@ -141,9 +141,17 @@ const ProjectForm = ({
 							Cancel
 						</Button>
 					)}
-					<Button type="submit" className="cursor-pointer">
-						Submit
+					<Button
+						type="submit"
+						className="cursor-pointer flex items-center gap-2"
+						disabled={form.formState.isSubmitting}
+					>
+						{form.formState.isSubmitting && (
+							<span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+						)}
+						{form.formState.isSubmitting ? "Submitting..." : "Submit"}
 					</Button>
+
 				</div>
 			</form>
 		</Form>
