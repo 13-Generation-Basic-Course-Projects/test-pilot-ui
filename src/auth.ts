@@ -2,7 +2,11 @@ import NextAuth, { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "@auth/core/providers/google";
 import GitHub from "@auth/core/providers/github";
-import { googleLoinService, signInService } from "./service/auth-service";
+import {
+	githubLoginService,
+	googleLoinService,
+	signInService,
+} from "./service/auth-service";
 
 class CustomError extends CredentialsSignin {
 	constructor(code: string) {
@@ -19,12 +23,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			credentials: {
 				email: {},
 				password: {},
+				githubCode: {},
 			},
 			// The authorize function for email/password is correct.
 			// It returns an object with a `.token` property.
 			authorize: async (credentials) => {
 				try {
-					const userToken: { token: string } = await signInService({
+					const { githubCode } = credentials;
+					let userToken: { token: string } = { token: "" };
+					console.log("codeeeee");
+					if (githubCode) {
+						userToken = await githubLoginService({
+							githubCode: githubCode as string,
+						});
+						console.log("tokennenenenenen " + userToken);
+						return {
+							id: "some-id",
+							token: userToken.token,
+						};
+					}
+
+					userToken = await signInService({
 						credentials,
 					} as any);
 					if (!userToken || !userToken.token) {
@@ -57,38 +76,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	},
 	debug: process.env.NODE_ENV === "development",
 
-	// ===================================================================
-	// THE FINAL CORRECTED CALLBACKS
-	// ===================================================================
 	callbacks: {
-		// We no longer need the signIn callback for this logic.
-		// async signIn({ account, user }) { ... }
-
 		async jwt({ token, user, account }) {
 			// `account` and `user` are only passed on the very first sign-in.
 			if (account && user) {
 				// If the user signed in with Google...
 				if (account.provider === "google") {
 					try {
-						// 1. Get the Google ID token.
 						const googleIdToken = account.id_token as string;
 
-						// 2. Call your backend to get your custom token.
 						const backendPayload = await googleLoinService({
 							accessToken: googleIdToken,
 						});
 
-						// 3. THIS IS THE KEY STEP: Save your custom token to the session.
-						// From your log, the token is in `backendPayload.token`.
 						token.accessToken = backendPayload.token;
 
-						// 4. (Optional but recommended) Persist user info from Google.
 						token.name = user.name;
 						token.email = user.email;
 						token.picture = user.image;
 					} catch (error) {
 						console.error("Error during Google token exchange:", error);
-						return null; // Prevent login if the backend call fails
+						return null;
+					}
+				}
+				if (account.provider === "github") {
+					try {
+						const githubIdToken = account.id_token as string;
+
+						const backendPayload = await googleLoinService({
+							accessToken: githubIdToken,
+						});
+
+						token.accessToken = backendPayload.token;
+
+						token.name = user.name;
+						token.email = user.email;
+						token.picture = user.image;
+					} catch (error) {
+						console.error("Error during Google token exchange:", error);
+						return null;
 					}
 				}
 

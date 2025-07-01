@@ -1,7 +1,7 @@
 "use client";
 import {
   AlertDialog,
-  AlertDialogAction,
+  AlertDialogActionV2,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -28,7 +28,7 @@ export function DeleteEndpoint({ open, onOpenChange, onConfirm }: DeleteRequestP
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogActionV2
             onClick={() => {
               onConfirm();
               onOpenChange(false); 
@@ -36,7 +36,7 @@ export function DeleteEndpoint({ open, onOpenChange, onConfirm }: DeleteRequestP
             className="cursor-pointer"
           >
             Delete
-          </AlertDialogAction>
+          </AlertDialogActionV2>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

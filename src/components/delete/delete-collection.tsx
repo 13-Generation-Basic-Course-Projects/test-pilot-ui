@@ -2,7 +2,7 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
+  AlertDialogActionV2,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -29,7 +29,7 @@ export function DeleteCollection({ open, onOpenChange, onConfirm }: DeleteCollec
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogActionV2
             onClick={() => {
               onConfirm();
               onOpenChange(false); 
@@ -37,7 +37,7 @@ export function DeleteCollection({ open, onOpenChange, onConfirm }: DeleteCollec
             className="cursor-pointer"
           >
             Delete
-          </AlertDialogAction>
+          </AlertDialogActionV2>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

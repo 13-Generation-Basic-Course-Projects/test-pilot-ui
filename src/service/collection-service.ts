@@ -54,7 +54,7 @@ export const createCollectionService = async (
 	projectId: string
 ) => {
 	try {
-		return await fetchAPI(`${COLLECTION_ENDPOINT}`, {
+		return await fetchAPI<CollectionResponseType>(`${COLLECTION_ENDPOINT}`, {
 			method: "POST",
 			body: JSON.stringify({ name, projectId }),
 		});

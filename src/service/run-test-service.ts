@@ -1,7 +1,6 @@
 import { fetchAPI } from "@/lib/api";
 import { TEST_EXECUTION_ENDPOINT } from "@/lib/static"; // Assuming you have an endpoint for this
 import { TestRunPayload } from "@/action/run-test-action";
-import { HistoryType } from "@/components/history/history";
 
 /**
  * Service that sends the test run payload to the backend API.
@@ -10,7 +9,7 @@ export const runTestCasesService = async (
 	payload: TestRunPayload
 ): Promise<any> => {
 	try {
-		const response = await fetchAPI<HistoryType>(TEST_EXECUTION_ENDPOINT, {
+		const response = await fetchAPI(TEST_EXECUTION_ENDPOINT, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

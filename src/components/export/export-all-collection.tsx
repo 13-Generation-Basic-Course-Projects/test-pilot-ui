@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,50 +13,71 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Endpoint } from "@/types";
 import { toast } from "sonner";
+import { CollectionItem } from "@/types/collection-type";
 
-type ExportProps = {
+type ExportAllProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  endpoint?: Endpoint | null;
+  projectId: string;
+  projectName: string;
 };
 
-export function ExportEndpoint({ open, onOpenChange, endpoint }: ExportProps) {
+export function ExportAllCollections({
+  open,
+  onOpenChange,
+  projectId,
+  projectName,
+}: ExportAllProps) {
   const [layout, setLayout] = useState("comfortable");
+  const [collections, setCollections] = useState<CollectionItem[]>([]);
+
+  // useEffect(() => {
+  //   if (open) {
+  //     const fetchData = async () => {
+  //       try {
+  //         const data = await getAllCollectionsWithEndpoints(projectId);
+  //         setCollections(data);
+  //       } catch (err) {
+  //         console.error("Failed to load collections", err);
+  //       }
+  //     };
+  //     fetchData();
+  //   }
+  // }, [open, projectId]);
 
   const handleExport = () => {
-    if (!endpoint) {
-      alert("No endpoint selected for export.");
+    if (collections.length === 0) {
+      toast.error("No collections to export.");
       return;
     }
 
     const exportData = {
-      method: endpoint.method || "GET",
-      path: endpoint.path || "/new-request",
-      name: endpoint.name || endpoint.path || "/new-request",
+      projectName: projectName || "UnnamedProject",
+      version: layout === "default" ? "2.0" : "2.1",
+      collections: collections.map((collection) => ({
+        title: collection.title,
+        endpoints: collection.endpoints.map((endpoint) => ({
+          id: endpoint.id,
+          method: endpoint.method || "GET",
+          path: endpoint.path || "/new-request",
+          name: endpoint.name || endpoint.path || "/new-request",
+        })),
+      })),
     };
 
-    // Create JSON string
     const jsonString = JSON.stringify(exportData, null, 2);
-
     const blob = new Blob([jsonString], { type: "application/json" });
-
     const url = window.URL.createObjectURL(blob);
-
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${endpoint.name || "endpoint"}.json`; 
+    link.download = `${projectName || "project"}_collections_export.json`;
     document.body.appendChild(link);
     link.click();
-
-    // Clean up
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
-    // Notify user of successful export
-    toast.success(`Endpoint "${endpoint.name}" exported as JSON successfully!`);
-
+    toast.success(`Exported all collections from "${projectName}" successfully.`);
     onOpenChange(false);
   };
 
@@ -64,9 +85,9 @@ export function ExportEndpoint({ open, onOpenChange, endpoint }: ExportProps) {
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Export Request</AlertDialogTitle>
+          <AlertDialogTitle>Export All Collections</AlertDialogTitle>
           <AlertDialogDescription>
-            The request will be exported as a JSON file.
+            Export all collections and their requests as a JSON file.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -86,8 +107,8 @@ export function ExportEndpoint({ open, onOpenChange, endpoint }: ExportProps) {
         </RadioGroup>
 
         <AlertDialogFooter>
-          <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-          <Button onClick={handleExport} className="cursor-pointer">Export</Button>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <Button onClick={handleExport}>Export All</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
