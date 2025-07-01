@@ -19,7 +19,7 @@ export function CustomCheckbox({ checked, onCheckedChange, disabled = false, cla
       onClick={() => !disabled && onCheckedChange(!checked)}
       className={`
         w-4 h-4 border-2 rounded-sm flex items-center justify-center transition-colors
-        ${checked ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}
+        ${checked ? "bg-[#34302B] border-[#34302B]" : "bg-white border-gray-300"}
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-blue-500"}
         ${className}
       `}

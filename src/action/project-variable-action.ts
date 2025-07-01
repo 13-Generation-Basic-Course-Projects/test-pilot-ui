@@ -26,7 +26,7 @@ export async function getAllProjectVariableAction(projectId: string, token?: str
     }))
   } catch (error) {
     console.error("Failed to fetch variables:", error)
-    throw new Error("Failed to load variables")
+    return [];
   }
 }
 

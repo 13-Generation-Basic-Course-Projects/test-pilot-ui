@@ -102,9 +102,13 @@ export default function ProjectVariable({ projectId, token }: ProjectVariablePro
     const row = rows[index]
     
     // Validate inputs
-    if (!row.variable?.trim() || !row.value?.trim()) {
-      setError("Variable name and value are required")
-      throw new Error("Validation failed")
+    if (!row.variable?.trim()) {
+      setError("Variable name is required")
+      return false
+    }
+    if (!row.value?.trim()) {
+      setError("Variable value is required")
+      return false
     }
 
     setIsSaving(true)
@@ -151,11 +155,11 @@ export default function ProjectVariable({ projectId, token }: ProjectVariablePro
         setRows(updatedRows)
       }
       setError(null)
-      return true // Indicate success
+      return true
     } catch (err) {
       console.error("Save operation failed:", err)
       setError(`Failed to ${row.variableId ? "update" : "create"} variable: ${err instanceof Error ? err.message : 'Unknown error'}`)
-      return false // Indicate failure
+      return false
     } finally {
       setIsSaving(false)
     }
@@ -184,13 +188,29 @@ export default function ProjectVariable({ projectId, token }: ProjectVariablePro
     setEditIndex(index)
   }
 
-  const handleCellBlur = (index: number) => {
+  const handleCellBlur = async (index: number) => {
     const row = rows[index]
-    if (!row.variableId) {
-      handleSaveRow(index)
+    
+    // Don't save if the row is empty (newly added)
+    if (!row.variableId && !row.variable.trim() && !row.value.trim()) {
       return
     }
 
+    // For new rows with content, try to save immediately
+    if (!row.variableId && (row.variable.trim() || row.value.trim())) {
+      if (!row.variable.trim()) {
+        setError("Variable name is required")
+        return
+      }
+      if (!row.value.trim()) {
+        setError("Variable value is required")
+        return
+      }
+      await handleSaveRow(index)
+      return
+    }
+
+    // For existing rows, check if changes were made
     if (originalRow && (row.variable !== originalRow.variable || row.value !== originalRow.value)) {
       setShowEditDialog(true)
     } else {
@@ -228,6 +248,7 @@ export default function ProjectVariable({ projectId, token }: ProjectVariablePro
     setEditIndex(null)
     setOriginalRow(null)
     setShowEditDialog(false)
+    setError(null)
   }
 
   const handleToggleAll = async (enabled: boolean) => {
