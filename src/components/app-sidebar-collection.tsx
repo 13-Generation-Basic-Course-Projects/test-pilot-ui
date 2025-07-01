@@ -52,6 +52,7 @@ import {
 import { deleteCollectionAction } from "@/action/collection-action";
 import { CollectionSidebarSkeleton } from "./collection-sidebar-skeleton";
 import { useRouter } from "next/navigation";
+import { ExportAllCollections } from "./export/export-all-collections";
 
 interface Project {
   id: string;
@@ -88,6 +89,43 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     collectionId: string;
     endpointId: string;
   } | null>(null);
+
+  // Added new state for exporting all collections
+  const [isExportAllOpen, setIsExportAllOpen] = useState(false); // New state for all collections export
+
+  // Updated useEffect for fetchRequests to handle async properly
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!collectionsData.length) return;
+
+      const getProjects = await Promise.all(
+        collectionsData.map(async (project) => {
+          const getCollections = await Promise.all(
+            project.collections.map(async (collection) => {
+              const endpoints = await fetchRequestForCollection(collection.id);
+              return {
+                ...collection,
+                endpoints: endpoints.map((endpoint) => ({
+                  id: endpoint.id,
+                  method: endpoint.method || "GET",
+                  path: endpoint.name || endpoint.path || "/new-request",
+                  name: endpoint.name || endpoint.path || "/new-request",
+                })),
+              };
+            })
+          );
+          return {
+            ...project,
+            collections: getCollections,
+          };
+        })
+      );
+
+      setCollectionsData(getProjects);
+    };
+
+    fetchRequests();
+  }, [collectionsData.length]);
   const [collectionToDelete, setCollectionToDelete] = useState<{
     projectId: string;
     collectionId: string;
@@ -249,29 +287,28 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }));
   };
 
-	const handleCreateCollection = async (title: string) => {
+  const handleCreateCollection = async (title: string) => {
+    const res: any = await createCollectionAction(title, projectId);
 
-		const res: any = await createCollectionAction(title, projectId);
+    const newCollection: CollectionItem = {
+      id: res.id as any,
+      title,
+      endpoints: [],
+    };
 
-		const newCollection: CollectionItem = {
-			id: res.id as any,
-			title,
-			endpoints: [],
-		};
-
-		setCollectionsData((prev) => {
-			const lastProjectIndex = prev.length - 1;
-			return prev.map((project, index) => {
-				if (index === lastProjectIndex) {
-					return {
-						...project,
-						collections: [...project.collections, newCollection],
-					};
-				}
-				return project;
-			});
-		});
-	};
+    setCollectionsData((prev) => {
+      const lastProjectIndex = prev.length - 1;
+      return prev.map((project, index) => {
+        if (index === lastProjectIndex) {
+          return {
+            ...project,
+            collections: [...project.collections, newCollection],
+          };
+        }
+        return project;
+      });
+    });
+  };
 
   const handleRename = (
     projectId: string,
@@ -434,7 +471,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         e.stopPropagation();
         setSelectedCollection(collection);
         setIsShareCollectionOpen(true);
-		toast.success("Collection shared successfully");
+        toast.success("Collection shared successfully");
       },
       className: "cursor-pointer",
     },
@@ -598,10 +635,10 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                   Import
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setIsExportCollectionOpen(true)}
+                  onClick={() => setIsExportAllOpen(true)} // Trigger Export All
                   className="cursor-pointer"
                 >
-                  Export
+                  Export All
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -686,7 +723,9 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                         className="h-6 px-2 py-1 font-medium max-w-[200px] truncate overflow-hidden text-ellipsis"
                       />
                     ) : (
-                      <span className="font-medium  max-w-[220px] truncate overflow-hidden text-ellipsis">{collection.title}</span>
+                      <span className="font-medium  max-w-[220px] truncate overflow-hidden text-ellipsis">
+                        {collection.title}
+                      </span>
                     )}
                   </div>
                   <ItemActionsDropdown
@@ -805,6 +844,12 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         open={isExportCollectionOpen}
         onOpenChange={setIsExportCollectionOpen}
         collection={selectedCollection}
+      />
+      <ExportAllCollections
+        open={isExportAllOpen}
+        onOpenChange={setIsExportAllOpen}
+        projectName={"ProjectName"}
+        collections={collectionsData[0]?.collections || []}
       />
       <ShareCollection
         open={isShareCollectionOpen}

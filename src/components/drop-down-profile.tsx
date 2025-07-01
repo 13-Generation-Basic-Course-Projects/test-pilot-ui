@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
+	DropdownMenuItemV2,
 } from "@/components/ui/dropdown-menu";
 import {
 	AlertDialog,
@@ -70,19 +71,19 @@ export const DropdownProfile = () => {
 
 				<DropdownMenuContent className="w-48" align="end">
 					<DropdownMenuGroup>
-						<DropdownMenuItem onClick={() => router.push("/profile")}>
+						<DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
 							<Settings className="mr-2 h-4 w-4" />
 							Profile Setting
 						</DropdownMenuItem>
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem
+					<DropdownMenuItemV2
 						className="text-red-600 cursor-pointer"
 						onClick={() => setShowLogoutDialog(true)}
 					>
 						<LogOut className="text-red-600 mr-2 h-4 w-4" />
 						Log out
-					</DropdownMenuItem>
+					</DropdownMenuItemV2>
 				</DropdownMenuContent>
 			</DropdownMenu>
 

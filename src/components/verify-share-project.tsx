@@ -51,7 +51,7 @@ export default function VerifyForm() {
 
 			// Fetch project
 			const projects = await getAllProjectService();
-			const currentProject = projects.find((p) => p.id === projectId);
+			const currentProject = projects.projects.find((p) => p.id === projectId);
 
 			if (isEndpoint && collectionId) {
 				const endpoints = await getRequestByCollectionId({ collectionId });
