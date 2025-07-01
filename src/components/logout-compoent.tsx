@@ -37,8 +37,8 @@ export function LogOutPopup() {
                     </AlertDialogDescriptionV2>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button>Logout</Button>
+                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                    <Button className="cursor-pointer">Logout</Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

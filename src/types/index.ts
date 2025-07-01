@@ -97,8 +97,10 @@ export interface ProjectItem {
 
 export interface ProjectVariableItem {
 	id: string;
-	variable: string;
-	value: string;
+	variableId: string;
+	keyName: string;
+	keyValue: string;
+	enabled: boolean;
 }
 
 export interface ProjectProps {

@@ -1,79 +1,93 @@
 import { fetchAPI } from "@/lib/api";
 import { PROJECT_ENDPOINT } from "@/lib/static";
 import {
-	ProjectResponseType,
-	ProjectResponseTypes,
+  ProjectResponseType,
+  ProjectResponseTypes,
 } from "@/types/project-type";
 import { NewProjectPayload, ProjectItem } from "@/types";
 
-export const getAllProjectService = async (): Promise<ProjectItem[]> => {
-	const response = await fetchAPI<ProjectResponseTypes>(`${PROJECT_ENDPOINT}`);
+export const getAllProjectService = async (
+  cursor: string | null = null
+): Promise<{ projects: ProjectItem[]; nextCursor: string | null; hasNext: boolean }> => {
+  const url = cursor
+    ? `${PROJECT_ENDPOINT}?cursor=${cursor}`
+    : PROJECT_ENDPOINT;
 
-	if (!response?.payload?.payload) return [];
+  const response = await fetchAPI<ProjectResponseTypes>(url);
 
-	return response.payload.payload.map((project) => ({
-		id: project.projectId,
-		title: project.projectName,
-		description: project.projectDescription,
-		creationDate: (() => {
-			const date = new Date(project.createdAt);
-			const day = date.getDate();
-			const month = date
-				.toLocaleString("en-US", { month: "long" })
-				.toLowerCase();
-			const year = date.getFullYear();
-			return `${day}-${month}-${year}`;
-		})(),
-		userAvatarUrl: project.projectOwner?.profileImage || "/defaultAvatar.png",
-	}));
+  if (!response?.payload?.payload) {
+    return { projects: [], nextCursor: null, hasNext: false };
+  }
+
+  const projects = response.payload.payload.map((project) => ({
+    id: project.projectId,
+    title: project.projectName,
+    description: project.projectDescription,
+    creationDate: (() => {
+      const date = new Date(project.createdAt);
+      const day = date.getDate();
+      const month = date
+        .toLocaleString("en-US", { month: "long" })
+        .toLowerCase();
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    })(),
+    userAvatarUrl: project.projectOwner?.profileImage || "/defaultAvatar.png",
+  }));
+
+  return {
+    projects,
+    nextCursor: response.payload.metadata.nextCursor,
+    hasNext: response.payload.metadata.hasNext,
+  };
 };
 
 // Delete project by ID
 export const deleteProjectByIdService = async (
-	projectId: string
+  projectId: string
 ): Promise<void> => {
-	await fetchAPI(`${PROJECT_ENDPOINT}/${projectId}`, {
-		method: "DELETE",
-	});
+  await fetchAPI(`${PROJECT_ENDPOINT}/${projectId}`, {
+    method: "DELETE",
+  });
 };
 
-//Create project
+// Create project
 export const createProjectService = async ({
-	title,
-	description,
+  title,
+  description,
 }: NewProjectPayload) => {
-	const newProject = {
-		projectName: title,
-		projectDescription: description,
-	};
-	const response = await fetchAPI<ProjectResponseType>(`${PROJECT_ENDPOINT}`, {
-		method: "POST",
-		body: JSON.stringify(newProject),
-	});
+  const newProject = {
+    projectName: title,
+    projectDescription: description,
+  };
+  const response = await fetchAPI<ProjectResponseType>(`${PROJECT_ENDPOINT}`, {
+    method: "POST",
+    body: JSON.stringify(newProject),
+  });
 
-	return response;
+  return response;
 };
 
 // Update project
 export const updateProjectByIdService = async (
-	projectId: string,
-	{ title, description }: NewProjectPayload
+  projectId: string,
+  { title, description }: NewProjectPayload
 ) => {
-	const updateProject = {
-		projectName: title,
-		projectDescription: description,
-	};
+  const updateProject = {
+    projectName: title,
+    projectDescription: description,
+  };
 
-	const response = await fetchAPI<ProjectResponseType>(
-		`${PROJECT_ENDPOINT}/${projectId}`,
-		{
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(updateProject),
-		}
-	);
+  const response = await fetchAPI<ProjectResponseType>(
+    `${PROJECT_ENDPOINT}/${projectId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateProject),
+    }
+  );
 
-	return response;
+  return response;
 };

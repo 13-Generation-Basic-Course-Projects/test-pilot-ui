@@ -23,6 +23,20 @@ export const signInAction = async (formData: FormData) => {
 	}
 };
 
+export const signInGithub = async (code: string) => {
+	try {
+		await signIn("credentials", {
+			githubCode: code,
+			redirectTo: "/project",
+		});
+	} catch (error) {
+		if (error instanceof AuthError) {
+			return redirect(`/login?error=${error.message}`);
+		}
+		throw error;
+	}
+};
+
 export async function signUpAction(
 	prevState: { message: string | null; success: boolean },
 	formData: FormData
