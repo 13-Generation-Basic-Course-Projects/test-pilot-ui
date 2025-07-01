@@ -14,7 +14,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ import {
   createRequestByCollectionIdAction,
   duplicateRequestAction,
 } from "@/action/request-action";
-import { CollectionItem, Endpoint } from "@/types";
+import { CollectionItem, Endpoint, EndpointItem } from "@/types";
 import { toast } from "sonner";
 import { getMethodColor } from "@/lib/utils";
 import {
@@ -51,7 +51,7 @@ import {
 } from "@/action/collection-action";
 import { deleteCollectionAction } from "@/action/collection-action";
 import { CollectionSidebarSkeleton } from "./collection-sidebar-skeleton";
-import { useRouter } from "next/navigation";
+import { ExportAllCollections } from "./export/export-all-collections";
 
 interface Project {
   id: string;
@@ -88,15 +88,54 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     collectionId: string;
     endpointId: string;
   } | null>(null);
+
+  // Added new state for exporting all collections
+  const [isExportAllOpen, setIsExportAllOpen] = useState(false); // New state for all collections export
+
+  // Updated useEffect for fetchRequests to handle async properly
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!collectionsData.length) return;
+
+      const getProjects = await Promise.all(
+        collectionsData.map(async (project) => {
+          const getCollections = await Promise.all(
+            project.collections.map(async (collection) => {
+              const endpoints = await fetchRequestForCollection(collection.id);
+              return {
+                ...collection,
+                endpoints: endpoints.map((endpoint) => ({
+                  id: endpoint.id,
+                  method: endpoint.method || "GET",
+                  path: endpoint.name || endpoint.path || "/new-request",
+                  name: endpoint.name || endpoint.path || "/new-request",
+                })),
+              };
+            })
+          );
+          return {
+            ...project,
+            collections: getCollections,
+          };
+        })
+      );
+
+      setCollectionsData(getProjects);
+    };
+
+    fetchRequests();
+  }, [collectionsData.length]);
   const [collectionToDelete, setCollectionToDelete] = useState<{
     projectId: string;
     collectionId: string;
   } | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
+  // Fetch collections
   useEffect(() => {
     const fetchCollections = async () => {
-      setIsLoading(true); // Set loading to true when starting
+      setIsLoading(true);
       try {
         const collections = await fetchCollectionsForProject(projectId);
         setCollectionsData([
@@ -104,7 +143,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
             id: projectId,
             collections: collections.map((col) => ({
               ...col,
-              endpoints: [], // Initialize with empty endpoints
+              endpoints: [],
             })),
           },
         ]);
@@ -112,7 +151,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         console.error("Failed to fetch collections:", error);
         toast.error("Could not load collections.");
       } finally {
-        setIsLoading(false); // Set loading to false when finished
+        setIsLoading(false);
       }
     };
     fetchCollections();
@@ -152,7 +191,31 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     fetchRequests();
   }, [collectionsData.length]);
 
-  //Add endpoint
+  // Load openCollections from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("openCollections");
+    setOpenCollections(saved ? JSON.parse(saved) : {});
+  }, []);
+
+  // Save openCollections to localStorage
+  useEffect(() => {
+    if (openCollections !== null) {
+      localStorage.setItem("openCollections", JSON.stringify(openCollections));
+    }
+  }, [openCollections]);
+
+  // Load openEndpoint from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("openEndpoint");
+    setOpenEndpoint(saved ? JSON.parse(saved) : {});
+  }, []);
+
+  // Save openEndpoint to localStorage
+  useEffect(() => {
+    localStorage.setItem("openEndpoint", JSON.stringify(openEndpoint));
+  }, [openEndpoint]);
+
+  // Add endpoint
   const handleAddEndpoint = async (projectId: string, collectionId: string) => {
     try {
       const requestName = "New Request";
@@ -240,38 +303,51 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     localStorage.setItem("openEndpoint", JSON.stringify(openEndpoint));
   }, [openEndpoint]);
 
-  const pathname = usePathname();
-
-  const toggleCollection = (collectionId: string) => {
-    setOpenCollections((prev) => ({
-      ...prev,
-      [collectionId]: !prev?.[collectionId],
-    }));
-  };
-
   const handleCreateCollection = async (title: string) => {
-    const res: any = await createCollectionAction(title, projectId);
-
-    const newCollection: CollectionItem = {
-      id: res.id as any,
-      title,
-      endpoints: [],
-    };
-
-    setCollectionsData((prev) => {
-      const lastProjectIndex = prev.length - 1;
-      return prev.map((project, index) => {
-        if (index === lastProjectIndex) {
-          return {
-            ...project,
-            collections: [...project.collections, newCollection],
-          };
-        }
-        return project;
+    const MIN_NAME_LENGTH = 3;
+    const namePattern = /^[a-zA-Z0-9 _-]+$/;
+    // Frontend validation
+    if (title.length < MIN_NAME_LENGTH) {
+      toast.error("Collection name must be at least 3 characters.");
+      return;
+    }
+    if (!namePattern.test(title)) {
+      toast.error("Collection name contains invalid characters.");
+      return;
+    }
+    try {
+      const res: any = await createCollectionAction(title, projectId);
+      if (res?.errors?.name) {
+        toast.error(res.errors.name);
+        return;
+      }
+      const newCollection: CollectionItem = {
+        id: res.id as any,
+        title,
+        endpoints: [],
+      };
+      setCollectionsData((prev) => {
+        const lastProjectIndex = prev.length - 1;
+        return prev.map((project, index) => {
+          if (index === lastProjectIndex) {
+            return {
+              ...project,
+              collections: [...project.collections, newCollection],
+            };
+          }
+          return project;
+        });
       });
-    });
+      toast.success("Collection created successfully");
+    } catch (error: any) {
+      console.error("Failed to create collection:", error);
+      toast.error(
+        error?.message || "Something went wrong while creating collection."
+      );
+    }
   };
 
+  // Rename collection
   const handleRename = (
     projectId: string,
     collectionId: string,
@@ -290,9 +366,10 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         };
       })
     );
-    toast.success("Collection Rename successfully");
+    toast.success("Collection renamed successfully");
   };
 
+  // Duplicate collection
   const handleDuplicateCollection = async (
     projectId: string,
     collection: CollectionItem
@@ -305,6 +382,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       projectId,
       existingCollections
     );
+
     if (!duplicated) return;
 
     setCollectionsData((prev) =>
@@ -320,6 +398,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     toast.success("Collection duplicated successfully");
   };
 
+  // Rename endpoint
   const handleRenameEndpoint = async (
     projectId: string,
     collectionId: string,
@@ -360,6 +439,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }
   };
 
+  // Duplicate endpoint
   const handleDuplicateEndpoint = async (
     projectId: string,
     collectionId: string,
@@ -409,6 +489,76 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         `Failed to duplicate endpoint: ${error.message || "Unknown error"}`
       );
     }
+  };
+
+  // Import collection
+  const handleImportCollection = async (data: any) => {
+    try {
+      if (!data.title || !Array.isArray(data.endpoints)) {
+        toast.error("Invalid collection format. Expected 'title' and 'endpoints' array.");
+        return;
+      }
+
+      // Create a new collection
+      const newCollection = await createCollectionAction(data.title, projectId);
+      if (!newCollection) {
+        throw new Error("Failed to create collection");
+      }
+
+      // Create endpoints for the collection
+      const createdEndpoints = await Promise.all(
+        data.endpoints.map(async (endpoint: any) => {
+          const requestName = endpoint.name || endpoint.path || "New Request";
+          const details = {
+            url: endpoint.url || "",
+            pathVariables: endpoint.pathVariables || {},
+            queryParams: endpoint.queryParams || {},
+            headers: endpoint.headers || {},
+            body: endpoint.body || null,
+            description: endpoint.description || "",
+          };
+
+          return {
+            id: endpoint.id,
+            method: endpoint.method || "GET",
+            path: requestName,
+            name: requestName,
+            collectionId: newCollection.id,
+            projectId,
+          } as EndpointItem ;
+        })
+      );
+
+      // Update local state with the new collection and endpoints
+      setCollectionsData((prev) =>
+        prev.map((project) => {
+          if (project.id !== projectId) return project;
+          return {
+            ...project,
+            collections: [
+              ...project.collections,
+              {
+                id: newCollection.id,
+                title: data.title,
+                endpoints: createdEndpoints,
+              },
+            ],
+          };
+        })
+      );
+
+      toast.success("Collection and endpoints imported successfully");
+    } catch (error: any) {
+      console.error("Failed to import collection:", error);
+      toast.error(`Failed to import collection: ${error.message || "Unknown error"}`);
+    }
+  };
+
+  const toggleCollection = (collectionId: string) => {
+    setOpenCollections((prev) => ({
+      ...prev,
+      [collectionId]: !prev?.[collectionId],
+    }));
   };
 
   const getCollectionMenuItems = (
@@ -584,7 +734,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
           <div className="flex items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 cursor-pointer"
+                >
                   <FolderDownIcon className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -596,10 +750,10 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                   Import
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setIsExportCollectionOpen(true)}
+                  onClick={() => setIsExportAllOpen(true)} // Trigger Export All
                   className="cursor-pointer"
                 >
-                  Export
+                  Export All
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -642,7 +796,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                     {openCollections[collection.id] ? (
                       <FolderOpenIcon className="w-4 h-4 text-muted-foreground" />
                     ) : (
-                      <Folder className="w-4 h-4 text-muted-foreground " />
+                      <Folder className="w-4 h-4 text-muted-foreground" />
                     )}
                     {renamingCollectionId === collection.id ? (
                       <Input
@@ -655,19 +809,16 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                             setRenamingCollectionId(null);
                             return;
                           }
-
-                          // Update local state
                           handleRename(project.id, collection.id, newTitle);
-
                           try {
                             await renameCollectionAction(
                               project.id,
                               collection.id,
                               newTitle
                             );
-                            // Optionally show success message
                           } catch (error) {
-                            // Optionally revert local state or show error toast
+                            console.error("Failed to rename collection:", error);
+                            toast.error("Failed to rename collection");
                           }
                           setRenamingCollectionId(null);
                           e.stopPropagation();
@@ -684,7 +835,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                         className="h-6 px-2 py-1 font-medium max-w-[200px] truncate overflow-hidden text-ellipsis"
                       />
                     ) : (
-                      <span className="font-medium  max-w-[220px] truncate overflow-hidden text-ellipsis">
+                      <span className="font-medium max-w-[220px] truncate overflow-hidden text-ellipsis">
                         {collection.title}
                       </span>
                     )}
@@ -806,6 +957,12 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         onOpenChange={setIsExportCollectionOpen}
         collection={selectedCollection}
       />
+      <ExportAllCollections
+        open={isExportAllOpen}
+        onOpenChange={setIsExportAllOpen}
+        projectName={"ProjectName"}
+        collections={collectionsData[0]?.collections || []}
+      />
       <ShareCollection
         open={isShareCollectionOpen}
         onOpenChange={setIsShareCollectionOpen}
@@ -819,6 +976,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       <ImportCollection
         open={isImportCollectionOpen}
         onOpenChange={setIsImportCollectionOpen}
+        onImport={handleImportCollection}
       />
       {collectionToDelete && (
         <DeleteCollection

@@ -24,50 +24,35 @@ type ExportProps = {
 
 export function ExportCollection({ open, onOpenChange, collection }: ExportProps) {
   const [layout, setLayout] = useState("comfortable");
-
   const handleExport = () => {
     if (!collection) {
       toast.error("No collection selected for export.");
       return;
     }
-
     // Prepare the collection data for export
     const exportData = {
       title: collection.title,
       endpoints: collection.endpoints.map((endpoint) => ({
-        id: endpoint.id,
         method: endpoint.method || "GET",
         path: endpoint.path || "/new-request",
         name: endpoint.name || endpoint.path || "/new-request",
-        // Add additional endpoint properties if needed (e.g., headers, queryParams, etc.)
       })),
-      version: layout === "default" ? "2.0" : "2.1", // Include version based on layout
+      version: layout === "default" ? "2.0" : "2.1",
     };
-
-    // Create JSON string
     const jsonString = JSON.stringify(exportData, null, 2);
-
-    // Create a Blob for the JSON file
     const blob = new Blob([jsonString], { type: "application/json" });
 
-    // Create a temporary URL for the Blob
     const url = window.URL.createObjectURL(blob);
 
-    // Create a temporary anchor element to trigger the download
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${collection.title || "collection"}.json`; // File name based on collection title
+    link.download = `${collection.title || "collection"}.json`;
     document.body.appendChild(link);
     link.click();
 
-    // Clean up
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-
-    // Notify user of successful export
     toast.success(`Collection "${collection.title}" exported as JSON successfully!`);
-
-    // Close the dialog
     onOpenChange(false);
   };
 
