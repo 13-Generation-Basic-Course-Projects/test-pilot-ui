@@ -4,7 +4,7 @@ FROM node:18-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production --ignore-scripts
+RUN npm ci  --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
