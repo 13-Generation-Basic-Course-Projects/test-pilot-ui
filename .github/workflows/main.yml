@@ -1,5 +1,4 @@
 name: CD Frontend Deployment with Docker Hub
-
 on:
   push:
     branches:
@@ -46,6 +45,15 @@ jobs:
           context: . # Next.js root
           file: ./Dockerfile
           push: true
+          build-args: |
+            NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}
+            NEXT_PUBLIC_AUTH_BASE_URL=${{ secrets.NEXT_PUBLIC_AUTH_BASE_URL }}
+            NEXT_PUBLIC_AUTH_GITHUB_ID=${{ secrets.NEXT_PUBLIC_AUTH_GITHUB_ID }}
+            NEXT_PUBLIC_AUTH_GITHUB_API=${{ secrets.NEXT_PUBLIC_AUTH_GITHUB_API }}
+            NEXT_PUBLIC_AUTH_GITHUB_SECRET=${{ secrets.NEXT_PUBLIC_AUTH_GITHUB_SECRET }}
+            AUTH_GOOGLE_ID=${{ secrets.AUTH_GOOGLE_ID }}
+            AUTH_GOOGLE_SECRET=${{ secrets.AUTH_GOOGLE_SECRET }}
+            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}

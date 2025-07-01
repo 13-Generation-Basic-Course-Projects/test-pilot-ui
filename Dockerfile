@@ -1,55 +1,63 @@
-# -----------------------------------
-# 1. Install dependencies only
-# -----------------------------------
-    FROM node:18-alpine AS deps
+FROM node:18-alpine AS base
 
-    # Avoid root user for security
-    RUN addgroup -g 1001 -S nextjs && adduser -S nextjs -G nextjs
-    
-    WORKDIR /app
-    
-    COPY package.json package-lock.json* ./
-    
-    RUN npm ci --frozen-lockfile
-    
-    # -----------------------------------
-    # 2. Build the Next.js app
-    # -----------------------------------
-    FROM node:18-alpine AS builder
-    
-    WORKDIR /app
-    
-    COPY --from=deps /app/node_modules ./node_modules
-    COPY . .
-    
-    RUN npm run build
-    
-    # Remove all dev dependencies
-    RUN npm prune --production
-    
-    # -----------------------------------
-    # 3. Create the final image
-    # -----------------------------------
-    FROM node:18-alpine AS runner
-    
-    WORKDIR /app
-    
-    # Use non-root user
-    RUN addgroup -g 1001 -S nextjs && adduser -S nextjs -G nextjs
-    USER nextjs
-    
-    ENV NODE_ENV=production
-    
-    # Optionally, set Next.js config for static generation
-    ENV NEXT_TELEMETRY_DISABLED 1
-    ENV PORT 3000
-    
-    COPY --from=builder /app/public ./public
-    COPY --from=builder /app/.next ./.next
-    COPY --from=builder /app/node_modules ./node_modules
-    COPY --from=builder /app/package.json ./package.json
-    
-    EXPOSE 3000
-    
-    CMD ["node", "node_modules/next/dist/bin/next", "start"]
-    
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Accept build arguments for ALL environment variables
+ARG NEXT_PUBLIC_BASE_URL
+ARG NEXT_PUBLIC_AUTH_BASE_URL
+ARG NEXT_PUBLIC_AUTH_GITHUB_ID
+ARG NEXT_PUBLIC_AUTH_GITHUB_API
+ARG NEXT_PUBLIC_AUTH_GITHUB_SECRET
+ARG AUTH_GOOGLE_ID
+ARG AUTH_GOOGLE_SECRET
+ARG AUTH_SECRET
+
+# Set environment variables for build
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_AUTH_BASE_URL=$NEXT_PUBLIC_AUTH_BASE_URL
+ENV NEXT_PUBLIC_AUTH_GITHUB_ID=$NEXT_PUBLIC_AUTH_GITHUB_ID
+ENV NEXT_PUBLIC_AUTH_GITHUB_API=$NEXT_PUBLIC_AUTH_GITHUB_API
+ENV NEXT_PUBLIC_AUTH_GITHUB_SECRET=$NEXT_PUBLIC_AUTH_GITHUB_SECRET
+ENV AUTH_GOOGLE_ID=$AUTH_GOOGLE_ID
+ENV AUTH_GOOGLE_SECRET=$AUTH_GOOGLE_SECRET
+ENV AUTH_SECRET=$AUTH_SECRET
+
+RUN npm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Also copy the build-time environment variables to runtime
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_AUTH_BASE_URL=$NEXT_PUBLIC_AUTH_BASE_URL
+ENV NEXT_PUBLIC_AUTH_GITHUB_ID=$NEXT_PUBLIC_AUTH_GITHUB_ID
+ENV NEXT_PUBLIC_AUTH_GITHUB_API=$NEXT_PUBLIC_AUTH_GITHUB_API
+ENV NEXT_PUBLIC_AUTH_GITHUB_SECRET=$NEXT_PUBLIC_AUTH_GITHUB_SECRET
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT=3000
+
+CMD ["node", "server.js"]
