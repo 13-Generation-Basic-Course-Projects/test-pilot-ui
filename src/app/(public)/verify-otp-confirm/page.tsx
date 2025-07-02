@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { VerifyOtpConfirmForm } from "../_components/verify-otp-confirm-form";
+import { Suspense } from "react";
 export default function VerifyOtoConfirmPage() {
 	return (
 		<div className="grid min-h-svh lg:grid-cols-2">
@@ -15,7 +16,9 @@ export default function VerifyOtoConfirmPage() {
 				</div>
 				<div className="flex flex-1 items-center justify-center">
 					<div className="w-full max-w-lg">
-						<VerifyOtpConfirmForm />
+						<Suspense>
+							<VerifyOtpConfirmForm />
+						</Suspense>
 					</div>
 				</div>
 			</div>

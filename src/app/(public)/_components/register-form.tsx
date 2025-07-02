@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useRegister } from "@/store/email-register-slice";
 import { signIn } from "next-auth/react"; // Import signIn for social login
 import { GITHUB_LOGIN } from "@/lib/constants"; // Assuming you have this constant
+import { VERIFICATION_TYPE } from "@/lib/verification-type";
 
 export function RegisterForm({
 	className,
@@ -36,7 +37,9 @@ export function RegisterForm({
 				if (emailInputValue) {
 					setRegisteredEmail(emailInputValue);
 					toast.success(state.message);
-					router.push("/verify-otp-confirm");
+					router.push(
+						`/verify-otp-confirm?VERIFICATION_TYPE=${VERIFICATION_TYPE.register}`
+					);
 				}
 			} else {
 				toast.error(state.message);
