@@ -298,7 +298,7 @@ export function EndpointDropdownUrl({
         setVariables(vars);
         console.log("Fetched variables:", vars); // Debug
         if (!vars.some((v) => v.variable === "test-Pilots")) {
-          toast.warning(
+          console.warn(
             "Variable 'test-Pilots' not found in project variables."
           );
         }
