@@ -2,8 +2,14 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Folder, Play, Trash2 } from "lucide-react";
-
+import {
+	ChevronDown,
+	ChevronUp,
+	Folder,
+	Play,
+	Trash2,
+	Loader2,
+} from "lucide-react";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
 	Table,
@@ -25,14 +31,30 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MethodBadge } from "@/components/method-badge";
-import { useState } from "react";
+import { Button } from "../ui/button";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
+import { useTestRunStore } from "@/store/test-run-slice";
+import { fetchCollectionsForProject } from "@/action/collection-action";
 
 type HistoryBatch = {
 	batchId: string;
+	projectId: string;
+	collectionId: string;
 	startTimestamp: string;
 	overallStatus: string;
 	results: Array<{
 		resultId: string;
+		requestId: string;
+		testCaseId: string;
+		requestDefinitionSnapshot: {
+			url: string;
+			method: string;
+			body: any;
+			headers: any;
+		};
 		requestSentDetails: {
 			url: string;
 			method: string;
@@ -52,6 +74,11 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeRow, setActiveRow] = useState<string | null>(null);
 	const [deleteIndex, setDeleteIndex] = useState<string | null>(null);
+
+	const [runningTestId, setRunningTestId] = useState<string | null>(null);
+	const [isPending, startTransition] = useTransition();
+	const router = useRouter();
+	const { setTestRunResult, clearTestRunResult } = useTestRunStore();
 
 	const transformedData = React.useMemo(() => {
 		if (!batchData || !Array.isArray(batchData.results)) {
@@ -89,10 +116,74 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 
 	const getStatusColor = (status: string) =>
 		status === "PASSED" ? "text-[#17C964]" : "text-[#EF4444]";
+
 	const getStatusCodeColor = (statusCode: number) => {
 		if (statusCode >= 200 && statusCode < 300) return "text-[#17C964]";
 		if (statusCode >= 400) return "text-[#EF4444]";
 		return "text-[#006FEE]";
+	};
+
+	const handleRunSingleTest = (testToRun: (typeof data)[0]) => {
+		startTransition(async () => {
+			setRunningTestId(testToRun.id);
+			clearTestRunResult();
+			sessionStorage.removeItem("testRunResult");
+
+			const toastId = toast.loading("Preparing to re-run test...");
+
+			try {
+				const collections = await fetchCollectionsForProject(
+					batchData.projectId
+				);
+				if (!collections || collections.length === 0) {
+					throw new Error("No collections found for this project.");
+				}
+				const collectionId = collections[0].id;
+				const requestId = testToRun.resultData.requestId;
+
+				const requestExecution = [
+					{
+						url: testToRun.resultData.requestDefinitionSnapshot.url,
+						method: testToRun.resultData.requestDefinitionSnapshot.method,
+						headers:
+							testToRun.resultData.requestDefinitionSnapshot.headers || {},
+						body: testToRun.resultData.requestDefinitionSnapshot.body || {},
+						requestId: requestId,
+						testCaseId: testToRun.resultData.testCaseId,
+						isExpectedSuccess: false,
+					},
+				];
+
+				const finalPayload: TestRunPayload = {
+					projectId: batchData.projectId,
+					triggerType: "SELECTED_TEST_CASES",
+					requestExecution,
+				};
+
+				toast.loading("Re-running test...", { id: toastId });
+
+				const result = await runTestCasesAction(finalPayload);
+
+				if (result.success && result.data) {
+					setTestRunResult(result.data);
+					sessionStorage.setItem("testRunResult", JSON.stringify(result.data));
+					router.push(
+						`/project/${batchData.projectId}/collection/${collectionId}/request/${requestId}/monitoring`
+					);
+					toast.success("Test run started successfully!", { id: toastId });
+				} else {
+					throw new Error(
+						result.error || "Test run initiated, but no data was returned."
+					);
+				}
+			} catch (err: any) {
+				toast.error(`Failed to start test run: ${err.message}`, {
+					id: toastId,
+				});
+			} finally {
+				setRunningTestId(null);
+			}
+		});
 	};
 
 	const batchTitle = `Test Run: ${new Date(
@@ -112,7 +203,7 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 						<Folder />
 						<div className="flex flex-col text-left">
 							<h4 className="text-lg font-semibold">{batchTitle}</h4>
-							{/* <p className="text-sm text-muted-foreground">
+							<p className="text-sm text-muted-foreground">
 								{testsCount} test{testsCount !== 1 ? "s" : ""} ran - Status:
 								<span
 									className={`font-medium ${getStatusColor(
@@ -122,7 +213,7 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 									{" "}
 									{batchData.overallStatus}
 								</span>
-							</p> */}
+							</p>
 						</div>
 					</div>
 					{isOpen ? (
@@ -163,78 +254,102 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{data.map((item) => (
-									<TableRow
-										key={item.id}
-										id={`request-${item.id}`}
-										onClick={() => {
-											setActiveRow(item.id);
-											onRowClick?.(item.resultData);
-										}}
-										className={`py-5 cursor-pointer ${
-											activeRow === item.id ? "bg-[#F1F5F9]" : ""
-										}`}
-									>
-										<TableCell className="py-5 pl-6">{item.date}</TableCell>
-										<TableCell className="py-5">
-											<MethodBadge method={item.method} />
-										</TableCell>
-										<TableCell className="py-5 break-all max-w-[300px]">
-											{item.endpoint}
-										</TableCell>
-										<TableCell className="py-5">
-											<div className="flex justify-between max-w-[120px]">
-												<p className={getStatusColor(item.status)}>
-													{item.status === "PASSED" ? "Passed" : "Failed"}
-												</p>
-												<div
-													className={`w-fit border border-[#E2E8F0] rounded-sm px-[15px] ${getStatusCodeColor(
-														item.statusCode
-													)}`}
-												>
-													{item.statusCode}
+								{data.map((item) => {
+									const isThisTestRunning = runningTestId === item.id;
+									return (
+										<TableRow
+											key={item.id}
+											id={`request-${item.id}`}
+											onClick={() => {
+												setActiveRow(item.id);
+												onRowClick?.(item.resultData);
+											}}
+											className={`py-5 cursor-pointer ${
+												activeRow === item.id ? "bg-[#F1F5F9]" : ""
+											}`}
+										>
+											<TableCell className="py-5 pl-6">{item.date}</TableCell>
+											<TableCell className="py-5">
+												<MethodBadge method={item.method} />
+											</TableCell>
+											<TableCell className="py-5 break-all truncate max-w-[300px]">
+												{item.endpoint}
+											</TableCell>
+											<TableCell className="py-5">
+												<div className="flex justify-between max-w-[120px]">
+													<p className={getStatusColor(item.status)}>
+														{item.status === "PASSED" ? "Passed" : "Failed"}
+													</p>
+													<div
+														className={`w-fit border border-[#E2E8F0] rounded-sm px-[15px] ${getStatusCodeColor(
+															item.statusCode
+														)}`}
+													>
+														{item.statusCode}
+													</div>
 												</div>
-											</div>
-										</TableCell>
-										<TableCell className="py-5">
-											<div className="flex gap-3">
-												<Play className="text-[#3B82F6]" width={20} />
-												<AlertDialog>
-													<AlertDialogTrigger asChild>
-														<Trash2
-															className="text-[#E2001A] cursor-pointer"
-															width={20}
-															onClick={(e) => {
-																e.stopPropagation();
-																setDeleteIndex(item.id);
-															}}
-														/>
-													</AlertDialogTrigger>
-													<AlertDialogContent>
-														<AlertDialogHeader>
-															<AlertDialogTitle>
-																Are you absolutely sure?
-															</AlertDialogTitle>
-															<AlertDialogDescription>
-																This action cannot be undone. This will
-																permanently delete this entry.
-															</AlertDialogDescription>
-														</AlertDialogHeader>
-														<AlertDialogFooter>
-															<AlertDialogCancel>Cancel</AlertDialogCancel>
-															<AlertDialogAction
-																onClick={handleDelete}
-																className="bg-[#EF4444] text-white hover:bg-[#dc2626]"
+											</TableCell>
+											<TableCell className="py-5">
+												<div className="flex gap-3">
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8"
+														disabled={isPending}
+														onClick={(e) => {
+															e.stopPropagation();
+															handleRunSingleTest(item);
+														}}
+													>
+														{isThisTestRunning ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Play className="text-[#3B82F6]" width={20} />
+														)}
+													</Button>
+													<AlertDialog>
+														<AlertDialogTrigger asChild>
+															<Button
+																variant="ghost"
+																size="icon"
+																className="h-8 w-8"
+																onClick={(e) => {
+																	e.stopPropagation();
+																	setDeleteIndex(item.id);
+																}}
 															>
-																Delete
-															</AlertDialogAction>
-														</AlertDialogFooter>
-													</AlertDialogContent>
-												</AlertDialog>
-											</div>
-										</TableCell>
-									</TableRow>
-								))}
+																<Trash2
+																	className="text-[#E2001A] cursor-pointer"
+																	width={20}
+																/>
+															</Button>
+														</AlertDialogTrigger>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>
+																	Are you absolutely sure?
+																</AlertDialogTitle>
+																<AlertDialogDescription>
+																	This action cannot be undone. This will
+																	permanently delete this entry.
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>Cancel</AlertDialogCancel>
+																<AlertDialogAction
+																	onClick={handleDelete}
+																	className="bg-[#EF4444] text-white hover:bg-[#dc2626]"
+																>
+																	Delete
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
+												</div>
+											</TableCell>
+										</TableRow>
+									);
+								})}
 							</TableBody>
 						</Table>
 					</motion.div>

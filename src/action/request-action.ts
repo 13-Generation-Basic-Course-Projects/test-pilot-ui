@@ -25,9 +25,7 @@ export const fetchRequestForCollection = async (
 		console.warn("No collectionId provided for fetchRequestForCollection");
 		return [];
 	}
-	// const endpoints = await getAllRequest(collectionId);
 	const endpoints = await getRequestByCollectionId({ collectionId });
-	// Log endpoints returned
 	return endpoints;
 };
 
