@@ -15,6 +15,7 @@ import { useTestRunStore } from "@/store/test-run-slice";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import { useHeaderStore } from "@/store/header-slice";
+import { useProjectVariableStore } from "@/store/project-variable-slice"; // --- 1. Import the project variable store
 
 interface TestCase {
 	id: string;
@@ -31,6 +32,21 @@ interface ValidTestCase {
 	variableIndex: number;
 }
 
+// --- 2. This helper function is needed to replace [[placeholders]]
+const replaceEnvVariablesInUrl = (
+	url: string,
+	variables: { variable: string; value: string }[]
+) => {
+	let resolvedUrl = url;
+	if (url && variables) {
+		variables.forEach((v) => {
+			const regex = new RegExp(`\\[\\[${v.variable}\\]\\]`, "gi");
+			resolvedUrl = resolvedUrl.replace(regex, v.value);
+		});
+	}
+	return { resolvedUrl };
+};
+
 export default function TestRequest({
 	request,
 	requestId,
@@ -41,6 +57,7 @@ export default function TestRequest({
 	const { pathVariables, queryParams } = useParamsApiStore();
 	const { method } = useRequestStore();
 	const { headers } = useHeaderStore();
+	const { getEnabledVariables } = useProjectVariableStore(); // --- 3. Get variables from the store
 	const router = useRouter();
 	const pathname = usePathname();
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
@@ -54,34 +71,28 @@ export default function TestRequest({
 		const fetchTestCases = async () => {
 			try {
 				const projectId = pathname.split("/")[2];
-
 				const [predefinedData, customData] = await Promise.all([
 					getAllPredefinedAction(),
 					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
 				]);
-
 				const transformToTestCase = (item: any): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
 				});
-
 				const transformedPredefined = Array.isArray(predefinedData)
 					? predefinedData.map(transformToTestCase)
 					: [];
-
 				const transformedCustom = Array.isArray(customData)
 					? customData.map(transformToTestCase)
 					: [];
-
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 			} catch (error) {
 				console.error("Failed to fetch all test cases:", error);
 			}
 		};
-
 		fetchTestCases();
 	}, [request, pathname]);
 
@@ -107,14 +118,21 @@ export default function TestRequest({
 		);
 	};
 
+	// --- 4. This function is now fully corrected
 	const generatePreviewUrl = (
 		baseUrl: string,
 		currentTestCase: ValidTestCase,
 		allPathVariables: any[],
 		allQueryParams: any[]
 	): string => {
-		let constructedUrl = baseUrl;
+		// Step A: Resolve project variables like [[Hello]] FIRST.
+		const enabledVariables = getEnabledVariables();
+		let constructedUrl = replaceEnvVariablesInUrl(
+			baseUrl,
+			enabledVariables
+		).resolvedUrl;
 
+		// Step B: Now, resolve path variables like {id}.
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
 			const isCurrentVariable =
@@ -132,12 +150,16 @@ export default function TestRequest({
 				valueToUse = variable.value || `{${variable.key}}`;
 			}
 
+			// This prevents multiline values from breaking the URL path
+			const finalValue = String(valueToUse).split("\n")[0];
+
 			constructedUrl = constructedUrl.replace(
 				new RegExp(`\\{${variable.key}\\}`, "g"),
-				String(valueToUse)
+				finalValue
 			);
 		});
 
+		// Step C: Finally, add query parameters.
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
@@ -182,21 +204,17 @@ export default function TestRequest({
 	const handleRunAllTests = () => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
-
 		const requestExecution = validTestCases
 			.map((testCase) => {
 				const fullTestCase = testCases.find(
 					(tc) => tc.case === testCase.testCase
 				);
 				if (!fullTestCase) return null;
-
-				const bodyPayload = {};
-
 				return {
 					url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
 					method: method || "GET",
 					headers: headers,
-					body: bodyPayload,
+					body: {},
 					requestId: requestId,
 					testCaseId: fullTestCase.id,
 					isExpectedSuccess: false,
@@ -208,16 +226,12 @@ export default function TestRequest({
 			toast.info("No test cases to run.");
 			return;
 		}
-
 		const finalPayload: TestRunPayload = {
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
 		};
-
-		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---
 		console.log("TestRequest (Params/Path) - Run All Payload:", finalPayload);
-
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
 				loading: "Starting test run...",
@@ -244,13 +258,11 @@ export default function TestRequest({
 	const handleRunSingleTest = (testCase: ValidTestCase) => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
-
 		const fullTestCase = testCases.find((tc) => tc.case === testCase.testCase);
 		if (!fullTestCase) {
 			toast.error("Test case details not found.");
 			return;
 		}
-
 		const requestExecution = [
 			{
 				url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
@@ -262,19 +274,15 @@ export default function TestRequest({
 				isExpectedSuccess: false,
 			},
 		];
-
 		const finalPayload: TestRunPayload = {
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
 		};
-
-		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---
 		console.log(
 			"TestRequest (Params/Path) - Single Run Payload:",
 			finalPayload
 		);
-
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
 				loading: `Running test: ${testCase.testCase}...`,
@@ -324,7 +332,7 @@ export default function TestRequest({
 
 	return (
 		<>
-			<div className=" min-h-[480px] flex flex-col space-y-4">
+			<div className="  flex flex-col space-y-4">
 				<div className="flex h-full justify-end items-center mt-1">
 					<Button
 						onClick={handleRunAllTests}

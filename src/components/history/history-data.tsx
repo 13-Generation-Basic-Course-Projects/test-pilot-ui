@@ -201,18 +201,18 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 				<div className="flex items-center justify-between space-x-4 px-4 border py-3 rounded-md cursor-pointer select-none">
 					<div className="flex items-center gap-3">
 						<Folder />
-						<div className="flex flex-col text-left">
+						<div className="flex items-center gap-4">
 							<h4 className="text-lg font-semibold">{batchTitle}</h4>
-							<p className="text-sm text-muted-foreground">
-								{testsCount} test{testsCount !== 1 ? "s" : ""} ran - Status:
-								<span
+							<p className="text-md text-muted-foreground">
+								{testsCount} test{testsCount !== 1 ? "s" : ""}
+								{/* <span
 									className={`font-medium ${getStatusColor(
 										batchData.overallStatus
 									)}`}
 								>
 									{" "}
 									{batchData.overallStatus}
-								</span>
+								</span> */}
 							</p>
 						</div>
 					</div>

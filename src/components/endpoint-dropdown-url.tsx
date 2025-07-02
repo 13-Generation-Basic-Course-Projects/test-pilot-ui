@@ -36,12 +36,12 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateRequestUrlAndMethodAction } from "@/action/request-action";
 import { useRequestStore } from "@/store/request-url-slice";
-import { getAllProjectVariableAction } from "@/action/project-variable-action";
 import { useApiBodyStore } from "@/store/body-api-slice";
 import { Badge } from "./ui/badge";
 import { ResponseView } from "./response-view";
 import { useParamsApiStore } from "@/store/params-api-slice";
-import { useHeaderStore } from "@/store/header-slice"; // ❗️ 1. IMPORT THE GLOBAL HEADER STORE
+import { useHeaderStore } from "@/store/header-slice";
+import { useProjectVariableStore } from "@/store/project-variable-slice"; // ❗️ 1. Make sure this is imported
 
 const endpointMethods = [
 	{ value: "GET", label: "GET" },
@@ -56,10 +56,12 @@ const replaceEnvVariablesInUrl = (
 	variables: { variable: string; value: string }[]
 ) => {
 	let resolvedUrl = url;
-	variables.forEach((v) => {
-		const regex = new RegExp(`\\[\\[${v.variable}\\]\\]`, "gi");
-		resolvedUrl = resolvedUrl.replace(regex, v.value);
-	});
+	if (url && variables) {
+		variables.forEach((v) => {
+			const regex = new RegExp(`\\[\\[${v.variable}\\]\\]`, "gi");
+			resolvedUrl = resolvedUrl.replace(regex, v.value);
+		});
+	}
 	return { resolvedUrl };
 };
 
@@ -68,12 +70,14 @@ const replacePathParams = (
 	pathVariables: { key: string; value: string }[]
 ) => {
 	let resolvedUrl = url;
-	pathVariables.forEach((param) => {
-		if (param.key) {
-			const regex = new RegExp(`\\{${param.key}\\}`, "g");
-			resolvedUrl = resolvedUrl.replace(regex, param.value);
-		}
-	});
+	if (url && pathVariables) {
+		pathVariables.forEach((param) => {
+			if (param.key) {
+				const regex = new RegExp(`\\{${param.key}\\}`, "g");
+				resolvedUrl = resolvedUrl.replace(regex, param.value);
+			}
+		});
+	}
 	return resolvedUrl;
 };
 
@@ -92,9 +96,6 @@ export function EndpointDropdownUrl({
 	const [currentMethod, setCurrentMethod] = useState<string | undefined>("GET");
 	const [currentUrl, setCurrentUrl] = useState("");
 	const [resolvedUrl, setResolvedUrl] = useState("");
-	const [variables, setVariables] = useState<
-		{ variable: string; value: string }[]
-	>([]);
 	const [isPending, startTransition] = useTransition();
 	const [apiResponse, setApiResponse] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -104,14 +105,15 @@ export function EndpointDropdownUrl({
 	const { setUrl, setMethod } = useRequestStore();
 	const { apiBodyRows } = useApiBodyStore();
 	const { pathVariables } = useParamsApiStore();
-	const { headers } = useHeaderStore(); // ❗️ 2. GET THE HEADERS FROM THE STORE
+	const { headers } = useHeaderStore();
+	const { getEnabledVariables } = useProjectVariableStore(); // ❗️ 2. Get variables from the global store
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
-	useEffect(() => {
-		getAllProjectVariableAction(projectId)
-			.then(setVariables)
-			.catch((error) => toast.error("Failed to load project variables."));
-	}, [projectId]);
+	// ❗️ 3. REMOVE the local state and useEffect that were fetching variables here.
+	// const [variables, setVariables] = useState<...>([]);
+	// useEffect(() => {
+	//     getAllProjectVariableAction(projectId).then(setVariables);
+	// }, [projectId]);
 
 	useEffect(() => {
 		if (endpoint) {
@@ -120,16 +122,18 @@ export function EndpointDropdownUrl({
 		}
 	}, [endpoint]);
 
+	// ❗️ 4. This useEffect now correctly uses the GLOBAL variables to build the URL.
 	useEffect(() => {
+		const enabledVariables = getEnabledVariables();
 		const { resolvedUrl: urlWithEnvVars } = replaceEnvVariablesInUrl(
 			currentUrl,
-			variables
+			enabledVariables
 		);
 		const finalResolvedUrl = replacePathParams(urlWithEnvVars, pathVariables);
 
 		setResolvedUrl(finalResolvedUrl);
 		setUrl(finalResolvedUrl);
-	}, [currentUrl, variables, pathVariables, setUrl]);
+	}, [currentUrl, pathVariables, setUrl, getEnabledVariables]); // Dependency array updated
 
 	useEffect(() => {
 		if (currentMethod) {
@@ -139,17 +143,14 @@ export function EndpointDropdownUrl({
 
 	const handleSave = (values: { url?: string; method?: string }) => {
 		if (!endpoint) return;
-
 		const newUrl = values.url ?? currentUrl;
 		const newMethod = values.method ?? currentMethod;
-
 		if (
 			newUrl === (endpoint.details?.url || "") &&
 			newMethod === endpoint.method
 		) {
 			return;
 		}
-
 		startTransition(async () => {
 			try {
 				await updateRequestUrlAndMethodAction({
@@ -179,7 +180,6 @@ export function EndpointDropdownUrl({
 			return acc;
 		}, {} as Record<string, any>);
 
-		// ❗️ 3. INITIALIZE HEADERS WITH THE VALUES FROM THE GLOBAL STORE
 		const requestHeaders: Record<string, string> = { ...headers };
 
 		if (
@@ -190,18 +190,11 @@ export function EndpointDropdownUrl({
 			requestHeaders["Content-Type"] = "application/json";
 		}
 
-		console.log("🚀 Sending Request:", {
-			method: currentMethod || "GET",
-			url: resolvedUrl,
-			headers: requestHeaders,
-			body: requestBody,
-		});
-
 		const startTime = Date.now();
 		try {
 			const response = await fetch(resolvedUrl, {
 				method: currentMethod || "GET",
-				headers: requestHeaders, // ❗️ 4. PASS THE CORRECT HEADERS
+				headers: requestHeaders,
 				body:
 					["GET", "DELETE"].includes(currentMethod || "") ||
 					Object.keys(requestBody).length === 0
@@ -209,12 +202,10 @@ export function EndpointDropdownUrl({
 						: JSON.stringify(requestBody),
 			});
 			const endTime = Date.now();
-
 			const responseHeaders: Record<string, string> = {};
 			response.headers.forEach((value, key) => {
 				responseHeaders[key] = value;
 			});
-
 			const contentType = response.headers.get("content-type");
 			let responseBody;
 			if (contentType?.includes("application/json")) {
@@ -222,11 +213,9 @@ export function EndpointDropdownUrl({
 			} else {
 				responseBody = await response.text();
 			}
-
 			const responseSize = new TextEncoder().encode(
 				JSON.stringify(responseBody)
 			).length;
-
 			setApiResponse({
 				status: response.status,
 				statusText: response.statusText,
