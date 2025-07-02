@@ -89,10 +89,22 @@ export function EndpointDropdownUrl({
 	const { apiBodyRows } = useApiBodyStore();
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
+	// Fetch project variables
 	useEffect(() => {
 		getAllProjectVariableAction(projectId)
-			.then(setVariables)
-			.catch((error) => toast.error("Failed to load project variables."));
+			.then((vars) => {
+				setVariables(vars);
+				console.log("Fetched variables:", vars); // Debug
+				if (!vars.some((v) => v.variable === "test-Pilots")) {
+					console.warn(
+						"Variable 'test-Pilots' not found in project variables."
+					);
+				}
+			})
+			.catch((error) => {
+				console.error("Failed to load project variables:", error);
+				toast.error("Failed to load project variables.");
+			});
 	}, [projectId]);
 
 	useEffect(() => {
