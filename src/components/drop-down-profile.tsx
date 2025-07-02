@@ -38,8 +38,7 @@ export const DropdownProfile = () => {
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const isProjectDetailPage =
-		pathname.startsWith("/project/") && pathname.split("/").length === 3;
+	const isProjectDetailPage = pathname.startsWith("/project/");
 
 	useEffect(() => {
 		const fetchProfile = async () => {
