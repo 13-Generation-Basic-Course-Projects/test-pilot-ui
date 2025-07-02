@@ -1,6 +1,5 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-
 const ProjectCardSkeleton = () => {
   return (
     <Card className="animate-pulse">

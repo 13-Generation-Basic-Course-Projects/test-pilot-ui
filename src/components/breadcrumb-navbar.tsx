@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -12,10 +11,9 @@ import { HomeIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProjectItem } from "@/types";
 import { getProjectAction } from "@/action/project-action";
-
+import React from "react";
 const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
   const [projects, setProjects] = useState<ProjectItem[]>([]);
-
   useEffect(() => {
     const fetchProjects = async () => {
       const data = await getProjectAction();
@@ -29,22 +27,14 @@ const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
     fetchProjects();
   }, []);
 
-  if (!Array.isArray(projects) || projects.length === 0) {
-    console.warn("No projects available to display in breadcrumb", { params });
-    return null;
-  }
-
-  const projectFound = projects.find((project) => project.id === params[0]);
-
-  if (!projectFound) {
-    console.warn(`No project found for ID: ${params[0]}`, { params, projects });
-  } else if (!projectFound.title || projectFound.title === "Untitled Project") {
-    console.warn(`Project with ID ${params[0]} has invalid title`, projectFound);
-  }
+  const projectId = params[0];
+  const nestedPaths = params.slice(1);
+  const projectFound = projects.find((p) => p.id === projectId);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
+        {/* Home */}
         <BreadcrumbItem>
           <BreadcrumbLink href="/project">
             <HomeIcon size={18} />
@@ -53,11 +43,34 @@ const BreadcrumbNavbar = ({ params }: { params: string[] }) => {
 
         <BreadcrumbSeparator />
 
+        {/* Project Title */}
         <BreadcrumbItem>
-          <BreadcrumbLink href={`/project/${params[0]}`}>
-            <h1 className="mb-[3px]">{projectFound?.title ?? "Project"}</h1>
+          <BreadcrumbLink href={`/project/${projectId}`}>
+            <span className="text-sm font-medium">
+              {projectFound?.title ?? "Project"}
+            </span>
           </BreadcrumbLink>
         </BreadcrumbItem>
+        
+
+        {/* Additional nested breadcrumb segments */}
+        {nestedPaths.map((segment, index) => {
+          const path = `/project/${[projectId, ...nestedPaths.slice(0, index + 2)].join("/")}`;
+          const label = segment
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
+
+          return (
+            <React.Fragment key={index}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={path}>
+                  <span className="text-sm font-medium">{label}</span>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </React.Fragment>
+          );
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   );
