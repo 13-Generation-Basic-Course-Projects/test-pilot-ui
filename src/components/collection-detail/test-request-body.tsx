@@ -40,11 +40,10 @@ export const TestRequestBody = ({
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
-	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
-
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
+	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
 
 	useEffect(() => {
 		const fetchTestCases = async () => {
@@ -107,31 +106,19 @@ export const TestRequestBody = ({
 			.filter((item): item is TestCasePayload => item !== null);
 	});
 
-	const handleRunSingleTest = (singleTestCase: TestCasePayload) => {
+	const runTests = (requests: any[]) => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
-
-		const requestExecution = [
-			{
-				url: url,
-				method: method || "GET",
-				headers: {},
-				body: singleTestCase.payload,
-				requestId: requestId,
-				testCaseId: singleTestCase.testCaseId,
-				isExpectedSuccess: false,
-			},
-		];
 
 		const finalPayload: TestRunPayload = {
 			projectId: projectId,
 			triggerType: "SELECTED_TEST_CASES",
-			requestExecution: requestExecution,
+			requestExecution: requests,
 		};
 
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
-				loading: `Running test: ${singleTestCase.testCase}...`,
+				loading: `Running ${requests.length} test(s)...`,
 				success: (result) => {
 					if (result && result.data) {
 						setTestRunResult(result.data);
@@ -154,10 +141,7 @@ export const TestRequestBody = ({
 	};
 
 	const handleRunAllTests = () => {
-		clearTestRunResult();
-		sessionStorage.removeItem("testRunResult");
-
-		const requestExecution = testCasePayloads.map((testCase) => ({
+		const allRequests = testCasePayloads.map((testCase) => ({
 			url: url,
 			method: method || "GET",
 			headers: {},
@@ -166,38 +150,24 @@ export const TestRequestBody = ({
 			testCaseId: testCase.testCaseId,
 			isExpectedSuccess: false,
 		}));
+		if (allRequests.length > 0) {
+			runTests(allRequests);
+		}
+	};
 
-		const finalPayload: TestRunPayload = {
-			projectId: projectId,
-			triggerType: "SELECTED_TEST_CASES",
-			requestExecution: requestExecution,
-		};
-
-		startTransition(async () => {
-			toast.promise(runTestCasesAction(finalPayload), {
-				loading: "Starting test run...",
-				success: (result) => {
-					if (result && result.data) {
-						setTestRunResult(result.data);
-						sessionStorage.setItem(
-							"testRunResult",
-							JSON.stringify(result.data)
-						);
-						router.push(`${pathname}/monitoring`);
-						return "Test run started successfully!";
-					}
-					console.error(
-						"Test run succeeded but returned no data. Full result:",
-						result
-					);
-					return "Test run initiated, but no data was returned from the backend.";
-				},
-				error: (err) => {
-					console.error("Failed to start test run:", err);
-					return "Failed to start test run.";
-				},
-			});
-		});
+	const handleRunSingleTest = (testCase: TestCasePayload) => {
+		const singleRequest = [
+			{
+				url: url,
+				method: method || "GET",
+				headers: {},
+				body: testCase.payload,
+				requestId: requestId,
+				testCaseId: testCase.testCaseId,
+				isExpectedSuccess: false,
+			},
+		];
+		runTests(singleRequest);
 	};
 
 	const CardSkeleton = () => (
@@ -271,7 +241,6 @@ export const TestRequestBody = ({
 									) : (
 										"Run"
 									)}
-									<Play className="ml-2 h-4 w-4" />
 								</Button>
 							</CardHeader>
 							<CardContent>

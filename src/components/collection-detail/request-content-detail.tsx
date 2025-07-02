@@ -41,8 +41,6 @@ export function RequestContentDetail({
 			<TabsContent value="request-content">
 				<ApiRequestDetailParam request={request} requestId={requestId} />
 				<ApiRequestContentHeader requests={request} requestId={requestId} />
-
-				{/* ✨ 4. Conditionally render the Body or a placeholder */}
 				{isBodyDisabled ? (
 					<div className="mt-8 p-6 text-center text-muted-foreground border rounded-md bg-slate-50">
 						A request body is not used for {method} requests.
