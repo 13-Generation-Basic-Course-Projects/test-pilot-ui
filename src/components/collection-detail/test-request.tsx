@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
@@ -7,15 +8,15 @@ import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { EndpointItem } from "@/types"; // ✨ 1. Import EndpointItem type
-
-// ✨ 2. Import BOTH actions
+import { EndpointItem } from "@/types";
+import { toast } from "sonner";
+import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
+import { useTestRunStore } from "@/store/test-run-slice";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 
-// Interfaces remain the same
 interface TestCase {
-	id: string; // ✨ Add id for consistency
+	id: string;
 	type: string;
 	case: string;
 	value: any;
@@ -29,7 +30,6 @@ interface ValidTestCase {
 	variableIndex: number;
 }
 
-// ✨ 3. Update the component to accept props
 export default function TestRequest({
 	request,
 	requestId,
@@ -42,20 +42,19 @@ export default function TestRequest({
 	const router = useRouter();
 	const pathname = usePathname();
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
-	// ✨ 4. This useEffect is now updated to fetch ALL test cases (predefined and custom)
+	const [isPending, startTransition] = useTransition();
+	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
+
 	useEffect(() => {
 		const fetchTestCases = async () => {
 			try {
-				// Get projectId from the request prop
 				const projectId = pathname.split("/")[2];
 
-				// Fetch both in parallel
 				const [predefinedData, customData] = await Promise.all([
 					getAllPredefinedAction(),
 					projectId ? getCustomTestCaseAction(projectId) : Promise.resolve([]),
 				]);
 
-				// Helper to transform data consistently
 				const transformToTestCase = (item: any): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
@@ -71,7 +70,6 @@ export default function TestRequest({
 					? customData.map(transformToTestCase)
 					: [];
 
-				// Combine into a single list
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
 			} catch (error) {
@@ -80,12 +78,12 @@ export default function TestRequest({
 		};
 
 		fetchTestCases();
-	}, [request]); // ✨ Depend on `request` prop to refetch if it changes
+	}, [request, pathname]);
 
-	// The rest of your component logic does not need to change.
-	// `generatePreviewUrl` will now correctly find custom test cases in the `testCases` state.
-
-	const getValidTestCases = (variables: any[], type: "path" | "query") => {
+	const getValidTestCases = (
+		variables: any[],
+		type: "path" | "query"
+	): ValidTestCase[] => {
 		return (
 			variables
 				.filter(
@@ -104,10 +102,6 @@ export default function TestRequest({
 		);
 	};
 
-	const handleRun = () => {
-		router.push(`${pathname}/monitoring`);
-	};
-
 	const generatePreviewUrl = (
 		baseUrl: string,
 		currentTestCase: ValidTestCase,
@@ -116,7 +110,6 @@ export default function TestRequest({
 	): string => {
 		let constructedUrl = baseUrl;
 
-		// Replace path parameters
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
 			const isCurrentVariable =
@@ -135,7 +128,6 @@ export default function TestRequest({
 			);
 		});
 
-		// Build query parameters
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
@@ -176,7 +168,60 @@ export default function TestRequest({
 		  ]
 		: [];
 
-	// The rest of the JSX is unchanged.
+	const handleRun = () => {
+		clearTestRunResult();
+		sessionStorage.removeItem("testRunResult");
+
+		const requestExecution = validTestCases
+			.map((testCase) => {
+				const fullTestCase = testCases.find(
+					(tc) => tc.case === testCase.testCase
+				);
+				if (!fullTestCase) return null;
+
+				const bodyPayload = {};
+
+				return {
+					url: generatePreviewUrl(url, testCase, pathVariables, queryParams),
+					method: method || "GET",
+					headers: {},
+					body: bodyPayload,
+					requestId: requestId,
+					testCaseId: fullTestCase.id,
+					isExpectedSuccess: false,
+				};
+			})
+			.filter((p) => p !== null);
+
+		const finalPayload: TestRunPayload = {
+			projectId: pathname.split("/")[2],
+			triggerType: "SELECTED_TEST_CASES",
+			requestExecution: requestExecution as any[],
+		};
+
+		startTransition(async () => {
+			toast.promise(runTestCasesAction(finalPayload), {
+				loading: "Starting test run...",
+				success: (result) => {
+					if (result && result.data) {
+						setTestRunResult(result.data);
+						sessionStorage.setItem(
+							"testRunResult",
+							JSON.stringify(result.data)
+						);
+						router.push(`${pathname}/monitoring`);
+						return "Test run started successfully!";
+					}
+					return "Test run initiated, but no data returned.";
+				},
+				error: (err) => {
+					console.error("Failed to start test run:", err);
+					return "Failed to start test run.";
+				},
+			});
+		});
+	};
+
 	if (!hasUrl) {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
@@ -204,8 +249,12 @@ export default function TestRequest({
 		<>
 			<div className=" min-h-[480px] flex flex-col space-y-4">
 				<div className="flex h-full justify-end items-center mt-1">
-					<Button onClick={() => handleRun()}>
-						Run All <Play className="ml-2 h-4 w-4" />
+					<Button
+						onClick={handleRun}
+						disabled={isPending || validTestCases.length === 0}
+					>
+						{isPending ? "Running..." : "Run All"}{" "}
+						<Play className="ml-2 h-4 w-4" />
 					</Button>
 				</div>
 				<div className="flex flex-col items-center gap-6">
@@ -243,9 +292,6 @@ export default function TestRequest({
 												: "Request Query Params"}
 										</CardTitle>
 									</div>
-									<Button onClick={() => handleRun()}>
-										Run <Play className="ml-2 h-4 w-4" />
-									</Button>
 								</CardHeader>
 								<CardContent>
 									<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">

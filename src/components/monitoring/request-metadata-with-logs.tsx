@@ -43,14 +43,12 @@ export function RequestMetadataWithLogs({
 			.padStart(3, "0")}`;
 	};
 
-	// When test changes, show logs for that specific test
 	useEffect(() => {
 		if (!selectedTest?.logs || !isClient) {
 			setDisplayedLogs([]);
 			return;
 		}
 
-		// If test is completed, show all logs for this specific test
 		if (selectedTest.status === "passed" || selectedTest.status === "failed") {
 			const logsWithTimestamps: LogEntryWithTimestamp[] = selectedTest.logs.map(
 				(log) => ({
@@ -64,24 +62,22 @@ export function RequestMetadataWithLogs({
 		}
 	}, [selectedTest?.id, selectedTest?.status, isClient]);
 
-	// Auto-scroll to bottom when logs change
 	useEffect(() => {
 		if (logContainerRef.current) {
 			logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
 		}
 	}, [displayedLogs]);
 
-	// Function to get color class based on log level
 	const getLogLevelClass = (level: LogLevel) => {
 		switch (level) {
 			case "INFO":
-				return "text-[#3B82F6]"; // blue
+				return "text-[#3B82F6]";
 			case "WARNING":
-				return "text-[#F59E0B]"; // amber
+				return "text-[#F59E0B]";
 			case "ERROR":
-				return "text-[#EF4444]"; // red
+				return "text-[#EF4444]";
 			case "DEBUG":
-				return "text-[#94A3B8]"; // slate
+				return "text-[#94A3B8]";
 			default:
 				return "text-[#3B82F6]";
 		}
@@ -92,17 +88,11 @@ export function RequestMetadataWithLogs({
 			<div className="space-y-6">
 				<div className="space-y-3">
 					<p className="text-xl font-semibold">Test Logs</p>
-					<div className="bg-[#1E293B] text-white font-mono text-xs p-3 rounded-lg h-[200px] overflow-y-auto">
-						<div className="flex items-center justify-center h-full text-[#94A3B8]">
-							Loading...
-						</div>
-					</div>
+					<div className="bg-[#1E293B] p-3 rounded-lg h-[200px]"></div>
 				</div>
 				<div className="space-y-3">
 					<p className="text-xl font-semibold">Request Metadata</p>
-					<div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 font-mono text-sm">
-						<div className="text-[#94A3B8]">Loading...</div>
-					</div>
+					<div className="bg-[#F8FAFC] rounded-lg h-[200px]"></div>
 				</div>
 			</div>
 		);
@@ -118,7 +108,6 @@ export function RequestMetadataWithLogs({
 						{displayedLogs.length}/{selectedTest.logs?.length || 0}
 					</div>
 				</div>
-
 				<div
 					ref={logContainerRef}
 					className="bg-[#1E293B] text-white font-mono text-xs p-3 rounded-lg h-[200px] overflow-y-auto"
@@ -164,10 +153,19 @@ export function RequestMetadataWithLogs({
 								fontSize: "0.875rem",
 								lineHeight: "1.5",
 								border: "none",
+								// 👇 FIX: Set a max-height and enable vertical scrolling
+								maxHeight: "400px", // You can adjust this value
+								overflowY: "auto",
 							}}
 							lineNumberStyle={{
 								color: "#94A3B8",
 								paddingRight: "1rem",
+							}}
+							codeTagProps={{
+								style: {
+									wordBreak: "break-all",
+									whiteSpace: "pre-wrap",
+								},
 							}}
 						>
 							{JSON.stringify(selectedTest.metadata, null, 2)}
