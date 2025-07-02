@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { HistoryData } from "@/components/history/history-data";
 import { PreviewSkeleton } from "@/components/preview-skeleton";
 import { getHistoryAction } from "@/action/history-action";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
+import { useTestRunStore } from "@/store/test-run-slice";
+import { Loader2, Play } from "lucide-react";
+import { fetchCollectionsForProject } from "@/action/collection-action";
+import { fetchRequestForCollection } from "@/action/request-action";
 
 type BackendResponse = {
 	message: string;
@@ -17,10 +23,16 @@ type BackendResponse = {
 
 export default function History() {
 	const [previewData, setPreviewData] = useState<any>(null);
-	const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
 	const [loadingHistory, setLoadingHistory] = useState<boolean>(true);
 	const pathName = usePathname();
+	const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
 	const [backendData, setBackendData] = useState<BackendResponse | null>(null);
+
+	const [isRunAllPending, startRunAllTransition] = useTransition();
+	const [runningBatchId, setRunningBatchId] = useState<string | null>(null);
+
+	const router = useRouter();
+	const { setTestRunResult, clearTestRunResult } = useTestRunStore();
 
 	const projectId = pathName.split("/")[2];
 
@@ -47,17 +59,90 @@ export default function History() {
 		}, 300);
 	};
 
+	const handleRunAllHistory = async () => {
+		if (!backendData || !backendData.payload) return;
+
+		clearTestRunResult();
+		sessionStorage.removeItem("testRunResult");
+
+		const allRequests = backendData.payload.flatMap((batch) =>
+			batch.results.map((result: any) => ({
+				url: result.requestDefinitionSnapshot.url,
+				method: result.requestDefinitionSnapshot.method,
+				headers: result.requestDefinitionSnapshot.headers || {},
+				body: result.requestDefinitionSnapshot.body || {},
+				requestId: result.requestId,
+				testCaseId: result.testCaseId,
+				isExpectedSuccess: false,
+			}))
+		);
+
+		if (allRequests.length === 0) {
+			toast.warning("No tests found in history to run.");
+			return;
+		}
+
+		const finalPayload: TestRunPayload = {
+			projectId: projectId,
+			triggerType: "SELECTED_TEST_CASES",
+			requestExecution: allRequests,
+		};
+
+		const collections = await fetchCollectionsForProject(projectId);
+		if (!collections || collections.length === 0) {
+			throw new Error("No collections found for this project.");
+		}
+		const collectionId = collections[0].id;
+		console.log("HISTORY", collectionId);
+		const requestId = (await fetchRequestForCollection(collectionId)).map(
+			(request) => request.id
+		)[0];
+
+		startRunAllTransition(async () => {
+			toast.promise(runTestCasesAction(finalPayload), {
+				loading: `Running ${allRequests.length} tests from history...`,
+				success: (result) => {
+					if (result?.data) {
+						setTestRunResult(result.data);
+						sessionStorage.setItem(
+							"testRunResult",
+							JSON.stringify(result.data)
+						);
+						router.push(
+							`/project/${projectId}/collection/${collectionId}/request/${requestId}/monitoring`
+						);
+						return "Test run started successfully!";
+					}
+					return "Test run initiated, but no data returned.";
+				},
+				error: (err) => `Failed to start test run: ${err.message}`,
+			});
+		});
+	};
+
 	return (
 		<div className="w-full mx-auto mt-10 bg-white p-8 space-y-10">
 			<div className="flex justify-between items-center">
 				<h1 className="text-2xl font-bold text-gray-900">
 					History: Test Pilot API
 				</h1>
-				<Button className="cursor-pointer">Run All History</Button>
+				<Button
+					onClick={handleRunAllHistory}
+					disabled={
+						isRunAllPending || loadingHistory || runningBatchId !== null
+					}
+				>
+					{isRunAllPending ? (
+						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+					) : (
+						<Play className="mr-2 h-4 w-4" />
+					)}
+					Run All History
+				</Button>
 			</div>
 
 			<div className="grid grid-cols-12 gap-10">
-				<div className="col-span-8 pr-10 space-y-4">
+				<div className="col-span-8 pr-4 space-y-4 max-h-[70vh] overflow-y-auto">
 					{loadingHistory ? (
 						<PreviewSkeleton />
 					) : backendData &&
@@ -92,7 +177,6 @@ export default function History() {
 								</div>
 								<h2 className="text-xl font-semibold">Request Details</h2>
 							</div>
-
 							<div className="space-y-4">
 								<div className="flex space-x-2">
 									<p>Status:</p>
@@ -126,9 +210,7 @@ export default function History() {
 									<p>{previewData.durationMs}ms</p>
 								</div>
 							</div>
-
 							<hr className="text-[#94A3B8]" />
-
 							<h3 className="text-xl">Request Body</h3>
 							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
 								<pre className="whitespace-pre-wrap">
@@ -141,7 +223,6 @@ export default function History() {
 										: "No request body"}
 								</pre>
 							</div>
-
 							<h3 className="text-xl">Request Headers</h3>
 							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
 								<pre className="whitespace-pre-wrap">
@@ -152,21 +233,18 @@ export default function History() {
 									)}
 								</pre>
 							</div>
-
 							<h3 className="text-xl">Response</h3>
 							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
 								<pre className="whitespace-pre-wrap">
 									{previewData.responseBody || "No response body"}
 								</pre>
 							</div>
-
 							<h3 className="text-xl">Response Headers</h3>
 							<div className="bg-[#F8FAFC] p-4 rounded-md text-sm font-mono overflow-auto max-h-60">
 								<pre className="whitespace-pre-wrap">
 									{JSON.stringify(previewData.responseHeaders, null, 2)}
 								</pre>
 							</div>
-
 							{previewData.assertionResults && (
 								<>
 									<h3 className="text-xl">Assertion Results</h3>
@@ -177,7 +255,6 @@ export default function History() {
 									</div>
 								</>
 							)}
-
 							{previewData.status !== "PASSED" && (
 								<div className="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm">
 									<strong>⚠️ Test Failed:</strong> Check assertion results and

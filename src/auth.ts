@@ -62,10 +62,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			clientId: process.env.AUTH_GOOGLE_ID,
 			clientSecret: process.env.AUTH_GOOGLE_SECRET,
 		}),
-		GitHub({
-			clientId: process.env.GITHUB_ID,
-			clientSecret: process.env.GITHUB_SECRET,
-		}),
 	],
 	secret: process.env.AUTH_SECRET,
 	session: {
@@ -78,9 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 	callbacks: {
 		async jwt({ token, user, account }) {
-			// `account` and `user` are only passed on the very first sign-in.
 			if (account && user) {
-				// If the user signed in with Google...
 				if (account.provider === "google") {
 					try {
 						const googleIdToken = account.id_token as string;

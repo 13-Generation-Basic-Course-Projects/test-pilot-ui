@@ -20,7 +20,7 @@ export function ResponseView({ response }: ResponseViewProps) {
 	const resultsList = assertionResults ? Object.entries(assertionResults) : [];
 
 	return (
-		<Tabs defaultValue="testResults" className="h-full flex flex-col">
+		<Tabs defaultValue="body" className="h-full flex flex-col">
 			<TabsList>
 				<TabsTrigger value="body">Response Body</TabsTrigger>
 				<TabsTrigger value="headers">Headers</TabsTrigger>

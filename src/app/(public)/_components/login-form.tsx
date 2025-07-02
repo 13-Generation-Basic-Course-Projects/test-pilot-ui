@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,21 +14,33 @@ import { toast } from "sonner";
 import { signInAction, signInGithub } from "@/action/auth-action";
 import { signIn } from "next-auth/react";
 import { GITHUB_LOGIN } from "@/lib/constants";
-import { githubLoginService } from "@/service/auth-service";
 
 export function LoginForm({
 	className,
 	...props
-}: React.ComponentPropsWithoutRef<"form">) {
+}: React.ComponentPropsWithoutRef<"div">) {
 	const searchParams = useSearchParams();
 	const router = useRouter();
+
 	useEffect(() => {
 		const error = searchParams.get("error");
 		const code = searchParams.get("code");
-		if (error) {
+
+		// Check for the specific error for existing accounts
+		if (error === "OAuthAccountNotLinked") {
+			toast.info("An account with this email already exists.", {
+				description:
+					"Please sign in using your original method (e.g., password or GitHub).",
+				id: "oauth-account-exists",
+			});
+			// Clear the error from the URL so it doesn't show again on refresh
+			router.replace("/login", { scroll: false });
+		} else if (error) {
+			// Handle other generic login errors
 			toast.error("Invalid credentials", {
 				id: "login-credentials-id",
 			});
+			router.replace("/login", { scroll: false });
 		}
 
 		if (code) {
@@ -36,15 +49,12 @@ export function LoginForm({
 				await signInGithub(code);
 			})();
 		}
-	}, [searchParams]);
+	}, [searchParams, router]);
+
 	const [showPassword, setShowPassword] = useState(false);
 
 	return (
-		<form
-			className={cn("flex flex-col gap-8 mb-10", className)}
-			action={signInAction}
-			{...props}
-		>
+		<div className={cn("flex flex-col gap-8 mb-10", className)} {...props}>
 			{/* Header */}
 			<div className="flex flex-col items-center gap-2 text-center">
 				<h1 className="text-2xl font-bold">Login to your account</h1>
@@ -52,9 +62,11 @@ export function LoginForm({
 					Click the button below to login via
 				</p>
 			</div>
-			{/* Social Buttons */}
+
+			{/* Social Buttons (outside the form) */}
 			<div className="flex justify-between items-center gap-8">
 				<Button
+					type="button"
 					onClick={() => router.push(GITHUB_LOGIN)}
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
@@ -63,6 +75,7 @@ export function LoginForm({
 					GitHub
 				</Button>
 				<Button
+					type="button"
 					variant="outline"
 					className="flex items-center justify-center w-full flex-1 cursor-pointer"
 					onClick={() => signIn("google")}
@@ -79,8 +92,8 @@ export function LoginForm({
 				</span>
 			</div>
 
-			{/* Email & Password */}
-			<div className="grid gap-6">
+			{/* Email/Password Form */}
+			<form action={signInAction} className="grid gap-6">
 				<div className="grid gap-2">
 					<Label htmlFor="email" className="text-[#34302B]">
 						Email
@@ -95,7 +108,6 @@ export function LoginForm({
 					/>
 				</div>
 
-				{/* Password Field with Eye Icon */}
 				<div className="grid gap-2 relative">
 					<Label htmlFor="password" className="text-[#34302B]">
 						Password
@@ -116,7 +128,10 @@ export function LoginForm({
 					>
 						{showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
 					</button>
-					<button className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]">
+					<button
+						type="button"
+						className="ml-auto text-sm underline-offset-4 hover:underline text-[#0973DC]"
+					>
 						<Link href="/forgot-password">Forgot your password?</Link>
 					</button>
 				</div>
@@ -124,15 +139,15 @@ export function LoginForm({
 				<Button type="submit" className="w-full cursor-pointer">
 					Login
 				</Button>
-			</div>
+			</form>
 
-			{/* Sign up */}
+			{/* Sign up link */}
 			<div className="text-center text-sm text-[#737373]">
 				Don't have an account?{" "}
 				<Link href="/register" className="text-[#0973DC]">
 					Sign up
 				</Link>
 			</div>
-		</form>
+		</div>
 	);
 }

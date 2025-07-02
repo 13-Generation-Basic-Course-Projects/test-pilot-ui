@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
 	Tabs,
@@ -11,6 +13,8 @@ import { ApiRequestDetailParam } from "./api-request-detail-params-testcase";
 import { Body } from "./body";
 import { CustomValue } from "./custom-value";
 import { EndpointItem } from "@/types";
+// ✨ 1. Import the store to get the current method
+import { useRequestStore } from "@/store/request-url-slice";
 
 export function RequestContentDetail({
 	projectId,
@@ -21,6 +25,12 @@ export function RequestContentDetail({
 	requestId: string;
 	request: EndpointItem[];
 }) {
+	// ✨ 2. Get the current method from your Zustand store
+	const { method } = useRequestStore();
+
+	// ✨ 3. Create a flag to determine if the body should be disabled
+	const isBodyDisabled = method === "GET" || method === "DELETE";
+
 	return (
 		<Tabs defaultValue="request-content" className="w-full">
 			<TabsListV2 className="mb-10">
@@ -31,7 +41,15 @@ export function RequestContentDetail({
 			<TabsContent value="request-content">
 				<ApiRequestDetailParam request={request} requestId={requestId} />
 				<ApiRequestContentHeader requests={request} requestId={requestId} />
-				<Body request={request} requestId={requestId} projectId={projectId} />
+
+				{/* ✨ 4. Conditionally render the Body or a placeholder */}
+				{isBodyDisabled ? (
+					<div className="mt-8 p-6 text-center text-muted-foreground border rounded-md bg-slate-50">
+						A request body is not used for {method} requests.
+					</div>
+				) : (
+					<Body request={request} requestId={requestId} projectId={projectId} />
+				)}
 			</TabsContent>
 			<TabsContent value="predefined-value">
 				<PredefinedTestCase />

@@ -2,18 +2,15 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import { useApiBodyStore } from "@/store/body-api-slice";
-import { Play } from "lucide-react";
+import { Play, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { toast } from "sonner";
 import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
-
-// Import both predefined and custom test case actions
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import { useTestRunStore } from "@/store/test-run-slice";
@@ -25,6 +22,13 @@ interface TestCase {
 	value: any;
 }
 
+interface TestCasePayload {
+	field: string;
+	testCase: string;
+	testCaseId: string;
+	payload: Record<string, any>;
+}
+
 export const TestRequestBody = ({
 	projectId,
 	requestId,
@@ -33,16 +37,14 @@ export const TestRequestBody = ({
 	requestId: string;
 }) => {
 	const { apiBodyRows } = useApiBodyStore();
-	const { pathVariables, queryParams } = useParamsApiStore();
 	const { method, url } = useRequestStore();
 	const router = useRouter();
 	const pathname = usePathname();
-	const { clearTestRunResult } = useTestRunStore();
+	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
 
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
-	const { setTestRunResult } = useTestRunStore(); // Get the setter from the store
 
 	useEffect(() => {
 		const fetchTestCases = async () => {
@@ -81,7 +83,7 @@ export const TestRequestBody = ({
 		}
 	}, [projectId]);
 
-	const testCasePayloads = apiBodyRows.flatMap((row) => {
+	const testCasePayloads: TestCasePayload[] = apiBodyRows.flatMap((row) => {
 		const basePayload = apiBodyRows.reduce((acc, r) => {
 			acc[r.id] = r.value;
 			return acc;
@@ -102,21 +104,66 @@ export const TestRequestBody = ({
 					payload: modifiedPayload,
 				};
 			})
-			.filter(Boolean);
+			.filter((item): item is TestCasePayload => item !== null);
 	});
 
-	const handleRun = () => {
+	const handleRunSingleTest = (singleTestCase: TestCasePayload) => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
+
+		const requestExecution = [
+			{
+				url: url,
+				method: method || "GET",
+				headers: {},
+				body: singleTestCase.payload,
+				requestId: requestId,
+				testCaseId: singleTestCase.testCaseId,
+				isExpectedSuccess: false,
+			},
+		];
+
+		const finalPayload: TestRunPayload = {
+			projectId: projectId,
+			triggerType: "SELECTED_TEST_CASES",
+			requestExecution: requestExecution,
+		};
+
+		startTransition(async () => {
+			toast.promise(runTestCasesAction(finalPayload), {
+				loading: `Running test: ${singleTestCase.testCase}...`,
+				success: (result) => {
+					if (result && result.data) {
+						setTestRunResult(result.data);
+						sessionStorage.setItem(
+							"testRunResult",
+							JSON.stringify(result.data)
+						);
+						router.push(`${pathname}/monitoring`);
+						return "Test run started successfully!";
+					}
+					console.error(
+						"Test run succeeded but returned no data. Full result:",
+						result
+					);
+					return "Test run initiated, but no data was returned from the backend.";
+				},
+				error: (err) => `Failed to start test run: ${err.message}`,
+			});
+		});
+	};
+
+	const handleRunAllTests = () => {
+		clearTestRunResult();
+		sessionStorage.removeItem("testRunResult");
+
 		const requestExecution = testCasePayloads.map((testCase) => ({
 			url: url,
 			method: method || "GET",
-			headers: {
-				// Merge headers from various sources here if necessary
-			},
-			body: testCase!.payload,
+			headers: {},
+			body: testCase.payload,
 			requestId: requestId,
-			testCaseId: testCase!.testCaseId,
+			testCaseId: testCase.testCaseId,
 			isExpectedSuccess: false,
 		}));
 
@@ -132,17 +179,18 @@ export const TestRequestBody = ({
 				success: (result) => {
 					if (result && result.data) {
 						setTestRunResult(result.data);
-
 						sessionStorage.setItem(
 							"testRunResult",
 							JSON.stringify(result.data)
 						);
-
 						router.push(`${pathname}/monitoring`);
-
 						return "Test run started successfully!";
 					}
-					return "Test run initiated, but no data returned.";
+					console.error(
+						"Test run succeeded but returned no data. Full result:",
+						result
+					);
+					return "Test run initiated, but no data was returned from the backend.";
 				},
 				error: (err) => {
 					console.error("Failed to start test run:", err);
@@ -178,7 +226,7 @@ export const TestRequestBody = ({
 		<div className=" min-h-[480px] flex flex-col space-y-4">
 			<div className="flex h-full justify-end items-center mt-1">
 				<Button
-					onClick={handleRun}
+					onClick={handleRunAllTests}
 					disabled={isLoading || isPending || testCasePayloads.length === 0}
 				>
 					{isPending ? "Running..." : "Run All"}
@@ -197,7 +245,7 @@ export const TestRequestBody = ({
 				) : (
 					testCasePayloads.map((testCase, index) => (
 						<Card
-							key={`${testCase!.field}-${testCase!.testCase}-${index}`}
+							key={`${testCase.field}-${testCase.testCase}-${index}`}
 							className="break-all w-full"
 						>
 							<CardHeader className="flex flex-row justify-between items-start">
@@ -205,19 +253,30 @@ export const TestRequestBody = ({
 									<CardTitle className="text-md">
 										Field :{" "}
 										<Badge variant="secondary" className="text-[#006FEE]">
-											{testCase!.field}
+											{testCase.field}
 										</Badge>
 									</CardTitle>
 									<CardTitle className="text-md">
 										Scenario :{" "}
-										<Badge variant="default">{testCase!.testCase}</Badge>
+										<Badge variant="default">{testCase.testCase}</Badge>
 									</CardTitle>
 									<CardTitle className="text-md">Request Body :</CardTitle>
 								</div>
+								<Button
+									onClick={() => handleRunSingleTest(testCase)}
+									disabled={isPending}
+								>
+									{isPending ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										"Run"
+									)}
+									<Play className="ml-2 h-4 w-4" />
+								</Button>
 							</CardHeader>
 							<CardContent>
 								<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">
-									<code>{JSON.stringify(testCase!.payload, null, 2)}</code>
+									<code>{JSON.stringify(testCase.payload, null, 2)}</code>
 								</pre>
 							</CardContent>
 						</Card>

@@ -9,6 +9,11 @@ import { ProgressMonitoring } from "./progress";
 import { RequestMetadataWithLogs } from "./request-metadata-with-logs";
 import { MonitoringData } from "./monitoring-data";
 import Link from "next/link";
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 export default function Monitoring() {
 	const { testRunResult, setTestRunResult, clearTestRunResult } =
@@ -20,19 +25,15 @@ export default function Monitoring() {
 	const [currentExecutingIndex, setCurrentExecutingIndex] = useState(-1);
 	const executionTimeouts = useRef<NodeJS.Timeout[]>([]);
 
-	// ✨ This useEffect is now corrected to run only once on mount.
 	useEffect(() => {
-		// We read the initial state from the store here.
 		let dataToProcess = testRunResult;
 
-		// If the store is empty (due to race condition), check sessionStorage
+		// If the store is empty, check sessionStorage as a fallback
 		if (!dataToProcess) {
 			const storedResult = sessionStorage.getItem("testRunResult");
 			if (storedResult) {
 				dataToProcess = JSON.parse(storedResult);
-				// Put the data back into the store so the app is consistent
 				setTestRunResult(dataToProcess!);
-				// Clean up sessionStorage immediately after use
 				sessionStorage.removeItem("testRunResult");
 			}
 		}
@@ -47,16 +48,15 @@ export default function Monitoring() {
 				status: "pending" as const,
 			}));
 			setTestResults(pendingResults);
-			// This is the only time startTestExecution should be called.
 			startTestExecution(finalResults);
 		}
 
-		// The cleanup function remains the same. It will run when you navigate away.
+		// Cleanup when the component unmounts
 		return () => {
 			clearTestRunResult();
 			executionTimeouts.current.forEach((timeout) => clearTimeout(timeout));
 		};
-	}, [setTestRunResult, clearTestRunResult]);
+	}, [setTestRunResult, clearTestRunResult]); // This dependency array is correct
 
 	const startTestExecution = (finalResults: TestResult[]) => {
 		executionTimeouts.current.forEach((timeout) => clearTimeout(timeout));
@@ -65,7 +65,6 @@ export default function Monitoring() {
 		finalResults.forEach((finalTest, index) => {
 			const startTimeout = setTimeout(() => {
 				setCurrentExecutingIndex(index);
-				// Using the functional update form is great practice here!
 				setTestResults((prev) =>
 					prev.map((test, i) =>
 						i === index ? { ...test, status: "loading" as const } : test
@@ -92,7 +91,6 @@ export default function Monitoring() {
 		});
 	};
 
-	// The rest of your component logic and JSX is correct.
 	const handleTestSelect = (testId: string) => {
 		const test = testResults.find((t) => t.id === testId);
 		if (test && (test.status === "passed" || test.status === "failed")) {
@@ -139,12 +137,20 @@ export default function Monitoring() {
 						<p className="text-[#71717A]">
 							{new Date(testRunResult.startTimestamp).toLocaleDateString(
 								"en-US",
-								{ day: "2-digit", month: "short", year: "numeric" }
+								{
+									day: "2-digit",
+									month: "short",
+									year: "numeric",
+								}
 							)}
 							,{" "}
 							{new Date(testRunResult.startTimestamp).toLocaleTimeString(
 								"en-US",
-								{ hour: "2-digit", minute: "2-digit", hour12: true }
+								{
+									hour: "2-digit",
+									minute: "2-digit",
+									hour12: true,
+								}
 							)}
 						</p>
 					)}
@@ -203,24 +209,34 @@ export default function Monitoring() {
 				</div>
 
 				{/* Request Detail Section */}
-				<div className="grid grid-cols-12 gap-8">
-					<div className="space-y-8 col-span-5 border-r pr-8">
-						{selectedTest ? (
-							<RequestMetadataWithLogs selectedTest={selectedTest} />
-						) : (
-							<div className="flex items-center justify-center h-64 text-[#94A3B8]">
-								<p>Select a test to view its details.</p>
-							</div>
-						)}
-					</div>
-					<div className="col-span-7">
-						<MonitoringData
-							testResults={testResults}
-							onSelectTest={handleTestSelect}
-							selectedTestId={selectedTestId}
-						/>
-					</div>
-				</div>
+				<ResizablePanelGroup
+					direction="horizontal"
+					className="rounded-lg border min-h-[60vh]"
+					dir="rtl"
+				>
+					<ResizablePanel defaultSize={60} minSize={40}>
+						<div className="p-6 h-full overflow-y-auto" dir="ltr">
+							<MonitoringData
+								testResults={testResults}
+								onSelectTest={handleTestSelect}
+								selectedTestId={selectedTestId}
+							/>
+						</div>
+					</ResizablePanel>
+					<ResizableHandle withHandle />
+
+					<ResizablePanel defaultSize={40} minSize={30}>
+						<div className="space-y-8 p-6 h-full overflow-y-auto" dir="ltr">
+							{selectedTest ? (
+								<RequestMetadataWithLogs selectedTest={selectedTest} />
+							) : (
+								<div className="flex items-center justify-center h-full text-muted-foreground">
+									<p>Select a test to view its details.</p>
+								</div>
+							)}
+						</div>
+					</ResizablePanel>
+				</ResizablePanelGroup>
 			</div>
 		</div>
 	);

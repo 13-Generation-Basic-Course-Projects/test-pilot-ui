@@ -40,6 +40,7 @@ import { getAllProjectVariableAction } from "@/action/project-variable-action";
 import { useApiBodyStore } from "@/store/body-api-slice";
 import { Badge } from "./ui/badge";
 import { ResponseView } from "./response-view";
+import { useParamsApiStore } from "@/store/params-api-slice";
 
 const endpointMethods = [
 	{ value: "GET", label: "GET" },
@@ -49,7 +50,7 @@ const endpointMethods = [
 	{ value: "DELETE", label: "DELETE" },
 ];
 
-const replaceVariablesInUrl = (
+const replaceEnvVariablesInUrl = (
 	url: string,
 	variables: { variable: string; value: string }[]
 ) => {
@@ -59,6 +60,20 @@ const replaceVariablesInUrl = (
 		resolvedUrl = resolvedUrl.replace(regex, v.value);
 	});
 	return { resolvedUrl };
+};
+
+const replacePathParams = (
+	url: string,
+	pathVariables: { key: string; value: string }[]
+) => {
+	let resolvedUrl = url;
+	pathVariables.forEach((param) => {
+		if (param.key) {
+			const regex = new RegExp(`\\{${param.key}\\}`, "g");
+			resolvedUrl = resolvedUrl.replace(regex, param.value);
+		}
+	});
+	return resolvedUrl;
 };
 
 export function EndpointDropdownUrl({
@@ -87,24 +102,13 @@ export function EndpointDropdownUrl({
 
 	const { setUrl, setMethod } = useRequestStore();
 	const { apiBodyRows } = useApiBodyStore();
+	const { pathVariables } = useParamsApiStore();
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
-	// Fetch project variables
 	useEffect(() => {
 		getAllProjectVariableAction(projectId)
-			.then((vars) => {
-				setVariables(vars);
-				console.log("Fetched variables:", vars); // Debug
-				if (!vars.some((v) => v.variable === "test-Pilots")) {
-					console.warn(
-						"Variable 'test-Pilots' not found in project variables."
-					);
-				}
-			})
-			.catch((error) => {
-				console.error("Failed to load project variables:", error);
-				toast.error("Failed to load project variables.");
-			});
+			.then(setVariables)
+			.catch((error) => toast.error("Failed to load project variables."));
 	}, [projectId]);
 
 	useEffect(() => {
@@ -115,10 +119,15 @@ export function EndpointDropdownUrl({
 	}, [endpoint]);
 
 	useEffect(() => {
-		const { resolvedUrl } = replaceVariablesInUrl(currentUrl, variables);
-		setResolvedUrl(resolvedUrl);
-		setUrl(resolvedUrl);
-	}, [currentUrl, variables, setUrl]);
+		const { resolvedUrl: urlWithEnvVars } = replaceEnvVariablesInUrl(
+			currentUrl,
+			variables
+		);
+		const finalResolvedUrl = replacePathParams(urlWithEnvVars, pathVariables);
+
+		setResolvedUrl(finalResolvedUrl);
+		setUrl(finalResolvedUrl);
+	}, [currentUrl, variables, pathVariables, setUrl]);
 
 	useEffect(() => {
 		if (currentMethod) {
@@ -162,15 +171,26 @@ export function EndpointDropdownUrl({
 		setIsResponsePanelOpen(true);
 
 		const requestBody = apiBodyRows.reduce((acc, r) => {
-			acc[r.id] = r.value;
+			if (r.id) {
+				acc[r.id] = r.value;
+			}
 			return acc;
 		}, {} as Record<string, any>);
+
+		const requestHeaders: Record<string, string> = {};
+
+		if (
+			!["GET", "DELETE"].includes(currentMethod || "") &&
+			!requestHeaders["Content-Type"]
+		) {
+			requestHeaders["Content-Type"] = "application/json";
+		}
 
 		const startTime = Date.now();
 		try {
 			const response = await fetch(resolvedUrl, {
 				method: currentMethod || "GET",
-				headers: { "Content-Type": "application/json" },
+				headers: requestHeaders,
 				body: ["GET", "DELETE"].includes(currentMethod || "")
 					? undefined
 					: JSON.stringify(requestBody),
@@ -330,21 +350,28 @@ export function EndpointDropdownUrl({
 								</Badge>
 							) : apiResponse ? (
 								<>
-									<h1>Status: </h1>
 									<Badge variant="outline">
-										<span className="">
+										Status:{" "}
+										<span
+											className={`ml-1.5 w-2.5 h-2.5 rounded-full inline-block ${getStatusColor(
+												apiResponse.status
+											)}`}
+										></span>
+										<span className="ml-1.5">
 											{apiResponse.status} {apiResponse.statusText}
 										</span>
 									</Badge>
-									<h1>Time: </h1>
 									<Badge variant="outline">
-										<span className="font-semibold">
+										Time:{" "}
+										<span className="ml-1 font-semibold">
 											{apiResponse.duration} ms
 										</span>
 									</Badge>
-									<h1>Size: </h1>
-									<Badge variant="outline" className="">
-										<span className="font-semibold">{apiResponse.size} B</span>
+									<Badge variant="outline">
+										Size:{" "}
+										<span className="ml-1 font-semibold">
+											{apiResponse.size} B
+										</span>
 									</Badge>
 								</>
 							) : error ? (

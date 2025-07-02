@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play } from "lucide-react";
+import { Play, Loader2 } from "lucide-react";
 import { useParamsApiStore } from "@/store/params-api-slice";
 import { useRequestStore } from "@/store/request-url-slice";
 import { usePathname, useRouter } from "next/navigation";
@@ -168,7 +168,7 @@ export default function TestRequest({
 		  ]
 		: [];
 
-	const handleRun = () => {
+	const handleRunAllTests = () => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
 
@@ -191,12 +191,12 @@ export default function TestRequest({
 					isExpectedSuccess: false,
 				};
 			})
-			.filter((p) => p !== null);
+			.filter((p): p is NonNullable<typeof p> => p !== null);
 
 		const finalPayload: TestRunPayload = {
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
-			requestExecution: requestExecution as any[],
+			requestExecution: requestExecution,
 		};
 
 		startTransition(async () => {
@@ -222,6 +222,58 @@ export default function TestRequest({
 		});
 	};
 
+	const handleRunSingleTest = (testCase: ValidTestCase) => {
+		clearTestRunResult();
+		sessionStorage.removeItem("testRunResult");
+
+		const fullTestCase = testCases.find((tc) => tc.case === testCase.testCase);
+		if (!fullTestCase) {
+			toast.error("Test case details not found.");
+			return;
+		}
+
+		const requestExecution = [
+			{
+				url: generatePreviewUrl(url, testCase, pathVariables, queryParams),
+				method: method || "GET",
+				headers: {},
+				body: {},
+				requestId: requestId,
+				testCaseId: fullTestCase.id,
+				isExpectedSuccess: false,
+			},
+		];
+
+		const finalPayload: TestRunPayload = {
+			projectId: pathname.split("/")[2],
+			triggerType: "SELECTED_TEST_CASES",
+			requestExecution: requestExecution,
+		};
+
+		startTransition(async () => {
+			toast.promise(runTestCasesAction(finalPayload), {
+				loading: `Running test: ${testCase.testCase}...`,
+				success: (result) => {
+					if (result?.data) {
+						setTestRunResult(result.data);
+						sessionStorage.setItem(
+							"testRunResult",
+							JSON.stringify(result.data)
+						);
+						router.push(`${pathname}/monitoring`);
+						return "Test run started successfully!";
+					}
+					console.error(
+						"Test run succeeded but returned no data. Full result:",
+						result
+					);
+					return "Test run initiated, but no data was returned from the backend.";
+				},
+				error: (err) => `Failed to start test run: ${err.message}`,
+			});
+		});
+	};
+
 	if (!hasUrl) {
 		return (
 			<div className="w-full max-w-2xl p-6 text-center">
@@ -238,8 +290,8 @@ export default function TestRequest({
 			<div className="w-full max-w-2xl p-6 text-center">
 				<p className="text-gray-500">
 					No valid test cases available. Please provide a <strong>key</strong>{" "}
-					and <strong>value</strong>
-					for each variable, and ensure test cases are defined.
+					and <strong>value</strong> for each variable, and ensure test cases
+					are defined.
 				</p>
 			</div>
 		);
@@ -250,7 +302,7 @@ export default function TestRequest({
 			<div className=" min-h-[480px] flex flex-col space-y-4">
 				<div className="flex h-full justify-end items-center mt-1">
 					<Button
-						onClick={handleRun}
+						onClick={handleRunAllTests}
 						disabled={isPending || validTestCases.length === 0}
 					>
 						{isPending ? "Running..." : "Run All"}{" "}
@@ -292,6 +344,17 @@ export default function TestRequest({
 												: "Request Query Params"}
 										</CardTitle>
 									</div>
+									<Button
+										onClick={() => handleRunSingleTest(testcase)}
+										disabled={isPending}
+									>
+										{isPending ? (
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										) : (
+											"Run"
+										)}
+										<Play className="ml-2 h-4 w-4" />
+									</Button>
 								</CardHeader>
 								<CardContent>
 									<pre className="bg-gray-100 p-3 rounded-md text-sm overflow-auto">

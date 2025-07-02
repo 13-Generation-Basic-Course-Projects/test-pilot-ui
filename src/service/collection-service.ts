@@ -18,10 +18,13 @@ export const getAllCollection = async (
 ): Promise<CollectionItem[]> => {
 	try {
 		const response = await fetchAPI<CollectionResponseTypes>(
-			`${COLLECTION_ENDPOINT}/by-project/${projectId}`, {
-                next: {tags: ["collection"]}
-            }
+			`${COLLECTION_ENDPOINT}/by-project/${projectId}`,
+			{
+				next: { tags: ["collection"] },
+			}
 		);
+
+		console.log("RESPONSE", response);
 		if (response.success && response.payload) {
 			return response.payload.map((item: any) => ({
 				id: item.id,
@@ -58,8 +61,6 @@ export const createCollectionService = async (
 			method: "POST",
 			body: JSON.stringify({ name, projectId }),
 		});
-
-
 	} catch (error) {
 		throw new Error("Failed to create collection");
 	}
