@@ -38,12 +38,16 @@ export default function TestRequest({
 	requestId: string;
 }) {
 	const { pathVariables, queryParams } = useParamsApiStore();
-	const { method, url } = useRequestStore();
+	const { method } = useRequestStore(); // We only need `method` from the store now
 	const router = useRouter();
 	const pathname = usePathname();
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isPending, startTransition] = useTransition();
 	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
+
+	// Get the original, unresolved URL directly from the component's props
+	const endpoint = request.find((ep) => ep.id === requestId);
+	const rawUrl = endpoint?.details?.url || "";
 
 	useEffect(() => {
 		const fetchTestCases = async () => {
@@ -110,6 +114,7 @@ export default function TestRequest({
 	): string => {
 		let constructedUrl = baseUrl;
 
+		// Substitute Path Variables
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
 			const isCurrentVariable =
@@ -117,17 +122,23 @@ export default function TestRequest({
 				currentTestCase.variableIndex === index &&
 				currentTestCase.key === variable.key;
 
-			const valueToUse = isCurrentVariable
-				? testCases.find((tc) => tc.case === currentTestCase.testCase)?.value ??
-				  ""
-				: variable.value || `{${variable.key}}`;
+			let valueToUse;
+			if (isCurrentVariable) {
+				const testCaseDetail = testCases.find(
+					(tc) => tc.case === currentTestCase.testCase
+				);
+				valueToUse = testCaseDetail ? testCaseDetail.value : variable.value;
+			} else {
+				valueToUse = variable.value || `{${variable.key}}`;
+			}
 
 			constructedUrl = constructedUrl.replace(
 				new RegExp(`\\{${variable.key}\\}`, "g"),
-				valueToUse
+				String(valueToUse) // Use String() to handle null and other types
 			);
 		});
 
+		// Substitute Query Params
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
@@ -157,10 +168,11 @@ export default function TestRequest({
 			constructedUrl +=
 				(constructedUrl.includes("?") ? "&" : "?") + queryParts.join("&");
 		}
+
 		return constructedUrl;
 	};
 
-	const hasUrl = url && url.trim() !== "";
+	const hasUrl = rawUrl && rawUrl.trim() !== "";
 	const validTestCases: ValidTestCase[] = hasUrl
 		? [
 				...getValidTestCases(pathVariables, "path"),
@@ -182,7 +194,7 @@ export default function TestRequest({
 				const bodyPayload = {};
 
 				return {
-					url: generatePreviewUrl(url, testCase, pathVariables, queryParams),
+					url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
 					method: method || "GET",
 					headers: {},
 					body: bodyPayload,
@@ -234,7 +246,7 @@ export default function TestRequest({
 
 		const requestExecution = [
 			{
-				url: generatePreviewUrl(url, testCase, pathVariables, queryParams),
+				url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
 				method: method || "GET",
 				headers: {},
 				body: {},
@@ -312,7 +324,7 @@ export default function TestRequest({
 				<div className="flex flex-col items-center gap-6">
 					{validTestCases.map((testcase, idx) => {
 						const previewUrl = generatePreviewUrl(
-							url,
+							rawUrl,
 							testcase,
 							pathVariables,
 							queryParams
