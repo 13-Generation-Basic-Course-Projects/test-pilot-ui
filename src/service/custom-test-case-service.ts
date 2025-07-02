@@ -18,8 +18,6 @@ export const getCustomTestCaseService = async (projectId: string) => {
 			throw new Error(res.message || "Failed to get custom test case.");
 		}
 
-		console.log(res);
-
 		return res;
 	} catch (error) {
 		console.error("Error in getCustomTestCaseService:", error);
@@ -41,8 +39,6 @@ export const createCustomTestCaseService = async (
 		if (!res.success || !res.payload) {
 			throw new Error(res.message || "Failed to create test case.");
 		}
-
-		console.log(res);
 
 		return res;
 	} catch (error) {

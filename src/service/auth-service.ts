@@ -117,7 +117,6 @@ export const googleLoinService = async ({
 }: {
 	accessToken: string;
 }) => {
-	console.log(accessToken);
 	const res = await fetch(`${AUTH_ENDPOINT}/google-login`, {
 		method: "POST",
 		headers: {
@@ -127,6 +126,5 @@ export const googleLoinService = async ({
 	});
 
 	const data = await res.json();
-	console.log(data);
 	return data;
 };

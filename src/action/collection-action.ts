@@ -8,6 +8,7 @@ import {
 	renameCollectionService,
 } from "@/service/collection-service";
 import { CollectionItem } from "@/types";
+import {revalidateTag} from "next/cache";
 
 export const fetchCollectionsForProject = async (
 	projectId: string
@@ -24,7 +25,9 @@ export const createCollectionAction = async (
 	title: string,
 	projectId: string
 ) => {
-	await createCollectionService(title, projectId);
+	const res = await createCollectionService(title, projectId);
+	revalidateTag("collection");
+	return res.payload;
 };
 
 export const duplicateCollectionAction = async (

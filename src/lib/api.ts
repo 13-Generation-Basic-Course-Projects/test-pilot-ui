@@ -2,13 +2,14 @@ import headerToken from "./header";
 
 export async function fetchAPI<T>(
 	url: string,
-	options: RequestInit = {}
+	options: RequestInit & { next?: { tags?: string[]; revalidate?: number } } = {}
 ): Promise<APIResponse<T>> {
 	const headers = await headerToken();
 	try {
 		const response = await fetch(url, {
 			...options,
 			headers,
+			...(options.next && { next: options.next }),
 		});
 
 		const text = await response.text();
