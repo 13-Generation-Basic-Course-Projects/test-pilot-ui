@@ -1,3 +1,4 @@
+import { fetchAPI } from "@/lib/api";
 import { AUTH_ENDPOINT } from "@/lib/static";
 import {
 	BackendErrorResponse,
@@ -95,6 +96,23 @@ export const resendOTPService = async ({ email }: { email: string }) => {
 	return data;
 };
 
+export const resendOTPResetPasswordService = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	const res = await fetch(`${AUTH_ENDPOINT}/password/resend-reset-otp`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email }),
+	});
+
+	const data = await res.json();
+	return data;
+};
+
 export const requestOTPPasswordService = async ({
 	email,
 }: {
@@ -106,6 +124,27 @@ export const requestOTPPasswordService = async ({
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({ email }),
+	});
+
+	const data = await res.json();
+	return data;
+};
+
+export const resetPasswordService = async ({
+	email,
+	newPassword,
+	confirmPassword,
+}: {
+	email: string;
+	newPassword: string;
+	confirmPassword: string;
+}) => {
+	const res = await fetch(`${AUTH_ENDPOINT}/password/reset-password`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email, newPassword, confirmPassword }),
 	});
 
 	const data = await res.json();
@@ -149,5 +188,45 @@ export const githubLoginService = async ({
 	const data = await res.json();
 	console.log("Data from backend:", data);
 
+	return data.payload;
+};
+
+export const requestResetPasswordService = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	const enpoint = `${AUTH_ENDPOINT}/password/request-reset-otp`;
+
+	const res = await fetch(enpoint, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email }),
+	});
+
+	const data = await res.json();
+	return data.payload;
+};
+
+export const verifyOTPResetPasswordService = async ({
+	email,
+	otp,
+}: {
+	email: string;
+	otp: string;
+}) => {
+	const enpoint = `${AUTH_ENDPOINT}/password/verify-otp`;
+
+	const res = await fetch(enpoint, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email, otp }),
+	});
+
+	const data = await res.json();
 	return data.payload;
 };

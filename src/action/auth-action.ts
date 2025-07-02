@@ -1,12 +1,15 @@
 "use server";
 import { signIn, signOut } from "@/auth";
 import {
+	requestResetPasswordService,
+	resendOTPResetPasswordService,
 	resendOTPService,
 	signUpService,
 	verifyOTPService,
 } from "@/service/auth-service";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { toast } from "sonner";
 
 export const signInAction = async (formData: FormData) => {
 	try {
@@ -87,7 +90,50 @@ export const resendOTPAction = async ({ email }: { email: string }) => {
 	} catch (error) {}
 };
 
+export const resendOTPResetPasswordAction = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	try {
+		const data = await resendOTPResetPasswordService({ email });
+		return data;
+	} catch (error) {}
+};
+
+export const resetPasswordAction = async ({
+	email,
+	newPassword,
+	confirmPassword,
+}: {
+	email: string;
+	newPassword: string;
+	confirmPassword: string;
+}) => {
+	try {
+		const data: any = await resetPasswordAction({
+			email,
+			newPassword,
+			confirmPassword,
+		});
+		return data;
+	} catch (error) {}
+};
+
 export const logout = async () => {
 	await signOut();
 	redirect("/");
+};
+
+export const requestResetPasswordAction = async ({
+	email,
+}: {
+	email: string;
+}) => {
+	try {
+		const data = await requestResetPasswordService({ email });
+		return data;
+	} catch (error) {
+		toast.error("Error sending request to reset password");
+	}
 };
