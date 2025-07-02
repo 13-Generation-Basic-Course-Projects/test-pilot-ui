@@ -62,10 +62,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			clientId: process.env.AUTH_GOOGLE_ID,
 			clientSecret: process.env.AUTH_GOOGLE_SECRET,
 		}),
-		GitHub({
-			clientId: process.env.GITHUB_ID,
-			clientSecret: process.env.GITHUB_SECRET,
-		}),
 	],
 	secret: process.env.AUTH_SECRET,
 	session: {
