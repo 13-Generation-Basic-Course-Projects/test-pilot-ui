@@ -251,19 +251,19 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
             collections: project.collections.map((collection) =>
               collection.id === collectionId
                 ? {
-                    ...collection,
-                    endpoints: [
-                      ...collection.endpoints,
-                      {
-                        id: newEndpoint.id,
-                        method: "GET",
-                        path: newEndpoint.name || requestName,
-                        name: newEndpoint.name || requestName,
-                        collectionId,
-                        projectId,
-                      },
-                    ],
-                  }
+                  ...collection,
+                  endpoints: [
+                    ...collection.endpoints,
+                    {
+                      id: newEndpoint.id,
+                      method: "GET",
+                      path: newEndpoint.name || requestName,
+                      name: newEndpoint.name || requestName,
+                      collectionId,
+                      projectId,
+                    },
+                  ],
+                }
                 : collection
             ),
           };
@@ -353,6 +353,19 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     collectionId: string,
     newTitle: string
   ) => {
+    const MIN_NAME_LENGTH = 3;
+    const namePattern = /^[a-zA-Z0-9 _-]+$/;
+
+    if (newTitle.length < MIN_NAME_LENGTH) {
+      toast.error(`Endpoint name must be at least ${MIN_NAME_LENGTH} characters.`)
+      return;
+    }
+
+    if (!namePattern.test(newTitle)) {
+      toast.error("Endpoint name contains invlid characters.")
+      return;
+    }
+    
     setCollectionsData((prev) =>
       prev.map((project) => {
         if (project.id !== projectId) return project;
@@ -405,6 +418,18 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     endpointId: string,
     newTitle: string
   ) => {
+    const MIN_NAME_LENGTH = 3;
+    const namePattern = /^[a-zA-Z0-9 _-]+$/;
+
+    if (newTitle.length < MIN_NAME_LENGTH) {
+      toast.error(`Endpoint name must be at least ${MIN_NAME_LENGTH} characters.`)
+      return;
+    }
+
+    if (!namePattern.test(newTitle)) {
+      toast.error("Endpoint name contains invlid characters.")
+      return;
+    }
     try {
       await updateRequestByIdAction(collectionId, endpointId, {
         name: newTitle,
@@ -413,20 +438,20 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         prev.map((project) =>
           project.id === projectId
             ? {
-                ...project,
-                collections: project.collections.map((collection) =>
-                  collection.id === collectionId
-                    ? {
-                        ...collection,
-                        endpoints: collection.endpoints.map((endpoint) =>
-                          endpoint.id === endpointId
-                            ? { ...endpoint, path: newTitle, name: newTitle }
-                            : endpoint
-                        ),
-                      }
-                    : collection
-                ),
-              }
+              ...project,
+              collections: project.collections.map((collection) =>
+                collection.id === collectionId
+                  ? {
+                    ...collection,
+                    endpoints: collection.endpoints.map((endpoint) =>
+                      endpoint.id === endpointId
+                        ? { ...endpoint, path: newTitle, name: newTitle }
+                        : endpoint
+                    ),
+                  }
+                  : collection
+              ),
+            }
             : project
         )
       );
@@ -525,7 +550,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
             name: requestName,
             collectionId: newCollection.id,
             projectId,
-          } as EndpointItem ;
+          } as EndpointItem;
         })
       );
 
@@ -565,139 +590,139 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     collection: CollectionItem,
     projectId: string
   ) => [
-    {
-      icon: <FilePlusIcon className="w-4 h-4" />,
-      label: "Add Request",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        handleAddEndpoint(projectId, collection.id);
+      {
+        icon: <FilePlusIcon className="w-4 h-4" />,
+        label: "Add Request",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          handleAddEndpoint(projectId, collection.id);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    { isSeparator: true as const },
-    {
-      icon: <Share2Icon className="w-4 h-4" />,
-      label: "Share",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedCollection(collection);
-        setIsShareCollectionOpen(true);
-        toast.success("Collection shared successfully");
+      { isSeparator: true as const },
+      {
+        icon: <Share2Icon className="w-4 h-4" />,
+        label: "Share",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setSelectedCollection(collection);
+          setIsShareCollectionOpen(true);
+          toast.success("Collection shared successfully");
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    { isSeparator: true as const },
-    {
-      icon: <EditIcon className="w-4 h-4" />,
-      label: "Rename",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setRenamingCollectionId(collection.id);
+      { isSeparator: true as const },
+      {
+        icon: <EditIcon className="w-4 h-4" />,
+        label: "Rename",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setRenamingCollectionId(collection.id);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    {
-      icon: <FilePlus2Icon className="w-4 h-4" />,
-      label: "Duplicate",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        handleDuplicateCollection(projectId, collection);
+      {
+        icon: <FilePlus2Icon className="w-4 h-4" />,
+        label: "Duplicate",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          handleDuplicateCollection(projectId, collection);
+        },
       },
-    },
-    {
-      icon: <FileOutput className="w-4 h-4" />,
-      label: "Export",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedCollection(collection);
-        setIsExportCollectionOpen(true);
+      {
+        icon: <FileOutput className="w-4 h-4" />,
+        label: "Export",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setSelectedCollection(collection);
+          setIsExportCollectionOpen(true);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    {
-      icon: (
-        <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-      ),
-      label: "Delete",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setTimeout(
-          () =>
-            setCollectionToDelete({ projectId, collectionId: collection.id }),
-          0
-        );
+      {
+        icon: (
+          <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+        ),
+        label: "Delete",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setTimeout(
+            () =>
+              setCollectionToDelete({ projectId, collectionId: collection.id }),
+            0
+          );
+        },
+        className:
+          "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
       },
-      className:
-        "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
-    },
-  ];
+    ];
 
   const getEndpointMenuItems = (
     endpoint: Endpoint,
     collectionId: string,
     projectId: string
   ) => [
-    {
-      icon: <Share2Icon className="w-4 h-4" />,
-      label: "Share",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedEndpoint(endpoint);
-        setIsShareEndpointOpen(true);
+      {
+        icon: <Share2Icon className="w-4 h-4" />,
+        label: "Share",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setSelectedEndpoint(endpoint);
+          setIsShareEndpointOpen(true);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    { isSeparator: true as const },
-    {
-      icon: <EditIcon className="w-4 h-4" />,
-      label: "Rename",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setRenamingEndpointId(endpoint.id);
+      { isSeparator: true as const },
+      {
+        icon: <EditIcon className="w-4 h-4" />,
+        label: "Rename",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setRenamingEndpointId(endpoint.id);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    {
-      icon: <FilePlus2Icon className="w-4 h-4" />,
-      label: "Duplicate",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
-        handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+      {
+        icon: <FilePlus2Icon className="w-4 h-4" />,
+        label: "Duplicate",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setOpenEndpoint((prev) => ({ ...prev, [endpoint.id]: false }));
+          handleDuplicateEndpoint(projectId, collectionId, endpoint.id);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    {
-      icon: <FileOutput className="w-4 h-4" />,
-      label: "Export",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedEndpoint(endpoint);
-        setIsExportRequestOpen(true);
+      {
+        icon: <FileOutput className="w-4 h-4" />,
+        label: "Export",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setSelectedEndpoint(endpoint);
+          setIsExportRequestOpen(true);
+        },
+        className: "cursor-pointer",
       },
-      className: "cursor-pointer",
-    },
-    {
-      icon: (
-        <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
-      ),
-      label: "Delete",
-      onClick: (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setTimeout(
-          () =>
-            setEndpointToDelete({
-              projectId,
-              collectionId,
-              endpointId: endpoint.id,
-            }),
-          0
-        );
+      {
+        icon: (
+          <TrashIcon className="w-4 h-4 hover:!text-red-600 hover:!bg-red-50" />
+        ),
+        label: "Delete",
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setTimeout(
+            () =>
+              setEndpointToDelete({
+                projectId,
+                collectionId,
+                endpointId: endpoint.id,
+              }),
+            0
+          );
+        },
+        className:
+          "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
       },
-      className:
-        "text-red-600 hover:!text-red-600 hover:!bg-red-50 cursor-pointer",
-    },
-  ];
+    ];
 
   if (openCollections === null) return <CollectionSidebarSkeleton />;
 
@@ -722,7 +747,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
 
   return (
     <>
-      <div className="w-80 border-r bg-background duration-75">
+      <div className="w-80 border-r bg-background duration-75 h-screen flex flex-col">
         {/* Header */}
         {!isLoading && collectionsData[0]?.collections.length === 0 && (
           <div className="p-4 text-center text-sm text-muted-foreground">
@@ -750,7 +775,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                   Import
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setIsExportAllOpen(true)} // Trigger Export All
+                  onClick={() => setIsExportAllOpen(true)}
                   className="cursor-pointer"
                 >
                   Export All
@@ -781,7 +806,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         </div>
 
         {/* Collections */}
-        <div className="flex-1 custom-scrollbar h-screen">
+        <div className="flex-1 custom-scrollbar overflow-y-auto">
           {collectionsData.map((project) =>
             project.collections.map((collection) => (
               <div key={`${project.id}-${collection.id}`}>
@@ -858,9 +883,8 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                       return (
                         <div
                           key={uniqueKey}
-                          className={`group mx-4 mb-1 rounded-md ${
-                            isActive ? "bg-muted" : "hover:bg-muted/50"
-                          }`}
+                          className={`group mx-4 mb-1 rounded-md ${isActive ? "bg-muted" : "hover:bg-muted/50"
+                            }`}
                         >
                           <Link
                             href={endpointPath}
@@ -990,11 +1014,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
               prev.map((project) =>
                 project.id === projectId
                   ? {
-                      ...project,
-                      collections: project.collections.filter(
-                        (collection) => collection.id !== collectionId
-                      ),
-                    }
+                    ...project,
+                    collections: project.collections.filter(
+                      (collection) => collection.id !== collectionId
+                    ),
+                  }
                   : project
               )
             );
@@ -1024,18 +1048,18 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                 prev.map((project) =>
                   project.id === projectId
                     ? {
-                        ...project,
-                        collections: project.collections.map((collection) =>
-                          collection.id === collectionId
-                            ? {
-                                ...collection,
-                                endpoints: collection.endpoints.filter(
-                                  (endpoint) => endpoint.id !== endpointId
-                                ),
-                              }
-                            : collection
-                        ),
-                      }
+                      ...project,
+                      collections: project.collections.map((collection) =>
+                        collection.id === collectionId
+                          ? {
+                            ...collection,
+                            endpoints: collection.endpoints.filter(
+                              (endpoint) => endpoint.id !== endpointId
+                            ),
+                          }
+                          : collection
+                      ),
+                    }
                     : project
                 )
               );
