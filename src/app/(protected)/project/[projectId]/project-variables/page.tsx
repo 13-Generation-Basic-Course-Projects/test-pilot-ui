@@ -1,13 +1,5 @@
-import ProjectVariable from "@/components/project-variable";
-import React from "react";
+import ProjectVariablesClient from "./project-client-page";
 
-const ProjectVariables = async({params}: {params: Promise<{projectId: string}>}) => {
-	const{projectId} = await params
-	return (
-		<div className="p-8">
-			<ProjectVariable  projectId = {projectId}/>
-		</div>
-	);
-};
-
-export default ProjectVariables;
+export default function Page() {
+  return <ProjectVariablesClient />;
+}

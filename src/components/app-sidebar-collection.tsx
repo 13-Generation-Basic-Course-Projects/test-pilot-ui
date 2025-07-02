@@ -279,28 +279,72 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     }
   };
 
-  // Create collection
+  // Load openCollections from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("openCollections");
+    setOpenCollections(saved ? JSON.parse(saved) : {});
+  }, []);
+
+  // Save openCollections to localStorage
+  useEffect(() => {
+    if (openCollections !== null) {
+      localStorage.setItem("openCollections", JSON.stringify(openCollections));
+    }
+  }, [openCollections]);
+
+  // Load openEndpoint from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("openEndpoint");
+    setOpenEndpoint(saved ? JSON.parse(saved) : {});
+  }, []);
+
+  // Save openEndpoint to localStorage
+  useEffect(() => {
+    localStorage.setItem("openEndpoint", JSON.stringify(openEndpoint));
+  }, [openEndpoint]);
+
   const handleCreateCollection = async (title: string) => {
-    const res: any = await createCollectionAction(title, projectId);
-
-    const newCollection: CollectionItem = {
-      id: res.id as any,
-      title,
-      endpoints: [],
-    };
-
-    setCollectionsData((prev) => {
-      const lastProjectIndex = prev.length - 1;
-      return prev.map((project, index) => {
-        if (index === lastProjectIndex) {
-          return {
-            ...project,
-            collections: [...project.collections, newCollection],
-          };
-        }
-        return project;
+    const MIN_NAME_LENGTH = 3;
+    const namePattern = /^[a-zA-Z0-9 _-]+$/;
+    // Frontend validation
+    if (title.length < MIN_NAME_LENGTH) {
+      toast.error("Collection name must be at least 3 characters.");
+      return;
+    }
+    if (!namePattern.test(title)) {
+      toast.error("Collection name contains invalid characters.");
+      return;
+    }
+    try {
+      const res: any = await createCollectionAction(title, projectId);
+      if (res?.errors?.name) {
+        toast.error(res.errors.name);
+        return;
+      }
+      const newCollection: CollectionItem = {
+        id: res.id as any,
+        title,
+        endpoints: [],
+      };
+      setCollectionsData((prev) => {
+        const lastProjectIndex = prev.length - 1;
+        return prev.map((project, index) => {
+          if (index === lastProjectIndex) {
+            return {
+              ...project,
+              collections: [...project.collections, newCollection],
+            };
+          }
+          return project;
+        });
       });
-    });
+      toast.success("Collection created successfully");
+    } catch (error: any) {
+      console.error("Failed to create collection:", error);
+      toast.error(
+        error?.message || "Something went wrong while creating collection."
+      );
+    }
   };
 
   // Rename collection
@@ -538,6 +582,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
         e.stopPropagation();
         setSelectedCollection(collection);
         setIsShareCollectionOpen(true);
+        toast.success("Collection shared successfully");
       },
       className: "cursor-pointer",
     },
