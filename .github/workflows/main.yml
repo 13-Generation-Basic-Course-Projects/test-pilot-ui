@@ -38,6 +38,10 @@ jobs:
           echo "Connecting to server: ${{ env.DOCKERHUB_USERNAME }}"
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Debug Secrets
+        run: |
+          echo "NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}"
+          echo "AUTH_SECRET: ${{ secrets.AUTH_SECRET != '' }}"
 
       - name: Build and Push Frontend Image to Docker Hub
         uses: docker/build-push-action@v5
