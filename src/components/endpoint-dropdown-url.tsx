@@ -41,6 +41,7 @@ import { useApiBodyStore } from "@/store/body-api-slice";
 import { Badge } from "./ui/badge";
 import { ResponseView } from "./response-view";
 import { useParamsApiStore } from "@/store/params-api-slice";
+import { useHeaderStore } from "@/store/header-slice"; // ❗️ 1. IMPORT THE GLOBAL HEADER STORE
 
 const endpointMethods = [
 	{ value: "GET", label: "GET" },
@@ -103,6 +104,7 @@ export function EndpointDropdownUrl({
 	const { setUrl, setMethod } = useRequestStore();
 	const { apiBodyRows } = useApiBodyStore();
 	const { pathVariables } = useParamsApiStore();
+	const { headers } = useHeaderStore(); // ❗️ 2. GET THE HEADERS FROM THE STORE
 	const endpoint = request.find((ep) => ep.id === endpointId);
 
 	useEffect(() => {
@@ -177,23 +179,34 @@ export function EndpointDropdownUrl({
 			return acc;
 		}, {} as Record<string, any>);
 
-		const requestHeaders: Record<string, string> = {};
+		// ❗️ 3. INITIALIZE HEADERS WITH THE VALUES FROM THE GLOBAL STORE
+		const requestHeaders: Record<string, string> = { ...headers };
 
 		if (
 			!["GET", "DELETE"].includes(currentMethod || "") &&
+			Object.keys(requestBody).length > 0 &&
 			!requestHeaders["Content-Type"]
 		) {
 			requestHeaders["Content-Type"] = "application/json";
 		}
 
+		console.log("🚀 Sending Request:", {
+			method: currentMethod || "GET",
+			url: resolvedUrl,
+			headers: requestHeaders,
+			body: requestBody,
+		});
+
 		const startTime = Date.now();
 		try {
 			const response = await fetch(resolvedUrl, {
 				method: currentMethod || "GET",
-				headers: requestHeaders,
-				body: ["GET", "DELETE"].includes(currentMethod || "")
-					? undefined
-					: JSON.stringify(requestBody),
+				headers: requestHeaders, // ❗️ 4. PASS THE CORRECT HEADERS
+				body:
+					["GET", "DELETE"].includes(currentMethod || "") ||
+					Object.keys(requestBody).length === 0
+						? undefined
+						: JSON.stringify(requestBody),
 			});
 			const endTime = Date.now();
 

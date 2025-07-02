@@ -14,6 +14,7 @@ import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
 import { useTestRunStore } from "@/store/test-run-slice";
+import { useHeaderStore } from "@/store/header-slice";
 
 interface TestCase {
 	id: string;
@@ -38,6 +39,7 @@ export const TestRequestBody = ({
 }) => {
 	const { apiBodyRows } = useApiBodyStore();
 	const { method, url } = useRequestStore();
+	const { headers } = useHeaderStore();
 	const router = useRouter();
 	const pathname = usePathname();
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
@@ -106,7 +108,7 @@ export const TestRequestBody = ({
 			.filter((item): item is TestCasePayload => item !== null);
 	});
 
-	const runTests = (requests: any[]) => {
+	const runTests = (requests: any[], context: string) => {
 		clearTestRunResult();
 		sessionStorage.removeItem("testRunResult");
 
@@ -115,6 +117,9 @@ export const TestRequestBody = ({
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requests,
 		};
+
+		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---
+		console.log(`TestRequestBody - ${context} Payload:`, finalPayload);
 
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
@@ -144,14 +149,16 @@ export const TestRequestBody = ({
 		const allRequests = testCasePayloads.map((testCase) => ({
 			url: url,
 			method: method || "GET",
-			headers: {},
+			headers: headers,
 			body: testCase.payload,
 			requestId: requestId,
 			testCaseId: testCase.testCaseId,
 			isExpectedSuccess: false,
 		}));
 		if (allRequests.length > 0) {
-			runTests(allRequests);
+			runTests(allRequests, "Run All");
+		} else {
+			toast.info("No test cases to run.");
 		}
 	};
 
@@ -160,14 +167,14 @@ export const TestRequestBody = ({
 			{
 				url: url,
 				method: method || "GET",
-				headers: {},
+				headers: headers,
 				body: testCase.payload,
 				requestId: requestId,
 				testCaseId: testCase.testCaseId,
 				isExpectedSuccess: false,
 			},
 		];
-		runTests(singleRequest);
+		runTests(singleRequest, "Single Run");
 	};
 
 	const CardSkeleton = () => (

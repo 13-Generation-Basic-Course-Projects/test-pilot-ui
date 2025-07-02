@@ -51,12 +51,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 
-// Actions and Types
+// Actions, Types, and a new import for our global store
 import {
 	saveAllHeadersAction,
 	HeaderRow,
 } from "@/action/request-header-action";
 import { EndpointItem } from "@/types";
+import { useHeaderStore } from "@/store/header-slice"; // ❗️ IMPORT THE ZUSTAND STORE
 
 const frameworks = [
 	{ value: "no-auth", label: "No auth" },
@@ -78,16 +79,18 @@ export function ApiRequestContentHeader({
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [manualRows, setManualRows] = useState<HeaderRow[]>([]);
-
 	const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 	const [isSaving, startTransition] = useTransition();
+
+	// ❗️ Get the 'setHeaders' function from the global store
+	const { setHeaders } = useHeaderStore();
 
 	const currentRequest = useMemo(
 		() => requests.find((req) => req.id === requestId),
 		[requests, requestId]
 	);
 
-	// This effect hydrates the local state from the server data (props).
+	// This effect hydrates the local state AND the global store from server data
 	useEffect(() => {
 		if (!currentRequest?.details?.header) {
 			setAuthType("no-auth");
@@ -95,6 +98,7 @@ export function ApiRequestContentHeader({
 			setPassword("");
 			setToken("");
 			setManualRows([]);
+			setHeaders({}); // ❗️ Clear headers in global store on new/empty request
 			return;
 		}
 		let headers: Record<string, any> = {};
@@ -103,6 +107,9 @@ export function ApiRequestContentHeader({
 		} catch (e) {
 			console.error("Could not parse header JSON:", e);
 		}
+
+		// ❗️ Update the global store whenever the request changes
+		setHeaders(headers);
 
 		const authHeader = headers["Authorization"] || headers["authorization"];
 		if (authHeader?.startsWith("Basic ")) {
@@ -129,7 +136,7 @@ export function ApiRequestContentHeader({
 			.filter(([key]) => key.toLowerCase() !== "authorization")
 			.map(([variable, value]) => ({ variable, value: String(value) }));
 		setManualRows(currentManualHeaders);
-	}, [currentRequest]);
+	}, [currentRequest, setHeaders]); // Add setHeaders to dependency array
 
 	if (!currentRequest) {
 		return (
@@ -139,7 +146,6 @@ export function ApiRequestContentHeader({
 		);
 	}
 
-	// This is the single, unified save handler. It merges state from both tabs.
 	const handleSaveAllHeaders = () => {
 		// Step A: Start with the manual headers from the local state
 		const finalHeaders = manualRows.reduce((acc, row) => {
@@ -161,7 +167,10 @@ export function ApiRequestContentHeader({
 			delete finalHeaders["Authorization"];
 		}
 
-		// Step C: Call the single backend action with the final, merged object
+		// ❗️ Step C: Update the global state so other components can see the change instantly
+		setHeaders(finalHeaders);
+
+		// Step D: Call the backend action to save to the database
 		startTransition(() => {
 			toast.promise(saveAllHeadersAction(requestId, finalHeaders), {
 				loading: "Saving all headers...",
@@ -171,7 +180,8 @@ export function ApiRequestContentHeader({
 		});
 	};
 
-	// These handlers correctly update the local state for an instant UI.
+	// --- NO OTHER CHANGES ARE NEEDED BELOW THIS LINE ---
+
 	const handleAuthTypeSelect = (newAuthType: string) => {
 		setAuthType(newAuthType);
 		setIsOpen(false);
@@ -189,6 +199,7 @@ export function ApiRequestContentHeader({
 	};
 	const handleAddRow = () =>
 		setManualRows([...manualRows, { variable: "", value: "" }]);
+
 	const handleDeleteRow = () => {
 		if (deleteIndex === null) return;
 		setManualRows((currentRows) =>
