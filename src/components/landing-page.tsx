@@ -197,108 +197,75 @@ export default function LandingPageComponent() {
 			</section>
 
 			{/* Section 4 */}
-			<section className="w-full bg-white py-16">
+			<section className="w-full bg-white py-8 md:py-16 space-y-30">
 				<div className="text-center">
-					<h1 className="text-4xl font-bold">It helps you more</h1>
-					<p className="text-gray-600 mt-2">
+					<h1 className="text-3xl md:text-4xl font-bold">It helps you more</h1>
+					<p className="text-gray-600 mt-2 text-sm md:text-base">
 						TestingPilot is very special for you
 					</p>
 				</div>
-				<div className="grid grid-cols-12 mt-8 me-28 ">
-					<div className="col-span-12 md:col-span-6 flex flex-col items-center justify-center p-6 rounded-lg text-center space-y-4">
-						<div>
-							<h1 className="text-2xl font-bold text-gray-800">
+				<div className="container mx-auto px-4 mt-6 md:mt-8">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{/* Image Column */}
+						<div className="flex flex-col items-center justify-center space-y-4">
+							<h1 className="text-xl md:text-2xl font-bold text-gray-800">
 								TestingPilot for API testing offers several key advantages.
 							</h1>
-							<div className="flex justify-center">
-								<p className="text-gray-700 max-w-md">
-									It provides more than what you see. It helps developers easily
-									find better solutions than ever before.
-								</p>
-							</div>
+							<p className="text-gray-700 text-sm md:text-base max-w-md text-center">
+								It provides more than what you see. It helps developers easily find better solutions than ever before.
+							</p>
+							<Image
+								src={Image3}
+								alt="Hero Astronaut"
+								className="max-w-full h-auto rounded-lg"
+								width={500}
+								height={600}
+							/>
 						</div>
-						<Image
-							src={Image3}
-							alt="Feature Illustration"
-							className="rounded-xl border-4 border-white"
-							width={500}
-							height={600}
-						/>
-					</div>
 
-					<div className="col-span-12 mt-10 md:col-span-6 space-y-6">
-						<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
-							{/* Left: Icon or Image */}
-							<div className="">
-								<BadgeCheck className="w-14 h-14" strokeWidth={1} />
+						{/* Cards Column */}
+						<div className="space-y-4">
+							<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+								<div>
+									<BadgeCheck className="w-12 h-12 md:w-14 md:h-14" strokeWidth={1} />
+								</div>
+								<div>
+									<h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">Smart Field Validation</h3>
+									<p className="text-gray-400 text-xs md:text-sm">Automatically validates data types such as 'Is Null', 'Is Email', 'Is Undefined, etc. You can test your APIs with TestingPilot to ensure they are implemented correctly.</p>
+								</div>
 							</div>
-
-							{/* Right: Text Content */}
-							<div>
-								<h3 className="font-semibold text-gray-800 mb-1">
-									Smart Field Validation
-								</h3>
-								<p className="text-gray-400 text-sm">
-									Automatically validates data types such as &apos;Is
-									Null&apos;, &apos;Is Email&apos;, &apos;Is Undefined, etc. You
-									can test your APIs with TestingPilot to ensure they are
-									implemented correctly.
-								</p>
+							<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+								<div>
+									<FileText className="w-12 h-12 md:w-14 md:h-14" strokeWidth={1} />
+								</div>
+								<div>
+									<h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">Test Case Templates</h3>
+									<p className="text-gray-400 text-xs md:text-sm">Quickly generate reusable test scenarios for common endpoint patterns like Create / Read / Update / Delete.</p>
+								</div>
 							</div>
-						</div>
-						<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow  hover:bg-gray-100 transition-shadow">
-							{/* Left: Icon or Image */}
-							<div className="">
-								<FileText className="w-16 h-16" strokeWidth={1} />
+							<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+								<div>
+									<ClipboardCheck className="w-12 h-12 md:w-14 md:h-14" strokeWidth={1} />
+								</div>
+								<div>
+									<h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">Detailed Validation Reports</h3>
+									<p className="text-gray-400 text-xs md:text-sm">Export test results with clear pass/fail summaries and error messages. Ideal for QA teams and stakeholders.</p>
+								</div>
 							</div>
-
-							{/* Right: Text Content */}
-							<div>
-								<h3 className="font-semibold text-gray-800 mb-1">
-									Test Case Templates
-								</h3>
-								<p className="text-gray-400 text-sm">
-									Quickly generate reusable test scenarios for common endpoint
-									patterns like Create / Read / Update / Delete.
-								</p>
-							</div>
-						</div>
-						<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow  hover:bg-gray-100 transition-shadow">
-							{/* Left: Icon or Image */}
-							<div className="">
-								<ClipboardCheck className="w-14 h-14 " strokeWidth={1} />
-							</div>
-							{/* Right: Text Content */}
-							<div>
-								<h3 className="font-semibold text-gray-800 mb-1">
-									Detailed Validation Reports
-								</h3>
-								<p className="text-gray-400 text-sm">
-									Export test results with clear pass/fail summaries and error
-									messages. Ideal for QA teams and stakeholders.
-								</p>
-							</div>
-						</div>
-						<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow  hover:bg-gray-100 transition-shadow">
-							{/* Left: Icon or Image */}
-							<div className="">
-								<Image
-									src={Image4}
-									alt="Hero Astronaut"
-									width={70}
-									height={70}
-									priority
-								/>
-							</div>
-							{/* Right: Text Content */}
-							<div>
-								<h3 className="font-semibold text-gray-800 mb-1">
-									User-Friendly Interface
-								</h3>
-								<p className="text-gray-400 text-sm">
-									Clean, modern UI focused on productivity—built for testers and
-									developers to work efficiently without distractions.
-								</p>
+							<div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+								<div>
+									<Image
+										src={Image4}
+										alt="Hero Astronaut"
+										className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover"
+										width={100}
+										height={100}
+									/>
+								</div>
+								<div>
+									<h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">User-Friendly Interface</h3>
+									<p className="text-gray-400 text-xs md:text-sm">Clean, modern UI focused on productivity—built for testers and developers to work efficiently without distractions.</p>
+								</div>
 							</div>
 						</div>
 					</div>
