@@ -14,6 +14,7 @@ import { runTestCasesAction, TestRunPayload } from "@/action/run-test-action";
 import { useTestRunStore } from "@/store/test-run-slice";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 import { getCustomTestCaseAction } from "@/action/custom-test-case-action";
+import { useHeaderStore } from "@/store/header-slice";
 
 interface TestCase {
 	id: string;
@@ -38,14 +39,14 @@ export default function TestRequest({
 	requestId: string;
 }) {
 	const { pathVariables, queryParams } = useParamsApiStore();
-	const { method } = useRequestStore(); // We only need `method` from the store now
+	const { method } = useRequestStore();
+	const { headers } = useHeaderStore();
 	const router = useRouter();
 	const pathname = usePathname();
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const [isPending, startTransition] = useTransition();
 	const { clearTestRunResult, setTestRunResult } = useTestRunStore();
 
-	// Get the original, unresolved URL directly from the component's props
 	const endpoint = request.find((ep) => ep.id === requestId);
 	const rawUrl = endpoint?.details?.url || "";
 
@@ -114,7 +115,6 @@ export default function TestRequest({
 	): string => {
 		let constructedUrl = baseUrl;
 
-		// Substitute Path Variables
 		allPathVariables.forEach((variable, index) => {
 			if (!variable.key) return;
 			const isCurrentVariable =
@@ -134,11 +134,10 @@ export default function TestRequest({
 
 			constructedUrl = constructedUrl.replace(
 				new RegExp(`\\{${variable.key}\\}`, "g"),
-				String(valueToUse) // Use String() to handle null and other types
+				String(valueToUse)
 			);
 		});
 
-		// Substitute Query Params
 		const queryParts: string[] = [];
 		allQueryParams.forEach((variable, index) => {
 			if (!variable.key) return;
@@ -196,7 +195,7 @@ export default function TestRequest({
 				return {
 					url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
 					method: method || "GET",
-					headers: {},
+					headers: headers,
 					body: bodyPayload,
 					requestId: requestId,
 					testCaseId: fullTestCase.id,
@@ -205,11 +204,19 @@ export default function TestRequest({
 			})
 			.filter((p): p is NonNullable<typeof p> => p !== null);
 
+		if (requestExecution.length === 0) {
+			toast.info("No test cases to run.");
+			return;
+		}
+
 		const finalPayload: TestRunPayload = {
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
 		};
+
+		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---
+		console.log("TestRequest (Params/Path) - Run All Payload:", finalPayload);
 
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
@@ -248,7 +255,7 @@ export default function TestRequest({
 			{
 				url: generatePreviewUrl(rawUrl, testCase, pathVariables, queryParams),
 				method: method || "GET",
-				headers: {},
+				headers: headers,
 				body: {},
 				requestId: requestId,
 				testCaseId: fullTestCase.id,
@@ -261,6 +268,12 @@ export default function TestRequest({
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
 		};
+
+		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---
+		console.log(
+			"TestRequest (Params/Path) - Single Run Payload:",
+			finalPayload
+		);
 
 		startTransition(async () => {
 			toast.promise(runTestCasesAction(finalPayload), {
