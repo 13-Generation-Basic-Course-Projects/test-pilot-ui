@@ -262,84 +262,80 @@ export const getRequestTestCaseService = async ({
 
 //Duplicate request
 export const duplicateRequest = async ({
-	requestId,
-	collectionId,
+  requestId,
+  collectionId,
 }: {
-	requestId: string;
-	collectionId: string;
+  requestId: string;
+  collectionId: string;
 }): Promise<RequestResponseTypes> => {
-	try {
-		if (!requestId) {
-			throw new Error("Invalid request ID provided");
-		}
+  try {
+    if (!requestId) {
+      throw new Error("Invalid request ID provided");
+    }
 
-		const existingRequest = await fetchAPI<RequestResponseTypes>(
-			`${REQUEST_ENDPOINT}/${requestId}`
-		);
+    const existingRequest = await fetchAPI<RequestResponseTypes>(
+      `${REQUEST_ENDPOINT}/${requestId}`
+    );
 
-		if (!existingRequest.payload) {
-			throw new Error("Request not found");
-		}
+    if (!existingRequest.payload) {
+      throw new Error("Request not found");
+    }
 
-		// Fetch all requests in the collection to check existing names
-		const collectionRequests = await getRequestByCollectionId({ collectionId });
+    const collectionRequests = await getRequestByCollectionId({ collectionId });
 
-		// Extract the base name and check if it's a copy
-		const baseName = existingRequest.payload.name.replace(/\s\(Copy\)(?:\s\d+)?$/, '');
-		const isCopy = existingRequest.payload.name.includes("(Copy)");
-		let newName = baseName;
+    // Extract the base name and check if it's a copy
+    const baseName = existingRequest.payload.name.replace(/\sCopy(?:\s\d+)?$/, '');
+    const isCopy = existingRequest.payload.name.includes("Copy");
+    let newName = baseName;
 
-		// Define the pattern to match copies (e.g., "New Request (Copy)" or "New Request (Copy) 1")
-		const namePattern = new RegExp(`^${baseName}\\s\\(Copy\\)(?:\\s(\\d+))?$`);
-		let maxNumber = 0;
+    const namePattern = new RegExp(`^${baseName}\\sCopy(?:\\s(\\d+))?$`);
+    let maxNumber = 1;
 
-		// Find the highest number among existing copies
-		collectionRequests.forEach((request) => {
-			const match = request.name.match(namePattern);
-			if (match && match[1]) {
-				const num = parseInt(match[1], 10);
-				if (num > maxNumber) {
-					maxNumber = num;
-				}
-			}
-		});
+    // Find the highest number among existing copies
+    collectionRequests.forEach((request) => {
+      const match = request.name.match(namePattern);
+      if (match && match[1]) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) {
+          maxNumber = num;
+        }
+      }
+    });
 
-		// Generate new name
-		if (!isCopy && !collectionRequests.some((req) => req.name === `${baseName} (Copy)`)) {
-			// If not a copy and "Base (Copy)" doesn't exist, use "Base (Copy)"
-			newName = `${baseName} (Copy)`;
-		} else {
-			// If it's a copy or "Base (Copy)" exists, use the next number
-			newName = `${baseName} (Copy) ${maxNumber + 1}`;
-		}
+    // Generate new name
+    if (!isCopy && !collectionRequests.some((req) => req.name === `${baseName} Copy`)) {
+      newName = `${baseName} Copy`;
+    } else {
+      newName = `${baseName} Copy ${maxNumber + 1}`;
+    }
 
-		const newRequest = {
-			name: newName,
-			collectionId,
-			method: existingRequest.payload.method || "GET",
-			details: existingRequest.payload.details || {
-				url: "",
-				pathVariables: {},
-				queryParams: {},
-				headers: {},
-				body: null,
-				description: "",
-			},
-		};
+    const newRequest = {
+      name: newName,
+      collectionId,
+      method: existingRequest.payload.method || "GET",
+      details: existingRequest.payload.details || {
+        url: "",
+        pathVariables: {},
+        queryParams: {},
+        headers: {},
+        body: null,
+        description: "",
+      },
+    };
 
-		const response = await fetchAPI<RequestResponseTypes>(
-			`${REQUEST_ENDPOINT}`,
-			{
-				method: "POST",
-				body: JSON.stringify(newRequest),
-			}
-		);
+    const response = await fetchAPI<RequestResponseTypes>(
+      `${REQUEST_ENDPOINT}`,
+      {
+        method: "POST",
+        body: JSON.stringify(newRequest),
+      }
+    );
 
-		return response.payload;
-	} catch (error) {
-		console.error("duplicateRequest error:", error);
-		throw error;
-	}
+    return response.payload;
+  } catch (error) {
+    console.error("duplicateRequest error:", error);
+    throw error;
+  }
 };
 
 export const CreateRequestBodyService = async (
