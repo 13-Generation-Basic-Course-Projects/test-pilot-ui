@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, startTransition } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -55,6 +55,7 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 	setEditingIndex,
 }) => {
 	const [open, setOpen] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<z.infer<typeof customValueSchema>>({
 		resolver: zodResolver(customValueSchema),
@@ -65,41 +66,39 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 		},
 	});
 
+	const pathname = usePathname();
+
 	useEffect(() => {
 		if (editingValue) {
 			form.reset(editingValue);
 			setOpen(true);
 		}
-	}, [editingValue]);
-	const pathname = usePathname();
+	}, [editingValue, form]);
 
 	async function onSubmit(values: z.infer<typeof customValueSchema>) {
-		if (editingIndex !== null) {
-			onEditCustomValue(values, editingIndex);
-			setEditingIndex(null);
-		} else {
-			onAddCustomValue(values);
-			const dataTypeId = (await getAllPredefinedAction()) as any;
-			const payload = {
-				projectId: pathname.split("/")[2],
-				dataTypeId: dataTypeId.find(
-					(data: any) => data.dataType.name === values.typeCase
-				).dataType.id,
-				name: values.nameCase,
-				value: values.value,
-			};
+		console.log("Starting submission, isSubmitting:", isSubmitting);
+		setIsSubmitting(true);
+		console.log("Set isSubmitting to true");
 
-			startTransition(async () => {
-				try {
-					await createCustomTestCaseAction(payload);
-					toast.success("Path variables saved.");
-				} catch (error) {
-					toast.error("Path variables could not be saved.");
-				}
-			});
+		try {
+			if (editingIndex !== null) {
+				await onEditCustomValue(values, editingIndex);
+				setEditingIndex(null);
+			} else {
+				await onAddCustomValue(values);
+				toast.success("Path variable saved.");
+			}
+		} catch (error) {
+			if (editingIndex === null) {
+				toast.error("Path variable could not be saved.");
+				console.error(error);
+			}
+		} finally {
+			console.log("Resetting isSubmitting to false");
+			setIsSubmitting(false);
+			form.reset();
+			setOpen(false);
 		}
-		form.reset();
-		setOpen(false);
 	}
 
 	return (
@@ -175,8 +174,15 @@ export const CustomValueForm: React.FC<CustomValueFormProps> = ({
 								)}
 							/>
 							<div className="w-full flex items-center justify-end">
-								<Button type="submit" className="cursor-pointer">
-									Submit
+								<Button
+									type="submit"
+									className="cursor-pointer flex items-center gap-2"
+									disabled={isSubmitting}
+								>
+									{isSubmitting && (
+										<span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+									)}
+									{isSubmitting ? "Submitting..." : "Submit"}
 								</Button>
 							</div>
 						</form>

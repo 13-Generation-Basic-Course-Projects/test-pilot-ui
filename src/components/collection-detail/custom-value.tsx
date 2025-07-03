@@ -32,6 +32,7 @@ import {
   getCustomTestCaseAction,
   deleteCustomTestCaseAction,
   updateCustomTestCaseAction,
+  createCustomTestCaseAction,
 } from "@/action/custom-test-case-action";
 import { getAllPredefinedAction } from "@/action/pre-defined-action";
 
@@ -52,6 +53,7 @@ interface ApiData {
     name: string;
   };
 }
+
 
 export const CustomValue = (): React.JSX.Element => {
   // State for table data, dialogs, and loading
@@ -80,10 +82,50 @@ export const CustomValue = (): React.JSX.Element => {
     fetchData();
   }, [pathname]);
 
-  // Placeholder for adding new test case (already working)
+  // Placeholder for adding new test case 
   const handleAddCustomValue = async (data: z.infer<typeof customValueSchema>) => {
-    // Create functionality is already implemented
+    startTransition(async () => {
+      try {
+        const projectId = pathname.split("/")[2];
+        const dataTypes = await getAllPredefinedAction();
+
+        const selectedDataType = dataTypes.find(
+          (dt: any) => dt.dataType.name.toLowerCase() === data.typeCase.toLowerCase()
+        );
+
+        if (!selectedDataType) {
+          throw new Error(`Invalid data type: ${data.typeCase}`);
+        }
+
+        const payload = {
+          projectId,
+          dataTypeId: selectedDataType.dataType.id,
+          name: data.nameCase,
+          value: data.value,
+        };
+
+        const response = await createCustomTestCaseAction(payload);
+
+        if (response.success && response.payload) {
+          const newRow: CustomValueRow = {
+            id: (response.payload as any).id, 
+            name: data.nameCase,
+            value: data.value,
+            type: data.typeCase,
+          };
+          setRequestParams((prev) => [...prev, newRow]); 
+        } else {
+          throw new Error(response.message || "Failed to create custom value.");
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to create custom value.";
+        toast.error(errorMessage);
+      }
+    });
   };
+
+
 
   // Start editing a test case
   const handleEdit = (index: number) => {
@@ -92,56 +134,59 @@ export const CustomValue = (): React.JSX.Element => {
     setEditingValue({
       nameCase: param.name,
       value: param.value,
-      typeCase: param.type.toLowerCase(), 
+      typeCase: param.type.toLowerCase(),
     });
   };
 
   // Update an existing test case
-  const handleEditCustomValue = async (data: z.infer<typeof customValueSchema>, index: number) => {
+  const handleEditCustomValue = async (
+    data: z.infer<typeof customValueSchema>,
+    index: number
+  ) => {
     const itemToUpdate = requestParams[index];
     if (!itemToUpdate) return;
 
-    startTransition(async () => {
-      try {
-        const dataTypes = await getAllPredefinedAction();
+    try {
+      const dataTypes = await getAllPredefinedAction();
 
-        const selectedDataType = dataTypes.find(
-          (dt: any) => dt.dataType.name.toLowerCase() === data.typeCase.toLowerCase()
+      const selectedDataType = dataTypes.find(
+        (dt: any) => dt.dataType.name.toLowerCase() === data.typeCase.toLowerCase()
+      );
+
+      if (!selectedDataType) {
+        throw new Error(
+          `Invalid data type: ${data.typeCase}. Available: ${dataTypes
+            .map((dt: any) => dt.dataType.name)
+            .join(", ")}`
         );
-
-        if (!selectedDataType) {
-          throw new Error(`Invalid data type: ${data.typeCase}. Available: ${dataTypes.map((dt: any) => dt.dataType.name).join(", ")}`);
-        }
-
-        // Build payload for update
-        const updateTestCase = {
-          projectId: pathname.split("/")[2],
-          dataTypeId: selectedDataType.dataType.id,
-          name: data.nameCase,
-          value: data.value,
-        };
-
-
-        const response = await updateCustomTestCaseAction(itemToUpdate.id, updateTestCase);
-        if (response.success) {
-          // Update table data
-          setRequestParams((prev) =>
-            prev.map((item, i) =>
-              i === index
-                ? { ...item, name: data.nameCase, value: data.value, type: data.typeCase }
-                : item
-            )
-          );
-          toast.success("Test case updated!");
-        } else {
-          throw new Error(response.message || "Failed to update test case.");
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to update test case.";
-        toast.error(errorMessage);
-        console.error("Update error:", errorMessage);
       }
-    });
+
+      const updateTestCase = {
+        projectId: pathname.split("/")[2],
+        dataTypeId: selectedDataType.dataType.id,
+        name: data.nameCase,
+        value: data.value,
+      };
+
+      const response = await updateCustomTestCaseAction(itemToUpdate.id, updateTestCase);
+      if (response.success) {
+        setRequestParams((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? { ...item, name: data.nameCase, value: data.value, type: data.typeCase }
+              : item
+          )
+        );
+        toast.success("Test case updated!");
+      } else {
+        throw new Error(response.message || "Failed to update test case.");
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update test case.";
+      toast.error(errorMessage);
+      console.error("Update error:", errorMessage);
+    }
     setEditingIndex(null);
     setEditingValue(null);
   };
