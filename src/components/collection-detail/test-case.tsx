@@ -68,6 +68,13 @@ interface SavedRequestTestCase {
 	};
 }
 
+interface DataType {
+	dataType: {
+		id: string;
+		name: string;
+	};
+}
+
 export const TestCase = ({
 	request,
 	requestId,
@@ -101,17 +108,24 @@ export const TestCase = ({
 					setSavedRequestTestCases(savedTestCases);
 				}
 
-				const transformToTestCase = (item: ApiTestCaseData): TestCase => ({
+				// Mapping functions for each data type
+				const transformPredefinedToTestCase = (item: DataType): TestCase => ({
+					id: item.dataType.id,
+					type: item.dataType.name,
+					case: item.dataType.name,
+					value: null,
+				});
+				const transformCustomToTestCase = (item: ApiTestCaseData): TestCase => ({
 					id: item.id,
 					type: item.dataType.name,
 					case: item.name,
 					value: item.value,
 				});
 				const transformedPredefined = Array.isArray(predefinedData)
-					? predefinedData.map(transformToTestCase)
+					? predefinedData.map(transformPredefinedToTestCase)
 					: [];
 				const transformedCustom = Array.isArray(customData)
-					? customData.map(transformToTestCase)
+					? customData.map(transformCustomToTestCase)
 					: [];
 				const allTestCases = [...transformedPredefined, ...transformedCustom];
 				setTestCases(allTestCases);
