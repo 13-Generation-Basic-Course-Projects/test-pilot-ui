@@ -2,14 +2,7 @@
 
 import { getAllPredefinedService } from "@/service/pre-defined-service";
 
-interface DataType {
-  dataType: {
-    id: string;
-    name: string;
-  };
-}
-
-export const getAllPredefinedAction = async (): Promise<DataType[]> => {
+export const getAllPredefinedAction = async () => {
   const data = await getAllPredefinedService();
-  return data as DataType[];
+  return data;
 };

@@ -86,6 +86,7 @@ export default function History() {
 			projectId: projectId,
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: allRequests,
+			runDate: ""
 		};
 
 		const collections = await fetchCollectionsForProject(projectId);
