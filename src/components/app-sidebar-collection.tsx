@@ -365,7 +365,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       toast.error("Endpoint name contains invlid characters.")
       return;
     }
-    
+
     setCollectionsData((prev) =>
       prev.map((project) => {
         if (project.id !== projectId) return project;
@@ -418,22 +418,66 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
     endpointId: string,
     newTitle: string
   ) => {
+    // Validation constants
     const MIN_NAME_LENGTH = 3;
-    const namePattern = /^[a-zA-Z0-9 _-]+$/;
+    const MAX_NAME_LENGTH = 30; 
+    const NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9 _-]*[a-zA-Z0-9]$/; 
+    const RESERVED_WORDS = ['api', 'admin', 'system', 'endpoint', 'collection', 'project'];
+    const CONSECUTIVE_SPECIAL_CHARS = /[_-\s]{2,}/; 
 
-    if (newTitle.length < MIN_NAME_LENGTH) {
-      toast.error(`Endpoint name must be at least ${MIN_NAME_LENGTH} characters.`)
+    if (!newTitle || newTitle.trim().length === 0) {
+      toast.error("Endpoint name cannot be empty or contain only whitespace.");
       return;
     }
 
-    if (!namePattern.test(newTitle)) {
-      toast.error("Endpoint name contains invlid characters.")
+    const trimmedTitle = newTitle.trim();
+
+    if (trimmedTitle.length < MIN_NAME_LENGTH) {
+      toast.error(`Endpoint name must be at least ${MIN_NAME_LENGTH} characters.`);
       return;
     }
+
+    if (trimmedTitle.length > MAX_NAME_LENGTH) {
+      toast.error(`Endpoint name must be ${MAX_NAME_LENGTH} characters or less.`);
+      return;
+    }
+
+    // if (!NAME_PATTERN.test(trimmedTitle)) {
+    //   toast.error(
+    //     "Endpoint name can only contain letters, numbers, spaces, underscores, or hyphens."
+    //   );
+    //   return;
+    // }
+
+    if (CONSECUTIVE_SPECIAL_CHARS.test(trimmedTitle)) {
+      toast.error("Endpoint name cannot contain consecutive underscores, hyphens, or spaces.");
+      return;
+    }
+
+    // 7. Check for reserved words (case-insensitive)
+    if (RESERVED_WORDS.includes(trimmedTitle.toLowerCase())) {
+      toast.error("Endpoint name cannot be a reserved word (e.g., 'api', 'admin').");
+      return;
+    }
+
+    const isDuplicate = collectionsData
+      .find((project) => project.id === projectId)
+      ?.collections.find((collection) => collection.id === collectionId)
+      ?.endpoints.some(
+        (endpoint) => endpoint.id !== endpointId && endpoint.name.toLowerCase() === trimmedTitle.toLowerCase()
+      );
+
+    if (isDuplicate) {
+      toast.error("An endpoint with this name already exists in the collection.");
+      return;
+    }
+
     try {
       await updateRequestByIdAction(collectionId, endpointId, {
-        name: newTitle,
+        name: trimmedTitle,
       });
+
+      // Update local state
       setCollectionsData((prev) =>
         prev.map((project) =>
           project.id === projectId
@@ -445,7 +489,7 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
                     ...collection,
                     endpoints: collection.endpoints.map((endpoint) =>
                       endpoint.id === endpointId
-                        ? { ...endpoint, path: newTitle, name: newTitle }
+                        ? { ...endpoint, path: trimmedTitle, name: trimmedTitle }
                         : endpoint
                     ),
                   }
@@ -455,12 +499,11 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
             : project
         )
       );
+
       toast.success("Endpoint renamed successfully");
     } catch (error: any) {
       console.error("Failed to rename endpoint:", error);
-      toast.error(
-        `Failed to rename endpoint: ${error.message || "Unknown error"}`
-      );
+      toast.error(`Failed to rename endpoint: ${error.message || "Unknown error"}`);
     }
   };
 

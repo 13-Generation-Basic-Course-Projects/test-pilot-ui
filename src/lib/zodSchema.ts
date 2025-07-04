@@ -8,10 +8,14 @@ export const loginSchema = z.object({
 });
 
 export const projectFormSchema = z.object({
-	projectName: z.string().min(1, { message: "Project name is required." }),
+	projectName: z
+		.string()
+		.min(1, { message: "Project name is required." })
+		.max(20, "Project name must be 20 characters or less"),
 	projectDescription: z
 		.string()
-		.min(1, { message: "Project description is required." }),
+		.min(1, { message: "Project description is required." })
+		.max(50, "Project description must be 50 characters or less"),
 });
 
 export const collectionFormSchema = z.object({
