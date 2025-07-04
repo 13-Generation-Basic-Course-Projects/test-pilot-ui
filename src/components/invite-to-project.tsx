@@ -62,6 +62,7 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     startTransition(async () => {
       try {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
         if (!emailRegex.test(email)) {
           setError("Invalid email format.");
           return;
