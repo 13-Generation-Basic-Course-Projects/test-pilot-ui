@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GithubIcon from "@/components/icons/github";
 import GoogleIcon from "@/components/icons/google";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { signUpAction } from "@/action/auth-action";
 import { useRouter } from "next/navigation";
@@ -23,12 +23,21 @@ export function RegisterForm({
 	// The component now wraps a <div>
 	const [showPassword, setShowPassword] = useState(false);
 	const router = useRouter();
-	const [state, formAction] = useActionState(signUpAction, {
+	const { setRegisteredEmail } = useRegister();
+	const [emailInputValue, setEmailInputValue] = useState<string>("");
+
+	const [isPending, startTransition] = useTransition();
+
+	const [state, formActionOrig] = useActionState(signUpAction, {
 		message: "",
 		success: false,
 	});
-	const { setRegisteredEmail } = useRegister();
-	const [emailInputValue, setEmailInputValue] = useState<string>("");
+
+	const formAction = async (formData: FormData) => {
+		startTransition(() => {
+			formActionOrig(formData);
+		});
+	};
 
 	useEffect(() => {
 		if (state.message) {
@@ -133,8 +142,15 @@ export function RegisterForm({
 					</button>
 				</div>
 
-				<Button type="submit" className="w-full">
-					Register
+				<Button type="submit" className="w-full" disabled={isPending}>
+					{isPending ? (
+						<>
+							<Loader2 className="animate-spin w-4 h-4 mr-2" />
+							Registering...
+						</>
+					) : (
+						"Register"
+					)}
 				</Button>
 			</form>
 
