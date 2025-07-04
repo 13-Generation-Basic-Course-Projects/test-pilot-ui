@@ -53,7 +53,7 @@ export function ExportAllCollections({
       const exportData = {
         info: {
           _testpilot_id: crypto.randomUUID(),
-          name: projectName, // e.g., "FackStoreAPI"
+          name: projectName,
           schema:
             layout === "default"
               ? "https://schema.getTestPilot.com/json/collection/v2.0.0/collection.json"
