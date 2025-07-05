@@ -420,10 +420,10 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
   ) => {
     // Validation constants
     const MIN_NAME_LENGTH = 3;
-    const MAX_NAME_LENGTH = 30; 
-    const NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9 _-]*[a-zA-Z0-9]$/; 
+    const MAX_NAME_LENGTH = 30;
+    const NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9 _-]*[a-zA-Z0-9]$/;
     const RESERVED_WORDS = ['api', 'admin', 'system', 'endpoint', 'collection', 'project'];
-    const CONSECUTIVE_SPECIAL_CHARS = /[_-\s]{2,}/; 
+    const CONSECUTIVE_SPECIAL_CHARS = /[_-\s]{2,}/;
 
     if (!newTitle || newTitle.trim().length === 0) {
       toast.error("Endpoint name cannot be empty or contain only whitespace.");
@@ -442,19 +442,12 @@ export const CollectionSidebar = ({ projectId }: { projectId: string }) => {
       return;
     }
 
-    // if (!NAME_PATTERN.test(trimmedTitle)) {
-    //   toast.error(
-    //     "Endpoint name can only contain letters, numbers, spaces, underscores, or hyphens."
-    //   );
-    //   return;
-    // }
 
     if (CONSECUTIVE_SPECIAL_CHARS.test(trimmedTitle)) {
       toast.error("Endpoint name cannot contain consecutive underscores, hyphens, or spaces.");
       return;
     }
 
-    // 7. Check for reserved words (case-insensitive)
     if (RESERVED_WORDS.includes(trimmedTitle.toLowerCase())) {
       toast.error("Endpoint name cannot be a reserved word (e.g., 'api', 'admin').");
       return;

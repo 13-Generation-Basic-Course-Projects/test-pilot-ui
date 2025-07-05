@@ -116,6 +116,7 @@ export const TestRequestBody = ({
 			projectId: projectId,
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requests,
+			runDate: ""
 		};
 
 		// --- ❗️ CONSOLE LOG ADDED HERE ❗️ ---

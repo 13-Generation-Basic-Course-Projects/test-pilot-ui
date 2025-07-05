@@ -158,6 +158,7 @@ export function HistoryData({ batchData, onRowClick }: HistoryDataProps) {
 					projectId: batchData.projectId,
 					triggerType: "SELECTED_TEST_CASES",
 					requestExecution,
+					runDate: ""
 				};
 
 				toast.loading("Re-running test...", { id: toastId });

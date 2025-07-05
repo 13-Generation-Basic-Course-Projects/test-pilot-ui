@@ -4,6 +4,7 @@ import { runTestCasesService } from "@/service/run-test-service";
 
 // Define a type for the payload for clarity and safety
 export interface TestRunPayload {
+    runDate: string;
 	projectId: string;
 	triggerType: "SELECTED_TEST_CASES";
 	requestExecution: {

@@ -44,6 +44,14 @@ interface CustomValueRow {
   type: string;
 }
 
+type PredefinedDataType = {
+  dataType: {
+    id: string;
+    name: string;
+  };
+};
+
+
 // Define the shape of API response data
 interface ApiData {
   id: string;
@@ -123,7 +131,7 @@ export const CustomValue = (): React.JSX.Element => {
     startTransition(async () => {
       try {
         const projectId = pathname.split("/")[2];
-        const dataTypes = await getAllPredefinedAction();
+        const dataTypes = await getAllPredefinedAction() as PredefinedDataType[];
         console.log("Available data types from API:", dataTypes);
 
         const selectedDataType = dataTypes.find(
@@ -188,7 +196,7 @@ export const CustomValue = (): React.JSX.Element => {
 
     startTransition(async () => {
       try {
-        const dataTypes = await getAllPredefinedAction();
+        const dataTypes = await getAllPredefinedAction() as PredefinedDataType[];
         console.log("Available data types for edit:", dataTypes);
 
         const selectedDataType = dataTypes.find(
@@ -196,6 +204,11 @@ export const CustomValue = (): React.JSX.Element => {
         );
 
         if (!selectedDataType) {
+          throw new Error(
+            `Invalid data type: ${data.typeCase}. Available: ${dataTypes
+              .map((dt: any) => dt.dataType.name)
+              .join(", ")}`
+          );
           throw new Error(
             `Invalid data type: ${data.typeCase}. Available: ${dataTypes
               .map((dt: any) => dt.dataType.name)

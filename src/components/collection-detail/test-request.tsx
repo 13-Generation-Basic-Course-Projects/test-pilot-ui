@@ -230,6 +230,7 @@ export default function TestRequest({
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
+			runDate: ""
 		};
 		console.log("TestRequest (Params/Path) - Run All Payload:", finalPayload);
 		startTransition(async () => {
@@ -278,6 +279,7 @@ export default function TestRequest({
 			projectId: pathname.split("/")[2],
 			triggerType: "SELECTED_TEST_CASES",
 			requestExecution: requestExecution,
+			runDate: ""
 		};
 		console.log(
 			"TestRequest (Params/Path) - Single Run Payload:",
