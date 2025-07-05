@@ -23,176 +23,202 @@ import Link from "next/link";
 export default function LandingPageComponent() {
   return (
     <>
-      {/* Section 1 */}
-      <section className="min-h-screen px-6 sm:px-6 py-16 flex items-center justify-center">
-        <div className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 items-center gap-16 md:gap-16">
+      {/* Section 1 - Hero */}
+      <section className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24 flex items-center justify-center">
+        <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-8 md:gap-12 lg:gap-16 xl:gap-20">
           {/* Left Content */}
-          <div className="space-y-8 text-center md:text-left">
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8 text-center lg:text-left">
             {/* Banner */}
-            <div className="flex justify-center">
-              <div className="text-sm px-4 py-2 rounded-xl inline-flex flex-col sm:flex-row items-center gap-2 shadow-sm text-center sm:text-left">
-                <span>We’re happy to announce that we released it today!</span>
+            <div className="flex justify-center lg:justify-start">
+              <div className="text-xs sm:text-sm md:text-base px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl inline-flex flex-col sm:flex-row items-center gap-1 sm:gap-2 shadow-sm text-center sm:text-left bg-white/10 backdrop-blur-sm">
+                <span>We're happy to announce our release today!</span>
                 <a
                   href="#"
-                  className="inline-flex items-center text-blue-800 underline hover:text-blue-900"
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 text-xs sm:text-sm md:text-base transition-colors"
                 >
-                  Get started <ArrowRight className="w-4 h-4 ml-1" />
+                  Get started{" "}
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                 </a>
               </div>
             </div>
 
             {/* Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-5xl text-center font-bold  text-gray-900 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
               Simplify API Validation <br className="hidden sm:block" /> for
               Developers
             </h1>
+
             {/* Description */}
-            <p className="text-gray-600  text-base  max-w-md ml-20 text-center ">
-              We are build a testing API platform that make it easy to test your
-              API. Now we will provide best solution for your development. it
-              very faster and good for testing APIs.
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-md mx-auto lg:mx-0 text-center lg:text-left">
+              Build, test, and monitor your APIs with our comprehensive platform
+              designed to streamline your development workflow and ensure
+              reliability.
             </p>
+
             {/* Buttons */}
-            <div className="flex flex-col lg:justify-start sm:flex-row gap-4 justify-center items-center sm:text-lg mx-auto lg:ml-20 lg:text-left">
-              <Link href={"/login"}>
-                <button className="bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-800 transition shadow">
+            <div className="flex flex-col xs:flex-row gap-3 w-full xs:w-auto">
+              <Link
+                href="/login"
+                className="w-full xs:w-auto min-w-[180px] sm:min-w-[200px]"
+              >
+                <button
+                  className="
+      bg-black hover:bg-gray-800 
+      text-white 
+      px-5 py-2.5 sm:px-6 sm:py-3 
+      rounded-md 
+      text-sm sm:text-base md:text-lg 
+      transition-all 
+      shadow-lg hover:shadow-xl 
+      w-full
+      text-center
+    "
+                >
                   Get Started
                 </button>
               </Link>
-              <button className="border border-gray-300 px-6 py-3 rounded-md text-sm hover:bg-gray-100 transition flex items-center gap-2">
-                <FaGithub className="w-4 h-4" />
+              <button
+                className="
+    border border-gray-300 hover:border-gray-400 
+    px-5 py-2.5 sm:px-6 sm:py-3 
+    rounded-md 
+    text-sm sm:text-base md:text-lg 
+    transition-all 
+    flex items-center justify-center gap-2 
+    w-full xs:w-auto
+    min-w-[180px] sm:min-w-[200px]
+    hover:bg-gray-50
+  "
+              >
+                <FaGithub className="w-4 h-4 sm:w-5 sm:h-5" />
                 GitHub
               </button>
             </div>
           </div>
+
           {/* Right Image */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center order-first lg:order-last">
             <Image
               src={heroImage}
               alt="Hero Astronaut"
-              width={400}
-              height={400}
-              className="max-w-[270px] sm:max-w-[300px] md:max-w-[300px]"
+              width={600}
+              height={600}
+              className="max-w-[180px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[400px] 2xl:max-w-[450px]"
               priority
+              quality={95}
             />
           </div>
         </div>
       </section>
 
-      {/* Section 2 */}
-      <section className="relative flex ms-30 py-10 sm:ps-14">
-        <div className="relative z-10">
-          <Image
-            src={Image1}
-            alt="Image 1"
-            className="rounded-xl shadow-lg"
-            width={1000}
-            height={800}
-			
-          />
-        </div>
+      {/* Section 2 - Overlapping Images */}
+      <section className="relative py-8 md:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative flex flex-col lg:flex-row gap-6 lg:gap-0">
+            <div className="relative z-10 w-full max-w-4xl mx-auto">
+              <Image
+                src={Image1}
+                alt="Dashboard screenshot"
+                className="rounded-xl shadow-lg w-full"
+                width={1200}
+                height={800}
+                quality={90}
+              />
+            </div>
 
-        {/* Image 2 (overlapping image) */}
-        <div className="absolute left-[30%] top-[40%] z-11 sm:left-[20%] ">
-          <Image
-            src={Image2}
-            alt="Image 2"
-            className="rounded-xl shadow-xl border-4 border-white sm:top[90%]"
-            width={1000}
-            height={800}
-          />
+            <div className="lg:absolute mt-5 lg:left-1/4 lg:top-1/3 z-20 w-full max-w-3xl lg:w-[65%] xl:w-[60%] mx-auto lg:mx-0  lg:mt-0 lg:-ml-8 xl:-ml-12 2xl:-ml-16">
+              <Image
+                src={Image2}
+                alt="Features close-up"
+                className="rounded-xl shadow-lg border-4 border-white w-full"
+                width={1000}
+                height={700}
+                quality={90}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Section 3 */}
-      <section className="text-center mt-64 px-4">
-        <div className="inline-block border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-700 mb-3">
-          Lasted updated: 7 May 2025
-        </div>
-        {/* Description */}
-        <p className="text-gray-700 mb-6">
-          Build with industry-standard tools and best practices
-        </p>
-        {/* Tech Stack Icons */}
-        <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-800">
-          {/* Next.js */}
-          <div className="flex items-center space-x-2">
-            <RiNextjsFill />
-            <span>
-              NextJS <strong>15.3.2</strong>
-            </span>
+      {/* Section 3 - Features */}
+      <section className="py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-block border border-gray-300 rounded-md px-3 py-1.5 text-sm md:text-base text-gray-700 mb-4 md:mb-6">
+            Last updated: 7 May 2025
           </div>
 
-          {/* TypeScript */}
-          <div className="flex items-center space-x-2">
-            <BiLogoTypescript className="text-blue-500" />
-            <span>
-              TypeScript <strong>5.4</strong>
-            </span>
+          <p className="text-gray-700 mb-8 md:mb-12 text-base md:text-lg lg:text-xl">
+            Built with industry-standard tools and best practices
+          </p>
+
+          {/* Tech Stack */}
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 lg:gap-8 text-sm md:text-base lg:text-lg text-gray-800 mb-12 md:mb-16 lg:mb-20">
+            <div className="flex items-center space-x-2">
+              <RiNextjsFill className="text-lg md:text-xl" />
+              <span>
+                NextJS <strong>15.3.2</strong>
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <BiLogoTypescript className="text-blue-500 text-lg md:text-xl" />
+              <span>
+                TypeScript <strong>5.4</strong>
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <BiLogoSpringBoot className="text-green-600 text-lg md:text-xl" />
+              <span>
+                Spring Boot <strong>3.4.5</strong>
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RiTailwindCssFill className="text-blue-800 text-lg md:text-xl" />
+              <span>
+                Tailwind <strong>4.1.7</strong>
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <SiShadcnui className="text-lg md:text-xl" />
+              <span>
+                Shadcn <strong>2.5.0</strong>
+              </span>
+            </div>
           </div>
 
-          {/* Spring Boot */}
-          <div className="flex items-center space-x-2">
-            {/* <img src="/icons/spring.svg" alt="Spring Boot" className="h-6 w-6" /> */}
-            <BiLogoSpringBoot className="text-green-600" />
-            <span>
-              Spring boot <strong>3.4.5</strong>
-            </span>
-          </div>
-
-          {/* Tailwind */}
-          <div className="flex items-center space-x-2">
-            <RiTailwindCssFill className="text-blue-800" />
-            <span>
-              tailwind <strong>4.1.7</strong>
-            </span>
-          </div>
-
-          {/* Shadcn */}
-          <div className="flex items-center space-x-2">
-            <SiShadcnui />
-            <span>
-              Shadcn <strong>2.5.0</strong>
-            </span>
-          </div>
-        </div>
-        <div className="mt-10 flex items-center justify-center">
-          <div className="text-center max-w-7xl ">
-            <h1 className="text-4xl font-bold mb-8">We&apos;re provide :</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Card 1 */}
-              <div className="p-6 bg-white shadow rounded-lg grid gap-4 text-left">
-                <div>
-					
-                  <FaCode className="h-18 w-18" />
-                </div>
-                <h2 className="text-xl font-bold">API Testing</h2>
-                <p className="text-gray-600">
-                  Validate your API endpoints easily with build-in and custom
-                  test cases to ensure reliability.
-                </p>
-              </div>
-              {/* Card 2 */}
-              <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
-                <div>
-                  <Monitor className="h-18 w-18" />
-                </div>
-                <h2 className="text-xl font-bold">Real-time Monitoring</h2>
-                <p className="text-gray-600">
-                  Track APi performance, errors , and usage live. Instantly
-                  identify issues and understand traffic patterns.
+          {/* Features Cards */}
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 lg:mb-16">
+              What We Provide
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
+              <div className="p-6 sm:p-8 bg-white shadow-lg rounded-xl grid gap-4 sm:gap-6 text-left hover:shadow-xl transition-shadow">
+                <FaCode className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600" />
+                <h3 className="text-xl sm:text-2xl font-bold">API Testing</h3>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Comprehensive validation with built-in and custom test cases
+                  to ensure your API endpoints are reliable and performant.
                 </p>
               </div>
 
-              {/* Card 3 */}
-              <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
-                <div>
-                  <History className="h-18 w-18" />
-                </div>
-                <h2 className="text-xl font-bold">View History</h2>
-                <p className="text-gray-600">
-                  Access detailed logs og past API requests and responses.
-                  Easily debug issues and audit activity.
+              <div className="p-6 sm:p-8 bg-white shadow-lg rounded-xl grid gap-4 sm:gap-6 text-left hover:shadow-xl transition-shadow">
+                <Monitor className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
+                <h3 className="text-xl sm:text-2xl font-bold">
+                  Real-time Monitoring
+                </h3>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Live tracking of API performance metrics, error rates, and
+                  usage patterns to quickly identify and resolve issues.
+                </p>
+              </div>
+
+              <div className="p-6 sm:p-8 bg-white shadow-lg rounded-xl grid gap-4 sm:gap-6 text-left hover:shadow-xl transition-shadow">
+                <History className="h-8 w-8 sm:h-10 sm:w-10 text-purple-600" />
+                <h3 className="text-xl sm:text-2xl font-bold">
+                  Request History
+                </h3>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Detailed logs of all API requests and responses for debugging,
+                  auditing, and performance analysis.
                 </p>
               </div>
             </div>
@@ -200,107 +226,95 @@ export default function LandingPageComponent() {
         </div>
       </section>
 
-      {/* Section 4 */}
-      <section className="w-full bg-white py-8 md:py-16 space-y-30 ">
-        <br />
-        <br />
-        <div className="text-center">
-          <h1 className="text-3xl md:text-4xl font-bold">It helps you more</h1>
-          <p className="text-gray-600 mt-2 text-sm md:text-base">
-            TestPilot is very special for you
-          </p>
-        </div>
-        <div className="container mx-auto px-4 mt-6 md:mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Image Column */}
-            <div className="flex flex-col items-center justify-center space-y-4 sm:px-6 text-center">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-800 sm:ps-8">
-                TestPilot for API testing offers several key advantages.
-              </h1>
-              <p className="text-gray-700 text-sm md:text-base sm:ps-14 max-w-md text-center">
-                It provides more than what you see. It helps developers easily
-                find better solutions than ever before.
+      {/* Section 4 - Benefits */}
+      <section className="py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 md:mb-16 lg:mb-20">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">
+              Why Choose TestPilot
+            </h2>
+            <p className="text-gray-600 text-base md:text-lg lg:text-xl max-w-3xl mx-auto">
+              Designed specifically to enhance your API development workflow
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-8 md:gap-10 lg:gap-12 xl:gap-16">
+            <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">
+                Comprehensive API Testing Solution
+              </h3>
+              <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8 max-w-lg">
+                TestPilot combines all the tools you need for thorough API
+                validation, monitoring, and debugging in one intuitive platform.
               </p>
               <Image
                 src={Image3}
-                alt="Hero Astronaut"
-                className="w-full max-w-[350px] h-auto rounded-lg sm:max-w-[200px] md:max-w-[300px]"
-                width={500}
+                alt="Dashboard overview"
+                className="rounded-xl shadow-lg w-full max-w-md"
+                width={800}
                 height={600}
+                quality={90}
               />
             </div>
 
-            {/* Cards Column */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+            <div className="lg:w-1/2 space-y-6 md:space-y-8">
+              <div className="flex items-start gap-4 md:gap-6 p-5 sm:p-6 md:p-7 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <BadgeCheck className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0 text-green-600" />
                 <div>
-                  <BadgeCheck
-                    className="w-12 h-12 md:w-14 md:h-14"
-                    strokeWidth={1}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">
-                    Smart Field Validation
-                  </h3>
-                  <p className="text-gray-400 text-xs md:text-sm">
-                    Automatically validates data types such as 'Is Null', 'Is
-                    Email', 'Is Undefined, etc. You can test your APIs with
-                    TestPilot to ensure they are implemented correctly.
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 md:mb-3">
+                    Smart Validation
+                  </h4>
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Automatic detection of common API issues with intelligent
+                    suggestions for fixes and optimizations.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+
+              <div className="flex items-start gap-4 md:gap-6 p-5 sm:p-6 md:p-7 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <FileText className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0 text-blue-600" />
                 <div>
-                  <FileText
-                    className="w-12 h-12 md:w-14 md:h-14"
-                    strokeWidth={1}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">
-                    Test Case Templates
-                  </h3>
-                  <p className="text-gray-400 text-xs md:text-sm">
-                    Quickly generate reusable test scenarios for common endpoint
-                    patterns like Create / Read / Update / Delete.
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 md:mb-3">
+                    Test Templates
+                  </h4>
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Pre-built test scenarios for common API patterns that can be
+                    customized to your specific needs.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+
+              <div className="flex items-start gap-4 md:gap-6 p-5 sm:p-6 md:p-7 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <ClipboardCheck className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0 text-orange-600" />
                 <div>
-                  <ClipboardCheck
-                    className="w-12 h-12 md:w-14 md:h-14"
-                    strokeWidth={1}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">
-                    Detailed Validation Reports
-                  </h3>
-                  <p className="text-gray-400 text-xs md:text-sm">
-                    Export test results with clear pass/fail summaries and error
-                    messages. Ideal for QA teams and stakeholders.
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 md:mb-3">
+                    Detailed Reports
+                  </h4>
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Comprehensive test results with visualizations and export
+                    options for sharing with your team.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
-                <div>
+
+              <div className="flex items-start gap-4 md:gap-6 p-5 sm:p-6 md:p-7 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0">
                   <Image
                     src={Image4}
-                    alt="Hero Astronaut"
-                    className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover"
+                    alt="UI example"
+                    className="rounded-lg object-cover w-full h-full"
                     width={100}
                     height={100}
+                    quality={100}
                   />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-1 text-base md:text-lg">
-                    User-Friendly Interface
-                  </h3>
-                  <p className="text-gray-400 text-xs md:text-sm">
-                    Clean, modern UI focused on productivity—built for testers
-                    and developers to work efficiently without distractions.
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 md:mb-3">
+                    Intuitive Interface
+                  </h4>
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Clean, modern design that makes complex testing workflows
+                    simple and accessible.
                   </p>
                 </div>
               </div>
@@ -309,57 +323,144 @@ export default function LandingPageComponent() {
         </div>
       </section>
 
-      {/* Footer of landing page */}
-      <footer className="w-full bg-white px-6 pt-10 text-black">
-        <div className="space-y-6 p-8">
-          <div className=" items-center md:items-start gap-6">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Image
-                src={Logo}
-                alt="Destinize Logo"
-                className="border-4 border-white rounded-xl"
-                width={120}
-                height={120}
-              />
-            </div>
-            {/* Description */}
-            <div className="max-w-md text-sm leading-relaxed text-gray-400 sm:text-left ">
-              <p>
-                Destinize adalah website atau layanan aplikasi yang membantu
-                kamu memilih atau merekomendasikan tempat yang dijuluki ‘hidden
-                gems’ agar lebih dikenal dan ramai.{" "}
-                <strong className="text-blue-600 cursor-pointer">
-                  Baca Selengkapnya
-                </strong>
+      {/* Footer */}
+      <footer className="bg-white py-12 md:py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between gap-8 md:gap-12">
+            <div className="lg:w-1/3">
+              <div className="flex items-center gap-3 sm:gap-4 md:gap-5 mb-6">
+                <div className="flex-shrink-0 relative">
+                  <Image
+                    src={Logo}
+                    alt="TestPilot Logo"
+                    className="border-2 sm:border-[3px] md:border-4 border-white/90 rounded-xl drop-shadow-sm transition-all duration-300 hover:scale-105 hover:drop-shadow-md"
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    style={{
+                      width: "auto",
+                      height: "auto",
+                      maxWidth: "100%",
+                      objectFit: "contain",
+                      objectPosition: "center",
+                    }}
+                    priority
+                    quality={100}
+                  />
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm sm:text-base mb-6 md:mb-8">
+                The complete solution for API testing, monitoring, and
+                validation. Built by developers, for developers.
               </p>
+              <div className="flex gap-4">
+                <a
+                  href="#"
+                  className="text-gray-500 hover:text-gray-700 transition"
+                >
+                  <FaGithub className="w-6 h-6" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-500 hover:text-gray-700 transition"
+                >
+                  <FaGoogle className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 lg:w-2/3">
+              <div>
+                <h4 className="text-lg font-semibold mb-4 md:mb-6">Product</h4>
+                <ul className="space-y-2 md:space-y-3 text-sm sm:text-base text-gray-600">
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Features
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Pricing
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Documentation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Releases
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold mb-4 md:mb-6">Company</h4>
+                <ul className="space-y-2 md:space-y-3 text-sm sm:text-base text-gray-600">
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      About
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Blog
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Careers
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Contact
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold mb-4 md:mb-6">Legal</h4>
+                <ul className="space-y-2 md:space-y-3 text-sm sm:text-base text-gray-600">
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Privacy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Terms
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-gray-900 transition">
+                      Security
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          {/* Divider */}
-          <hr className="border-t border-gray-300" />
-
-          {/* Bottom Section: Copyright & Icons */}
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm gap-4">
-            <p className="text-gray-600">@Copyright 2025 TestPilot</p>
-            <div className="flex items-center gap-4 text-black text-xl">
+          <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm sm:text-base text-gray-500">
+              © 2025 TestPilot. All rights reserved.
+            </p>
+            <div className="flex gap-4">
               <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="hover:text-gray-500"
+                href="#"
+                className="text-sm sm:text-base text-gray-500 hover:text-gray-700 transition"
               >
-                <FaGithub />
+                Privacy Policy
               </a>
               <a
-                href="https://google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Google"
-                className="hover:text-gray-500"
+                href="#"
+                className="text-sm sm:text-base text-gray-500 hover:text-gray-700 transition"
               >
-                <FaGoogle />
+                Terms of Service
               </a>
             </div>
           </div>
