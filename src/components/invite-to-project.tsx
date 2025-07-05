@@ -62,10 +62,12 @@ export function InviteToProject({ urlProject }: InviteToProjectProps) {
     startTransition(async () => {
       try {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+
+        if (!email || !emailRegex.test(email)) {
           setError("Invalid email format.");
           return;
         }
+
 
         //Check if email already exists in members list
         const isAlreadyInvited = members.some(

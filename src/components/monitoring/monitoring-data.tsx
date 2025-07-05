@@ -18,11 +18,56 @@ interface MonitoringDataProps {
 	selectedTestId: string | null;
 }
 
+// Validate timestamp (number or string) is valid date
+function parseLocalDate(dateString: string): Date | null {
+	const parts = dateString.split("T")[0].split("-");
+	if (parts.length !== 3) return null;
+
+	const year = Number(parts[0]);
+	const month = Number(parts[1]) - 1;
+	const day = Number(parts[2]);
+
+	if (
+		isNaN(year) ||
+		isNaN(month) ||
+		isNaN(day) ||
+		year < 1000 ||
+		month < 0 ||
+		month > 11 ||
+		day < 1 ||
+		day > 31
+	) {
+		return null;
+	}
+
+	return new Date(year, month, day);
+}
+
+function isValidDate(dateString: string) {
+	const date = parseLocalDate(dateString);
+	return date !== null && !isNaN(date.getTime());
+}
+
+function isSameDay(dateString: string) {
+	const date = parseLocalDate(dateString);
+	if (!date) return false;
+
+	const today = new Date();
+	return (
+		date.getFullYear() === today.getFullYear() &&
+		date.getMonth() === today.getMonth() &&
+		date.getDate() === today.getDate()
+	);
+}
+
+
+
+
 export function MonitoringData({
-	testResults,
-	onSelectTest,
-	selectedTestId,
-}: MonitoringDataProps) {
+								   testResults,
+								   onSelectTest,
+								   selectedTestId,
+							   }: MonitoringDataProps) {
 	const getStatusBadge = (test: TestResult) => {
 		const { status, httpStatus } = test;
 
@@ -98,29 +143,34 @@ export function MonitoringData({
 							className={`
                 ${selectedTestId === test.id ? "bg-[#F1F5F9]" : ""}
                 ${
-									isClickable(test.status)
-										? "hover:bg-[#F8FAFC] cursor-pointer"
-										: "cursor-not-allowed opacity-60"
-								}
+								isClickable(test.status)
+									? "hover:bg-[#F8FAFC] cursor-pointer"
+									: "cursor-not-allowed opacity-60"
+							}
                 py-3 my-2
               `}
 							onClick={() => isClickable(test.status) && onSelectTest(test.id)}
 						>
-							<TableCell className="font-medium py-4">{test.date}</TableCell>
+							<TableCell className="font-medium py-4">
+								{new Date().toLocaleDateString()}
+							</TableCell>
+
+
+
 							<TableCell className="py-4">
 								<div
 									className={`inline-block border border-[#E2E8F0] rounded-md px-[10px] py-1 text-xs ${
 										test.method === "GET"
 											? "text-[#3B82F6]"
 											: test.method === "POST"
-											? "text-[#10B981]"
-											: test.method === "PUT"
-											? "text-[#006FEE]"
-											: test.method === "DELETE"
-											? "text-[#EF4444]"
-											: test.method === "PATCH"
-											? "text-[#8B5CF6]"
-											: "text-[#8B5CF6]"
+												? "text-[#10B981]"
+												: test.method === "PUT"
+													? "text-[#006FEE]"
+													: test.method === "DELETE"
+														? "text-[#EF4444]"
+														: test.method === "PATCH"
+															? "text-[#8B5CF6]"
+															: "text-[#8B5CF6]"
 									}`}
 								>
 									{test.method}

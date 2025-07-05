@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { projectFormSchema } from "@/lib/zodSchema";
-import { ProjectFormProps, ProjectItem } from "@/types";
+import { ProjectFormProps } from "@/types";
 import {
 	createProjectAction,
 	updateProjectByIdAction,

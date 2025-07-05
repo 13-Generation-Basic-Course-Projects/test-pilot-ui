@@ -95,6 +95,14 @@ export interface ProjectItem {
 	userAvatarUrl?: string;
 }
 
+export interface PredefinedDataType {
+  dataType: {
+    id: string;
+    name: string;
+  };
+}
+
+
 export interface ProjectVariableItem {
 	id: string;
 	variableId: string;
