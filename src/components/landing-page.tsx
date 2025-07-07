@@ -162,7 +162,7 @@ export default function LandingPageComponent() {
               {/* Card 1 */}
               <div className="p-6 bg-white shadow rounded-lg grid gap-4 text-left">
                 <div>
-                  <FaCode className="h-18 w-18 text-blue-600" />
+                  <FaCode className="h-18 w-18 " />
                 </div>
                 <h2 className="text-xl font-bold">API Testing</h2>
                 <p className="text-gray-600">
@@ -173,7 +173,7 @@ export default function LandingPageComponent() {
               {/* Card 2 */}
               <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
                 <div>
-                  <Monitor className="h-18 w-18 text-red-600" />
+                  <Monitor className="h-18 w-18 " />
                 </div>
                 <h2 className="text-xl font-bold">Real-time Monitoring</h2>
                 <p className="text-gray-600">
@@ -185,7 +185,7 @@ export default function LandingPageComponent() {
               {/* Card 3 */}
               <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
                 <div>
-                  <History className="h-18 w-18 text-green-600" />
+                  <History className="h-18 w-18 " />
                 </div>
                 <h2 className="text-xl font-bold">View History</h2>
                 <p className="text-gray-600">
@@ -233,7 +233,7 @@ export default function LandingPageComponent() {
               <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
                 <div>
                   <BadgeCheck
-                    className="w-12 h-12 md:w-14 md:h-14 text-purple-600"
+                    className="w-12 h-12 md:w-14 md:h-14 "
                     strokeWidth={1}
                   />
                 </div>
@@ -251,7 +251,7 @@ export default function LandingPageComponent() {
               <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
                 <div>
                   <FileText
-                    className="w-12 h-12 md:w-14 md:h-14 text-orange-400"
+                    className="w-12 h-12 md:w-14 md:h-14 "
                     strokeWidth={1}
                   />
                 </div>
@@ -268,7 +268,7 @@ export default function LandingPageComponent() {
               <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
                 <div>
                   <ClipboardCheck
-                    className="w-12 h-12 md:w-14 md:h-14 text-green-500"
+                    className="w-12 h-12 md:w-14 md:h-14 "
                     strokeWidth={1}
                   />
                 </div>
@@ -287,7 +287,7 @@ export default function LandingPageComponent() {
                   <Image
                     src={Image4}
                     alt="Hero Astronaut"
-                    className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover "
+                    className="w-12 h-12 md:w-12 md:h-14 rounded-lg object-cover "
                     width={100}
                     height={100}
                   />
