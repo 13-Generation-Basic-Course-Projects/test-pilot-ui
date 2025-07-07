@@ -160,9 +160,9 @@ export default function LandingPageComponent() {
             <h1 className="text-4xl font-bold mb-8">We&apos;re provide :</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Card 1 */}
-              <div className="p-6 bg-white shadow rounded-lg grid gap-4 text-left">
+              <div className="p-6 bg-white shadow-md rounded-lg grid gap-4 text-left transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
-                  <FaCode className="h-18 w-18 " />
+                  <FaCode className="h-18 w-18" />
                 </div>
                 <h2 className="text-xl font-bold">API Testing</h2>
                 <p className="text-gray-600">
@@ -170,26 +170,27 @@ export default function LandingPageComponent() {
                   test cases to ensure reliability.
                 </p>
               </div>
+
               {/* Card 2 */}
-              <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
+              <div className="p-6 bg-white shadow-md rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
-                  <Monitor className="h-18 w-18 " />
+                  <Monitor className="h-18 w-18" />
                 </div>
                 <h2 className="text-xl font-bold">Real-time Monitoring</h2>
                 <p className="text-gray-600">
-                  Track APi performance, errors , and usage live. Instantly
+                  Track API performance, errors, and usage live. Instantly
                   identify issues and understand traffic patterns.
                 </p>
               </div>
 
               {/* Card 3 */}
-              <div className="p-6 bg-white shadow rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left">
+              <div className="p-6 bg-white shadow-md rounded-lg grid grid-rows-[auto_auto_1fr] gap-4 text-left transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
-                  <History className="h-18 w-18 " />
+                  <History className="h-18 w-18" />
                 </div>
                 <h2 className="text-xl font-bold">View History</h2>
                 <p className="text-gray-600">
-                  Access detailed logs og past API requests and responses.
+                  Access detailed logs of past API requests and responses.
                   Easily debug issues and audit activity.
                 </p>
               </div>
@@ -230,10 +231,10 @@ export default function LandingPageComponent() {
 
             {/* Cards Column */}
             <div className="space-y-4">
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
                   <BadgeCheck
-                    className="w-12 h-12 md:w-14 md:h-14 "
+                    className="w-12 h-12 md:w-14 md:h-14"
                     strokeWidth={1}
                   />
                 </div>
@@ -248,10 +249,11 @@ export default function LandingPageComponent() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+
+              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
                   <FileText
-                    className="w-12 h-12 md:w-14 md:h-14 "
+                    className="w-12 h-12 md:w-14 md:h-14"
                     strokeWidth={1}
                   />
                 </div>
@@ -265,10 +267,11 @@ export default function LandingPageComponent() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+
+              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
                   <ClipboardCheck
-                    className="w-12 h-12 md:w-14 md:h-14 "
+                    className="w-12 h-12 md:w-14 md:h-14"
                     strokeWidth={1}
                   />
                 </div>
@@ -282,12 +285,13 @@ export default function LandingPageComponent() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm hover:shadow hover:bg-gray-100 transition-shadow">
+
+              <div className="flex items-start gap-4 border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm transition-shadow duration-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                 <div>
                   <Image
                     src={Image4}
                     alt="Hero Astronaut"
-                    className="w-12 h-12 md:w-12 md:h-14 rounded-lg object-cover "
+                    className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover"
                     width={100}
                     height={100}
                   />
@@ -342,7 +346,7 @@ export default function LandingPageComponent() {
             <p className="text-gray-600">@Copyright 2025 TestPilot</p>
             <div className="flex items-center gap-4 text-black text-xl">
               <a
-                href="https://github.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
@@ -351,7 +355,7 @@ export default function LandingPageComponent() {
                 <FaGithub />
               </a>
               <a
-                href="https://google.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Google"
