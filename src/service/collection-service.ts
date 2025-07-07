@@ -1,5 +1,5 @@
 import { fetchAPI } from "@/lib/api";
-import { COLLECTION_ENDPOINT, PROJECT_ENDPOINT } from "@/lib/static";
+import { COLLECTION_ENDPOINT, PROJECT_ENDPOINT, PUBLIC_SHARE_LINK } from "@/lib/static";
 import { CollectionItem, NewProjectPayload } from "@/types";
 import {
 	CollectionResponseType,
@@ -112,7 +112,7 @@ export async function fetchShareLink(
 			return null;
 		}
 		const response = await fetch(
-			`https://testpilot.yamu.me/api/v1/public-share-link/by-collection/${collectionId}`,
+			`${PUBLIC_SHARE_LINK}/by-collection/${collectionId}`,
 			{
 				method: "POST",
 				headers: {
@@ -138,7 +138,7 @@ export async function verifyShareToken(token: string): Promise<VerifyResponse> {
 		if (!authToken) throw new Error("Missing authentication token");
 
 		const response = await fetch(
-			`https://testpilot.yamu.me/api/v1/public-share-link/verify-token/${token}`,
+			`${PUBLIC_SHARE_LINK}/verify-token/${token}`,
 			{
 				method: "GET",
 				headers: {
