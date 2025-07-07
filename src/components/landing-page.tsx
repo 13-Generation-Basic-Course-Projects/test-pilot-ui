@@ -347,7 +347,6 @@ export default function LandingPageComponent() {
             <div className="flex items-center gap-4 text-black text-xl">
               <a
                 href="#"
-                target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
                 className="hover:text-gray-500"
@@ -356,7 +355,6 @@ export default function LandingPageComponent() {
               </a>
               <a
                 href="#"
-                target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Google"
                 className="hover:text-gray-500"
