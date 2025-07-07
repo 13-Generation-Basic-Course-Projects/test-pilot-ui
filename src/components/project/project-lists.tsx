@@ -41,21 +41,26 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
   const [hasNext, setHasNext] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<ProjectItem | null>(null);
+  const [selectedProjectForEdit, setSelectedProjectForEdit] =
+    useState<ProjectItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedProjectForDelete, setSelectProjectForDelete] = useState<ProjectItem | null>(null);
+  const [selectedProjectForDelete, setSelectProjectForDelete] =
+    useState<ProjectItem | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProjectForShare, setSelectedProjectForShare] = useState<ProjectItem | null>(null);
+  const [selectedProjectForShare, setSelectedProjectForShare] =
+    useState<ProjectItem | null>(null);
   const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<{ profileImage: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    profileImage: string;
+  } | null>(null);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Filter projects based on search query
   const filteredProjects = projects.filter((project) =>
-    project.title.toLowerCase().includes(searchQuery)
+    project.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Fetch more projects
@@ -64,10 +69,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
     setIsLoading(true);
     try {
-      const { projects: newProjects, nextCursor, hasNext } = await getAllProjectService(cursor);
+      const {
+        projects: newProjects,
+        nextCursor,
+        hasNext,
+      } = await getAllProjectService(cursor);
       setProjects((prev) => {
         const existingIds = new Set(prev.map((project) => project.id));
-        const uniqueNewProjects = newProjects.filter((project) => !existingIds.has(project.id));
+        const uniqueNewProjects = newProjects.filter(
+          (project) => !existingIds.has(project.id)
+        );
         return [...prev, ...uniqueNewProjects];
       });
       setCursor(nextCursor);
@@ -107,7 +118,11 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
     const fetchInitialProjects = async () => {
       setIsInitialLoading(true);
       try {
-        const { projects: newProjects, nextCursor, hasNext } = await getAllProjectService();
+        const {
+          projects: newProjects,
+          nextCursor,
+          hasNext,
+        } = await getAllProjectService();
         setProjects(newProjects);
         setCursor(nextCursor);
         setHasNext(hasNext);
@@ -192,9 +207,8 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
   const handleProjectCreated = (newProject: ProjectItem) => {
     if (!newProject?.id || !newProject?.title) return;
     setProjects((prev) => {
-      // Check if project ID already exists to prevent duplicates
       if (prev.some((project) => project.id === newProject.id)) {
-        return prev; // Skip adding if duplicate ID exists
+        return prev;
       }
       return [newProject, ...prev];
     });
@@ -203,7 +217,6 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
   const handleProjectUpdated = (updatedProject: ProjectItem) => {
     setProjects((prev) => {
-      // Ensure no duplicate IDs are introduced
       const existingIds = new Set(prev.map((project) => project.id));
       if (existingIds.has(updatedProject.id)) {
         return prev.map((project) =>
@@ -215,16 +228,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
   };
 
   const handleSearchChange = (query: string) => {
-    setSearchQuery(query.toLowerCase());
+    setSearchQuery(query);
   };
 
   return (
-    <>
-      <div className="mb-6 flex flex-col justify-between items-center">
-        <div className="flex items-center justify-between w-full">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex flex-col justify-between items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-4">
           <div>
-            <h1 className="text-2xl">Projects</h1>
-            <p className="text-slate-400 mt-2">
+            <h1 className="text-2xl font-bold">Projects</h1>
+            <p className="text-slate-400 mt-1 md:mt-2">
               Manage your API testing projects
             </p>
           </div>
@@ -235,11 +248,13 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
             onProjectCreated={handleProjectCreated}
           />
         </div>
-        <SearchForm className="mt-10" onSearch={handleSearchChange} />
+        <div className="w-full">
+          <SearchForm onSearch={handleSearchChange} />
+        </div>
       </div>
 
       {isInitialLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(6)
             .fill(0)
             .map((_, index) => (
@@ -247,25 +262,26 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
             ))}
         </div>
       ) : filteredProjects.length === 0 && !isLoading ? (
-        <div className="text-center text-slate-500 mt-10 justify-center">
+        <div className="text-center text-slate-500 py-10">
           <p className="text-lg font-medium">No projects found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
             <Link
               href={`/project/${project.id}`}
               key={project.id}
               className="block hover:shadow-lg transition-shadow duration-200 rounded-lg"
             >
-              <Card>
-                <CardHeader>
+              <Card className="h-full flex flex-col">
+                <CardHeader className="flex-1">
                   <div className="flex justify-between items-start">
                     <Image
                       src="/folderIcon.png"
                       alt="folder-icon"
                       width={50}
                       height={50}
+                      className="w-12 h-12"
                     />
                     <div
                       onClick={(e) => {
@@ -314,31 +330,33 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
                     </div>
                   </div>
                   <CardTitle className="mt-4">
-                    <h1 className="text-lg">{project.title}</h1>
+                    <h1 className="text-lg font-semibold line-clamp-1">
+                      {project.title}
+                    </h1>
                   </CardTitle>
                 </CardHeader>
-                <div>
-                  <CardContent>
-                    <p className="text-clip line-clamp-2 h-12">
-                      {project.description}
+                <CardContent className="flex-1">
+                  <p className="text-clip line-clamp-2 h-12 text-gray-600">
+                    {project.description}
+                  </p>
+                </CardContent>
+                <CardFooter className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <CalendarPlus className="text-slate-400 size-4" />
+                    <p className="text-sm text-slate-400">
+                      {project.creationDate || "N/A"}
                     </p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between items-center mt-4">
-                    <div className="flex items-center gap-2">
-                      <CalendarPlus className="text-slate-400 size-4" />
-                      <p className="text-sm text-slate-400">
-                        {project.creationDate || "N/A"}
-                      </p>
-                    </div>
+                  </div>
+                  <div className="w-[35px] h-[35px] rounded-full overflow-hidden">
                     <Image
                       src={userProfile?.profileImage || "/profile.png"}
                       alt="user profile"
                       width={35}
                       height={35}
-                      className="rounded-full"
+                      className="object-cover"
                     />
-                  </CardFooter>
-                </div>
+                  </div>
+                </CardFooter>
               </Card>
             </Link>
           ))}
@@ -377,7 +395,7 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
           project={selectedProjectForShare}
         />
       )}
-    </>
+    </div>
   );
 };
 
