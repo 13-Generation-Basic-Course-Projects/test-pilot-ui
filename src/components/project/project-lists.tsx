@@ -41,14 +41,19 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
   const [hasNext, setHasNext] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<ProjectItem | null>(null);
+  const [selectedProjectForEdit, setSelectedProjectForEdit] =
+    useState<ProjectItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedProjectForDelete, setSelectProjectForDelete] = useState<ProjectItem | null>(null);
+  const [selectedProjectForDelete, setSelectProjectForDelete] =
+    useState<ProjectItem | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProjectForShare, setSelectedProjectForShare] = useState<ProjectItem | null>(null);
+  const [selectedProjectForShare, setSelectedProjectForShare] =
+    useState<ProjectItem | null>(null);
   const [isShareProjectOpen, setIsShareProjectOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<{ profileImage: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    profileImage: string;
+  } | null>(null);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -64,10 +69,16 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
 
     setIsLoading(true);
     try {
-      const { projects: newProjects, nextCursor, hasNext } = await getAllProjectService(cursor);
+      const {
+        projects: newProjects,
+        nextCursor,
+        hasNext,
+      } = await getAllProjectService(cursor);
       setProjects((prev) => {
         const existingIds = new Set(prev.map((project) => project.id));
-        const uniqueNewProjects = newProjects.filter((project) => !existingIds.has(project.id));
+        const uniqueNewProjects = newProjects.filter(
+          (project) => !existingIds.has(project.id)
+        );
         return [...prev, ...uniqueNewProjects];
       });
       setCursor(nextCursor);
@@ -107,7 +118,11 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
     const fetchInitialProjects = async () => {
       setIsInitialLoading(true);
       try {
-        const { projects: newProjects, nextCursor, hasNext } = await getAllProjectService();
+        const {
+          projects: newProjects,
+          nextCursor,
+          hasNext,
+        } = await getAllProjectService();
         setProjects(newProjects);
         setCursor(nextCursor);
         setHasNext(hasNext);
@@ -233,16 +248,18 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
             onProjectCreated={handleProjectCreated}
           />
         </div>
-        <div className="w-full md:w-auto">
+        <div className="w-full">
           <SearchForm onSearch={handleSearchChange} />
         </div>
       </div>
 
       {isInitialLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array(6).fill(0).map((_, index) => (
-            <ProjectCardSkeleton key={index} />
-          ))}
+          {Array(6)
+            .fill(0)
+            .map((_, index) => (
+              <ProjectCardSkeleton key={index} />
+            ))}
         </div>
       ) : filteredProjects.length === 0 && !isLoading ? (
         <div className="text-center text-slate-500 py-10">
@@ -313,7 +330,9 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
                     </div>
                   </div>
                   <CardTitle className="mt-4">
-                    <h1 className="text-lg font-semibold line-clamp-1">{project.title}</h1>
+                    <h1 className="text-lg font-semibold line-clamp-1">
+                      {project.title}
+                    </h1>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -328,20 +347,23 @@ const ProjectLists = ({ projects: initialProjects }: ProjectProps) => {
                       {project.creationDate || "N/A"}
                     </p>
                   </div>
-                  <Image
-                    src={userProfile?.profileImage || "/profile.png"}
-                    alt="user profile"
-                    width={35}
-                    height={35}
-                    className="rounded-full"
-                  />
+                  <div className="w-[35px] h-[35px] rounded-full overflow-hidden">
+                    <Image
+                      src={userProfile?.profileImage || "/profile.png"}
+                      alt="user profile"
+                      width={35}
+                      height={35}
+                      className="object-cover"
+                    />
+                  </div>
                 </CardFooter>
               </Card>
             </Link>
           ))}
-          {isLoading && Array(3).fill(0).map((_, index) => (
-            <ProjectCardSkeleton key={index} />
-          ))}
+          {isLoading &&
+            Array(3)
+              .fill(0)
+              .map((_, index) => <ProjectCardSkeleton key={index} />)}
         </div>
       )}
 
