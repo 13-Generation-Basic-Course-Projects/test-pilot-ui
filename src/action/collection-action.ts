@@ -1,5 +1,4 @@
 "use server";
-
 import {
   createCollectionService,
   deleteCollectionByIdService,
@@ -79,7 +78,7 @@ function generateCopyName(name: string, existingTitles: string[]): string {
   const nextCopyNumber = maxCopy + 1;
   return nextCopyNumber === 1
     ? `${baseName} Copy`
-    : `${baseName} Copy ${nextCopyNumber}`;
+    : `${baseName} Copy${nextCopyNumber}`;
 }
 
 export const duplicateCollectionAction = async (

@@ -10,7 +10,7 @@ interface InviteData {
 
 export async function projectCollaboratorService(data: InviteData) {
 	const res = await fetchAPI<projectCollaboratorType>(
-		`http://localhost:8080/api/v1/collaborators/invite
+		`${API_BASE_URL}/collaborators/invite
 `,
 		{
 			method: "POST",
