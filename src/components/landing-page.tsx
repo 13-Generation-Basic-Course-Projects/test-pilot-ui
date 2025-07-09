@@ -30,7 +30,7 @@ export default function LandingPageComponent() {
           <div className="space-y-8 text-center md:text-left">
             {/* Banner */}
             <div className="flex justify-center">
-              <div className="text-sm px-4 py-2 rounded-xl inline-flex flex-col sm:flex-row items-center gap-2 shadow-sm text-center sm:text-left">
+              <div className="hidden sm:block text-sm px-4 py-2 rounded-xl flex-col sm:flex-row items-center gap-2 shadow-sm text-center sm:text-left">
                 <span>We’re happy to announce that we released it today!</span>
                 <a
                   href="#"
@@ -47,13 +47,13 @@ export default function LandingPageComponent() {
               Developers
             </h1>
             {/* Description */}
-            <p className="text-gray-600  text-base  max-w-md ml-20 text-center ">
+            <p className="text-gray-600  text-base  max-w-md lg:ml-20 text-center ">
               We are build a testing API platform that make it easy to test your
               API. Now we will provide best solution for your development. it
               very faster and good for testing APIs.
             </p>
             {/* Buttons */}
-            <div className="flex flex-col lg:justify-start sm:flex-row gap-4 justify-center items-center sm:text-lg mx-auto lg:ml-20 lg:text-left">
+            <div className="flex  lg:justify-start sm:flex-row gap-4 justify-center items-center sm:text-lg mx-auto lg:ml-20 lg:text-left">
               <Link href={"/login"}>
                 <button className="bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-800 transition shadow">
                   Get Started
@@ -328,12 +328,13 @@ export default function LandingPageComponent() {
             {/* Description */}
             <div className="max-w-md text-sm leading-relaxed text-gray-400 sm:text-left ">
               <p>
-                Destinize adalah website atau layanan aplikasi yang membantu
-                kamu memilih atau merekomendasikan tempat yang dijuluki ‘hidden
-                gems’ agar lebih dikenal dan ramai.{" "}
-                <strong className="text-blue-600 cursor-pointer">
-                  Baca Selengkapnya
-                </strong>
+                TestPilot is a web-based platform that simplifies API testing
+                with a user-friendly interface, enabling developers to create
+                custom requests, run batch test cases, and monitor result in
+                real time. Built with Next.js, Spring Boot, and PostgreSQL, it
+                offers project management, code snippet generation, and team
+                collaboration features, outperforming tools like Postman and
+                Swagger in validation efficiency.
               </p>
             </div>
           </div>
